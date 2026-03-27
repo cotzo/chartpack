@@ -1,4 +1,4 @@
-{{- include "universal-helm.validateWorkloadType" . -}}
+{{- include "universal-helm.validate" . -}}
 {{- if eq .Values.workloadType "Deployment" }}
 apiVersion: apps/v1
 kind: Deployment

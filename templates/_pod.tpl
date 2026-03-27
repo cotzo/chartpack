@@ -10,7 +10,7 @@ metadata:
     {{- toYaml . | nindent 4 }}
     {{- end }}
   annotations:
-    {{- include "universal-helm.checksumAnnotations" . | nindent 4 }}
+    {{- include "universal-helm.storage.checksumAnnotations" . | nindent 4 }}
     {{- with .Values.podSettings.annotations }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
@@ -27,14 +27,14 @@ spec:
   {{- if .Values.initContainers }}
   initContainers:
     {{- range $name, $config := .Values.initContainers }}
-    {{- include "universal-helm.renderContainer" (dict "name" $name "config" $config "context" $) | nindent 4 }}
+    {{- include "universal-helm.containers.renderContainer" (dict "name" $name "config" $config "context" $) | nindent 4 }}
     {{- end }}
   {{- end }}
   containers:
     {{- range $name, $config := .Values.containers }}
-    {{- include "universal-helm.renderContainer" (dict "name" $name "config" $config "context" $) | nindent 4 }}
+    {{- include "universal-helm.containers.renderContainer" (dict "name" $name "config" $config "context" $) | nindent 4 }}
     {{- end }}
-  {{- $volumes := include "universal-helm.volumes" . }}
+  {{- $volumes := include "universal-helm.storage.volumes" . }}
   {{- if $volumes }}
   volumes:
     {{- $volumes | nindent 4 }}

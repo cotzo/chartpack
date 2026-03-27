@@ -33,7 +33,7 @@ spec:
       {{- include "universal-helm.selectorLabels" . | nindent 6 }}
   template:
     {{- include "universal-helm.podTemplate" . | nindent 4 }}
-  {{- $vcts := include "universal-helm.volumeClaimTemplates" . }}
+  {{- $vcts := include "universal-helm.storage.volumeClaimTemplates" . }}
   {{- if $vcts }}
   volumeClaimTemplates:
     {{- $vcts | nindent 4 }}

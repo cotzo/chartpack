@@ -1,8 +1,8 @@
 {{/*
 Render a single container from the standardized container spec.
-Usage: {{ include "universal-helm.renderContainer" (dict "name" "app" "config" $containerConfig "context" $) }}
+Usage: {{ include "universal-helm.containers.renderContainer" (dict "name" "app" "config" $containerConfig "context" $) }}
 */}}
-{{- define "universal-helm.renderContainer" -}}
+{{- define "universal-helm.containers.renderContainer" -}}
 {{- $name := .name -}}
 {{- $config := .config -}}
 {{- $ctx := .context -}}

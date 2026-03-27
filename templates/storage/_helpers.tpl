@@ -3,7 +3,7 @@ Build the complete pod-level volumes list.
 Collects volumes from podSettings.volumes, container mounts (configMap/secret/persistence),
 and init container mounts. Deduplicates by volume name.
 */}}
-{{- define "universal-helm.volumes" -}}
+{{- define "universal-helm.storage.volumes" -}}
 {{- $volumes := list }}
 {{- $seen := dict }}
 {{- $fullName := include "universal-helm.fullname" . }}
@@ -88,7 +88,7 @@ and init container mounts. Deduplicates by volume name.
 Generate volumeClaimTemplates for StatefulSets.
 Only includes persistence entries without existingClaim.
 */}}
-{{- define "universal-helm.volumeClaimTemplates" -}}
+{{- define "universal-helm.storage.volumeClaimTemplates" -}}
 {{- $templates := list }}
 {{- range $name, $config := .Values.persistence }}
 {{- if not $config.existingClaim }}
@@ -124,7 +124,7 @@ Only includes persistence entries without existingClaim.
 {{/*
 Generate checksum annotations for configMaps and secrets to trigger pod rollouts on changes.
 */}}
-{{- define "universal-helm.checksumAnnotations" -}}
+{{- define "universal-helm.storage.checksumAnnotations" -}}
 {{- range $name, $config := .Values.configMaps }}
 {{- if $config }}
 checksum/configmap-{{ $name }}: {{ toJson $config.data | sha256sum }}
