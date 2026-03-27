@@ -1,7 +1,7 @@
 {{- if eq .Values.workloadType "CronJob" }}
 apiVersion: batch/v1
 kind: CronJob
-{{ include "universal-helm.metadata" (dict "context" $) }}
+{{ include "chartpack.metadata" (dict "context" $) }}
 spec:
   schedule: {{ .Values.cronJob.schedule | quote }}
   {{- with .Values.cronJob.timeZone }}
@@ -40,5 +40,5 @@ spec:
       parallelism: {{ . }}
       {{- end }}
       template:
-        {{- include "universal-helm.podTemplate" . | nindent 8 }}
+        {{- include "chartpack.podTemplate" . | nindent 8 }}
 {{- end }}

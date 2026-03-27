@@ -1,8 +1,8 @@
-{{- include "universal-helm.validate" . -}}
+{{- include "chartpack.validate" . -}}
 {{- if eq .Values.workloadType "Deployment" }}
 apiVersion: apps/v1
 kind: Deployment
-{{ include "universal-helm.metadata" (dict "context" $) }}
+{{ include "chartpack.metadata" (dict "context" $) }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.deployment.replicaCount }}
@@ -19,7 +19,7 @@ spec:
   {{- end }}
   selector:
     matchLabels:
-      {{- include "universal-helm.selectorLabels" . | nindent 6 }}
+      {{- include "chartpack.selectorLabels" . | nindent 6 }}
   template:
-    {{- include "universal-helm.podTemplate" . | nindent 4 }}
+    {{- include "chartpack.podTemplate" . | nindent 4 }}
 {{- end }}

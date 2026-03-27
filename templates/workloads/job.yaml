@@ -1,7 +1,7 @@
 {{- if eq .Values.workloadType "Job" }}
 apiVersion: batch/v1
 kind: Job
-{{ include "universal-helm.metadata" (dict "context" $) }}
+{{ include "chartpack.metadata" (dict "context" $) }}
 spec:
   {{- with .Values.job.backoffLimit }}
   backoffLimit: {{ . }}
@@ -25,5 +25,5 @@ spec:
   suspend: {{ .Values.job.suspend }}
   {{- end }}
   template:
-    {{- include "universal-helm.podTemplate" . | nindent 4 }}
+    {{- include "chartpack.podTemplate" . | nindent 4 }}
 {{- end }}

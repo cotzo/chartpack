@@ -1,16 +1,16 @@
 {{/*
 Shared pod template spec used by all workload types.
-Usage: {{ include "universal-helm.podTemplate" . }}
+Usage: {{ include "chartpack.podTemplate" . }}
 */}}
-{{- define "universal-helm.podTemplate" -}}
+{{- define "chartpack.podTemplate" -}}
 metadata:
   labels:
-    {{- include "universal-helm.selectorLabels" . | nindent 4 }}
+    {{- include "chartpack.selectorLabels" . | nindent 4 }}
     {{- with .Values.podSettings.labels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
   annotations:
-    {{- include "universal-helm.storage.checksumAnnotations" . | nindent 4 }}
+    {{- include "chartpack.storage.checksumAnnotations" . | nindent 4 }}
     {{- with .Values.podSettings.annotations }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
@@ -19,7 +19,7 @@ spec:
   imagePullSecrets:
     {{- toYaml . | nindent 4 }}
   {{- end }}
-  serviceAccountName: {{ include "universal-helm.serviceAccountName" . }}
+  serviceAccountName: {{ include "chartpack.serviceAccountName" . }}
   {{- with .Values.podSettings.securityContext }}
   securityContext:
     {{- toYaml . | nindent 4 }}
@@ -27,14 +27,14 @@ spec:
   {{- if .Values.initContainers }}
   initContainers:
     {{- range $name, $config := .Values.initContainers }}
-    {{- include "universal-helm.containers.renderContainer" (dict "name" $name "config" $config "context" $) | nindent 4 }}
+    {{- include "chartpack.containers.renderContainer" (dict "name" $name "config" $config "context" $) | nindent 4 }}
     {{- end }}
   {{- end }}
   containers:
     {{- range $name, $config := .Values.containers }}
-    {{- include "universal-helm.containers.renderContainer" (dict "name" $name "config" $config "context" $) | nindent 4 }}
+    {{- include "chartpack.containers.renderContainer" (dict "name" $name "config" $config "context" $) | nindent 4 }}
     {{- end }}
-  {{- $volumes := include "universal-helm.storage.volumes" . }}
+  {{- $volumes := include "chartpack.storage.volumes" . }}
   {{- if $volumes }}
   volumes:
     {{- $volumes | nindent 4 }}

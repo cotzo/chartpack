@@ -1,7 +1,7 @@
 {{/*
 Validate service port containerPort references exist in container ports.
 */}}
-{{- define "universal-helm.validation.networking.servicePorts" -}}
+{{- define "chartpack.validation.networking.servicePorts" -}}
 {{- $allContainerPorts := dict }}
 {{- range $cName, $c := .Values.containers }}
 {{- range $pName, $pCfg := $c.ports }}
@@ -22,6 +22,6 @@ Validate service port containerPort references exist in container ports.
 {{/*
 Run all networking validations.
 */}}
-{{- define "universal-helm.validation.networking" -}}
-{{- include "universal-helm.validation.networking.servicePorts" . }}
+{{- define "chartpack.validation.networking" -}}
+{{- include "chartpack.validation.networking.servicePorts" . }}
 {{- end }}

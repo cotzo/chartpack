@@ -2,12 +2,12 @@
 {{- if not (or (eq .Values.workloadType "CronJob") (eq .Values.workloadType "Job") (eq .Values.workloadType "DaemonSet")) }}
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
-{{ include "universal-helm.metadata" (dict "context" $ "extraAnnotations" .Values.autoscaling.annotations "extraLabels" .Values.autoscaling.labels) }}
+{{ include "chartpack.metadata" (dict "context" $ "extraAnnotations" .Values.autoscaling.annotations "extraLabels" .Values.autoscaling.labels) }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: {{ .Values.workloadType }}
-    name: {{ include "universal-helm.fullname" . }}
+    name: {{ include "chartpack.fullname" . }}
   minReplicas: {{ .Values.autoscaling.minReplicas }}
   maxReplicas: {{ .Values.autoscaling.maxReplicas }}
   {{- with .Values.autoscaling.metrics }}

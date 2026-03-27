@@ -1,7 +1,7 @@
 {{/*
 Validate roleBinding roleRef.name exists in rbac.roles.
 */}}
-{{- define "universal-helm.validation.rbac.roleBindings" -}}
+{{- define "chartpack.validation.rbac.roleBindings" -}}
 {{- range $name, $binding := .Values.rbac.roleBindings }}
 {{- if not (hasKey $.Values.rbac.roles $binding.roleRef.name) }}
 {{- fail (printf "rbac.roleBindings.%s: roleRef.name %q not found in rbac.roles map" $name $binding.roleRef.name) }}
@@ -12,7 +12,7 @@ Validate roleBinding roleRef.name exists in rbac.roles.
 {{/*
 Validate clusterRoleBinding roleRef.name exists in rbac.clusterRoles.
 */}}
-{{- define "universal-helm.validation.rbac.clusterRoleBindings" -}}
+{{- define "chartpack.validation.rbac.clusterRoleBindings" -}}
 {{- range $name, $binding := .Values.rbac.clusterRoleBindings }}
 {{- if not (hasKey $.Values.rbac.clusterRoles $binding.roleRef.name) }}
 {{- fail (printf "rbac.clusterRoleBindings.%s: roleRef.name %q not found in rbac.clusterRoles map" $name $binding.roleRef.name) }}
@@ -23,7 +23,7 @@ Validate clusterRoleBinding roleRef.name exists in rbac.clusterRoles.
 {{/*
 Run all RBAC validations.
 */}}
-{{- define "universal-helm.validation.rbac" -}}
-{{- include "universal-helm.validation.rbac.roleBindings" . }}
-{{- include "universal-helm.validation.rbac.clusterRoleBindings" . }}
+{{- define "chartpack.validation.rbac" -}}
+{{- include "chartpack.validation.rbac.roleBindings" . }}
+{{- include "chartpack.validation.rbac.clusterRoleBindings" . }}
 {{- end }}

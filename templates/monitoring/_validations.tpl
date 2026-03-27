@@ -1,7 +1,7 @@
 {{/*
 Validate monitor port references exist in service ports (service kind) or container ports (pod kind).
 */}}
-{{- define "universal-helm.validation.monitoring.ports" -}}
+{{- define "chartpack.validation.monitoring.ports" -}}
 {{- $allContainerPorts := dict }}
 {{- range $cName, $c := .Values.containers }}
 {{- range $pName, $pCfg := $c.ports }}
@@ -35,6 +35,6 @@ Validate monitor port references exist in service ports (service kind) or contai
 {{/*
 Run all monitoring validations.
 */}}
-{{- define "universal-helm.validation.monitoring" -}}
-{{- include "universal-helm.validation.monitoring.ports" . }}
+{{- define "chartpack.validation.monitoring" -}}
+{{- include "chartpack.validation.monitoring.ports" . }}
 {{- end }}

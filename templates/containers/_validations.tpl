@@ -1,7 +1,7 @@
 {{/*
 Validate at least one container is defined.
 */}}
-{{- define "universal-helm.validation.containers.required" -}}
+{{- define "chartpack.validation.containers.required" -}}
 {{- if not .Values.containers }}
 {{- fail "containers: at least one container must be defined" }}
 {{- end }}
@@ -10,7 +10,7 @@ Validate at least one container is defined.
 {{/*
 Validate container images are set.
 */}}
-{{- define "universal-helm.validation.containers.images" -}}
+{{- define "chartpack.validation.containers.images" -}}
 {{- range $name, $c := .Values.containers }}
 {{- if not $c.image }}
 {{- fail (printf "containers.%s: image is required" $name) }}
@@ -32,7 +32,7 @@ Validate container images are set.
 {{/*
 Validate mounts reference existing resources.
 */}}
-{{- define "universal-helm.validation.containers.mounts" -}}
+{{- define "chartpack.validation.containers.mounts" -}}
 {{- $allContainers := dict }}
 {{- range $k, $v := .Values.containers }}{{ $_ := set $allContainers $k $v }}{{ end }}
 {{- range $k, $v := .Values.initContainers }}{{ $_ := set $allContainers $k $v }}{{ end }}
@@ -69,7 +69,7 @@ Validate mounts reference existing resources.
 {{/*
 Validate env references to chart-managed resources.
 */}}
-{{- define "universal-helm.validation.containers.env" -}}
+{{- define "chartpack.validation.containers.env" -}}
 {{- range $cName, $c := .Values.containers }}
 {{- range $c.env }}
 
@@ -113,9 +113,9 @@ Validate env references to chart-managed resources.
 {{/*
 Run all container validations.
 */}}
-{{- define "universal-helm.validation.containers" -}}
-{{- include "universal-helm.validation.containers.required" . }}
-{{- include "universal-helm.validation.containers.images" . }}
-{{- include "universal-helm.validation.containers.mounts" . }}
-{{- include "universal-helm.validation.containers.env" . }}
+{{- define "chartpack.validation.containers" -}}
+{{- include "chartpack.validation.containers.required" . }}
+{{- include "chartpack.validation.containers.images" . }}
+{{- include "chartpack.validation.containers.mounts" . }}
+{{- include "chartpack.validation.containers.env" . }}
 {{- end }}

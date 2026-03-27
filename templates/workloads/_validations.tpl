@@ -1,7 +1,7 @@
 {{/*
 Validate workload type.
 */}}
-{{- define "universal-helm.validation.workloads.type" -}}
+{{- define "chartpack.validation.workloads.type" -}}
 {{- $allowedTypes := list "Deployment" "StatefulSet" "CronJob" "Job" "DaemonSet" }}
 {{- if not (has .Values.workloadType $allowedTypes) }}
 {{- fail (printf "workloadType %q is invalid. Must be one of: %s" .Values.workloadType (join ", " $allowedTypes)) }}
@@ -11,7 +11,7 @@ Validate workload type.
 {{/*
 Validate CronJob requires schedule.
 */}}
-{{- define "universal-helm.validation.workloads.cronjob" -}}
+{{- define "chartpack.validation.workloads.cronjob" -}}
 {{- if eq .Values.workloadType "CronJob" }}
 {{- if not .Values.cronJob.schedule }}
 {{- fail "cronJob.schedule: required when workloadType is CronJob" }}
@@ -22,7 +22,7 @@ Validate CronJob requires schedule.
 {{/*
 Run all workload validations.
 */}}
-{{- define "universal-helm.validation.workloads" -}}
-{{- include "universal-helm.validation.workloads.type" . }}
-{{- include "universal-helm.validation.workloads.cronjob" . }}
+{{- define "chartpack.validation.workloads" -}}
+{{- include "chartpack.validation.workloads.type" . }}
+{{- include "chartpack.validation.workloads.cronjob" . }}
 {{- end }}

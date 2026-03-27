@@ -1,7 +1,7 @@
 {{- if eq .Values.workloadType "DaemonSet" }}
 apiVersion: apps/v1
 kind: DaemonSet
-{{ include "universal-helm.metadata" (dict "context" $) }}
+{{ include "chartpack.metadata" (dict "context" $) }}
 spec:
   {{- with .Values.daemonSet.updateStrategy }}
   updateStrategy:
@@ -15,7 +15,7 @@ spec:
   {{- end }}
   selector:
     matchLabels:
-      {{- include "universal-helm.selectorLabels" . | nindent 6 }}
+      {{- include "chartpack.selectorLabels" . | nindent 6 }}
   template:
-    {{- include "universal-helm.podTemplate" . | nindent 4 }}
+    {{- include "chartpack.podTemplate" . | nindent 4 }}
 {{- end }}

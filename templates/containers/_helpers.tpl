@@ -1,12 +1,12 @@
 {{/*
 Render a single container from the standardized container spec.
-Usage: {{ include "universal-helm.containers.renderContainer" (dict "name" "app" "config" $containerConfig "context" $) }}
+Usage: {{ include "chartpack.containers.renderContainer" (dict "name" "app" "config" $containerConfig "context" $) }}
 */}}
-{{- define "universal-helm.containers.renderContainer" -}}
+{{- define "chartpack.containers.renderContainer" -}}
 {{- $name := .name -}}
 {{- $config := .config -}}
 {{- $ctx := .context -}}
-{{- $fullName := include "universal-helm.fullname" $ctx -}}
+{{- $fullName := include "chartpack.fullname" $ctx -}}
 - name: {{ $name }}
   image: "{{ $config.image.repository }}:{{ $config.image.tag | default $ctx.Chart.AppVersion }}"
   imagePullPolicy: {{ default "IfNotPresent" $config.image.pullPolicy }}

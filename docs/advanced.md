@@ -10,7 +10,7 @@ global:
     team: platform
     env: production
   annotations:
-    managed-by: universal-helm
+    managed-by: chartpack
 ```
 
 ## Pod Settings
@@ -61,7 +61,7 @@ extraResources:
   - apiVersion: networking.k8s.io/v1
     kind: NetworkPolicy
     metadata:
-      name: '{{ include "universal-helm.fullname" . }}-netpol'
+      name: '{{ include "chartpack.fullname" . }}-netpol'
     spec:
       podSelector:
         matchLabels:

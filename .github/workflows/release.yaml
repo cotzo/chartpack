@@ -65,7 +65,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release upload "v${{ steps.release.outputs.version }}" \
-            universal-helm-${{ steps.release.outputs.version }}.tgz \
+            chartpack-${{ steps.release.outputs.version }}.tgz \
             --clobber
 
       # Publish OCI chart to GitHub Container Registry
@@ -77,5 +77,5 @@ jobs:
       - name: Push OCI chart to GHCR
         if: steps.release.outputs.new_release == 'true'
         run: |
-          helm push universal-helm-${{ steps.release.outputs.version }}.tgz \
+          helm push chartpack-${{ steps.release.outputs.version }}.tgz \
             oci://ghcr.io/${{ github.repository_owner }}/charts

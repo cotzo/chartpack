@@ -2,7 +2,7 @@
 {{- if not (or (eq .Values.workloadType "CronJob") (eq .Values.workloadType "Job")) }}
 apiVersion: policy/v1
 kind: PodDisruptionBudget
-{{ include "universal-helm.metadata" (dict "context" $ "extraAnnotations" .Values.pdb.annotations "extraLabels" .Values.pdb.labels) }}
+{{ include "chartpack.metadata" (dict "context" $ "extraAnnotations" .Values.pdb.annotations "extraLabels" .Values.pdb.labels) }}
 spec:
   {{- with .Values.pdb.minAvailable }}
   minAvailable: {{ . }}
@@ -15,6 +15,6 @@ spec:
   {{- end }}
   selector:
     matchLabels:
-      {{- include "universal-helm.selectorLabels" . | nindent 6 }}
+      {{- include "chartpack.selectorLabels" . | nindent 6 }}
 {{- end }}
 {{- end }}

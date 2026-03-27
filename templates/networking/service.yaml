@@ -13,7 +13,7 @@
 ---
 apiVersion: v1
 kind: Service
-{{ include "universal-helm.metadata" (dict "name" (include "universal-helm.headlessServiceName" .) "context" $) }}
+{{ include "chartpack.metadata" (dict "name" (include "chartpack.headlessServiceName" .) "context" $) }}
 spec:
   type: ClusterIP
   clusterIP: None
@@ -32,7 +32,7 @@ spec:
     {{- end }}
     {{- end }}
   selector:
-    {{- include "universal-helm.selectorLabels" . | nindent 4 }}
+    {{- include "chartpack.selectorLabels" . | nindent 4 }}
 {{- end }}
 {{- end }}
 
@@ -42,7 +42,7 @@ spec:
 ---
 apiVersion: v1
 kind: Service
-{{ include "universal-helm.metadata" (dict "name" (printf "%s-%s" (include "universal-helm.fullname" $) $name) "context" $ "extraAnnotations" $svc.annotations "extraLabels" $svc.labels) }}
+{{ include "chartpack.metadata" (dict "name" (printf "%s-%s" (include "chartpack.fullname" $) $name) "context" $ "extraAnnotations" $svc.annotations "extraLabels" $svc.labels) }}
 spec:
   {{- if $svc.headless }}
   type: ClusterIP
@@ -87,7 +87,7 @@ spec:
       {{- end }}
     {{- end }}
   selector:
-    {{- include "universal-helm.selectorLabels" $ | nindent 4 }}
+    {{- include "chartpack.selectorLabels" $ | nindent 4 }}
     {{- with $svc.selectorLabels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}

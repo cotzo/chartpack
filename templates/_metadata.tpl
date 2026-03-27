@@ -1,16 +1,16 @@
 {{/*
 Resource metadata builder.
-Usage: {{ include "universal-helm.metadata" (dict "name" "myname" "context" $ "extraLabels" (dict) "extraAnnotations" (dict)) }}
+Usage: {{ include "chartpack.metadata" (dict "name" "myname" "context" $ "extraLabels" (dict) "extraAnnotations" (dict)) }}
 All fields except "context" are optional.
 */}}
-{{- define "universal-helm.metadata" -}}
+{{- define "chartpack.metadata" -}}
 {{- $ctx := .context }}
-{{- $name := default (include "universal-helm.fullname" $ctx) .name }}
+{{- $name := default (include "chartpack.fullname" $ctx) .name }}
 metadata:
   name: {{ $name }}
   namespace: {{ $ctx.Release.Namespace | quote }}
   labels:
-    {{- include "universal-helm.labels" $ctx | nindent 4 }}
+    {{- include "chartpack.labels" $ctx | nindent 4 }}
     {{- with .extraLabels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}

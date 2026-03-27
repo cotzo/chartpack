@@ -1,4 +1,4 @@
-{{- $fullName := include "universal-helm.fullname" . -}}
+{{- $fullName := include "chartpack.fullname" . -}}
 {{- range $name, $mon := .Values.monitors }}
 {{- if $mon }}
 {{- $kind := default "service" $mon.kind -}}
@@ -36,7 +36,7 @@
 ---
 apiVersion: {{ $apiVersion }}
 kind: {{ $k8sKind }}
-{{ include "universal-helm.metadata" (dict "name" (printf "%s-%s" $fullName $name) "context" $ "extraAnnotations" $mon.annotations "extraLabels" $mon.labels) }}
+{{ include "chartpack.metadata" (dict "name" (printf "%s-%s" $fullName $name) "context" $ "extraAnnotations" $mon.annotations "extraLabels" $mon.labels) }}
 spec:
   {{- with $mon.jobLabel }}
   jobLabel: {{ . }}
@@ -56,7 +56,7 @@ spec:
   {{- end }}
   selector:
     matchLabels:
-      {{- include "universal-helm.selectorLabels" $ | nindent 6 }}
+      {{- include "chartpack.selectorLabels" $ | nindent 6 }}
       {{- with $mon.selector }}
       {{- toYaml . | nindent 6 }}
       {{- end }}

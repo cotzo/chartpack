@@ -1,12 +1,12 @@
 {{- if eq .Values.workloadType "StatefulSet" }}
 apiVersion: apps/v1
 kind: StatefulSet
-{{ include "universal-helm.metadata" (dict "context" $) }}
+{{ include "chartpack.metadata" (dict "context" $) }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.statefulSet.replicaCount }}
   {{- end }}
-  serviceName: {{ include "universal-helm.headlessServiceName" . }}
+  serviceName: {{ include "chartpack.headlessServiceName" . }}
   {{- with .Values.statefulSet.podManagementPolicy }}
   podManagementPolicy: {{ . }}
   {{- end }}
@@ -30,10 +30,10 @@ spec:
   {{- end }}
   selector:
     matchLabels:
-      {{- include "universal-helm.selectorLabels" . | nindent 6 }}
+      {{- include "chartpack.selectorLabels" . | nindent 6 }}
   template:
-    {{- include "universal-helm.podTemplate" . | nindent 4 }}
-  {{- $vcts := include "universal-helm.storage.volumeClaimTemplates" . }}
+    {{- include "chartpack.podTemplate" . | nindent 4 }}
+  {{- $vcts := include "chartpack.storage.volumeClaimTemplates" . }}
   {{- if $vcts }}
   volumeClaimTemplates:
     {{- $vcts | nindent 4 }}

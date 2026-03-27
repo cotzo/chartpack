@@ -2,7 +2,7 @@
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
-{{ include "universal-helm.metadata" (dict "name" (printf "%s-%s" (include "universal-helm.fullname" $) $name) "context" $ "extraAnnotations" $role.annotations "extraLabels" $role.labels) }}
+{{ include "chartpack.metadata" (dict "name" (printf "%s-%s" (include "chartpack.fullname" $) $name) "context" $ "extraAnnotations" $role.annotations "extraLabels" $role.labels) }}
 rules:
   {{- toYaml $role.rules | nindent 2 }}
 {{- end }}

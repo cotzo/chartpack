@@ -76,4 +76,4 @@
           <text x="325.5" y="365.3" text-anchor="middle" fill="#E5EEF9" style="font: 700 37.1px Inter, ui-sans-serif, system-ui;">Δ</text>
         </g>
         
-    <text x="512" y="790" text-anchor="middle" class="wordmark" fill="#E5EEF9">universal-helm</text><text x="512" y="846" text-anchor="middle" class="subtitle" fill="#9FB0C8">one chart • many Kubernetes workloads</text></svg>
+    <text x="512" y="790" text-anchor="middle" class="wordmark" fill="#E5EEF9">chartpack</text><text x="512" y="846" text-anchor="middle" class="subtitle" fill="#9FB0C8">one chart • many Kubernetes workloads</text></svg>

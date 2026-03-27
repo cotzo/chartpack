@@ -1,7 +1,7 @@
 {{/*
 Validate PDB cannot have both minAvailable and maxUnavailable.
 */}}
-{{- define "universal-helm.validation.autoscaling.pdb" -}}
+{{- define "chartpack.validation.autoscaling.pdb" -}}
 {{- if .Values.pdb.enabled }}
 {{- if and .Values.pdb.minAvailable .Values.pdb.maxUnavailable }}
 {{- fail "pdb: cannot set both minAvailable and maxUnavailable" }}
@@ -15,6 +15,6 @@ Validate PDB cannot have both minAvailable and maxUnavailable.
 {{/*
 Run all autoscaling validations.
 */}}
-{{- define "universal-helm.validation.autoscaling" -}}
-{{- include "universal-helm.validation.autoscaling.pdb" . }}
+{{- define "chartpack.validation.autoscaling" -}}
+{{- include "chartpack.validation.autoscaling.pdb" . }}
 {{- end }}

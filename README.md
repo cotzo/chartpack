@@ -8,7 +8,7 @@
 </p>
 
 <p align="center">
-  <a href="https://artifacthub.io/packages/search?repo=universal-helm"><img src="https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/universal-helm" alt="Artifact Hub"></a>
+  <a href="https://artifacthub.io/packages/search?repo=chartpack"><img src="https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/chartpack" alt="Artifact Hub"></a>
   <img src="https://img.shields.io/badge/kubernetes-%3E%3D1.28-blue?logo=kubernetes&logoColor=white" alt="Kubernetes >= 1.28">
   <img src="https://img.shields.io/badge/helm-v3-blue?logo=helm&logoColor=white" alt="Helm v3">
   <img src="https://img.shields.io/badge/license-Apache%202.0-green" alt="License">
@@ -34,7 +34,7 @@
 ## Quick Start
 
 ```bash
-helm install my-app ./universal-helm -f values.yaml
+helm install my-app ./chartpack -f values.yaml
 ```
 
 Minimal `values.yaml`:

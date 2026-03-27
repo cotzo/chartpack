@@ -1,5 +1,5 @@
 apiVersion: v2
-name: universal-helm
+name: chartpack
 description: A universal Helm chart for deploying any Kubernetes application workload
 type: application
 version: 1.0.3
@@ -11,16 +11,16 @@ keywords:
   - statefulset
   - cronjob
   - daemonset
-icon: https://raw.githubusercontent.com/cotzo/universal-helm/main/images/logo.svg
-home: https://github.com/cotzo/universal-helm
+icon: https://raw.githubusercontent.com/cotzo/chartpack/main/images/logo.svg
+home: https://github.com/cotzo/chartpack
 sources:
-  - https://github.com/cotzo/universal-helm
+  - https://github.com/cotzo/chartpack
 maintainers:
   - name: cotzo
 annotations:
   artifacthub.io/license: Apache-2.0
   artifacthub.io/links: |
     - name: Documentation
-      url: https://github.com/cotzo/universal-helm/tree/main/docs
+      url: https://github.com/cotzo/chartpack/tree/main/docs
     - name: Source
-      url: https://github.com/cotzo/universal-helm
+      url: https://github.com/cotzo/chartpack

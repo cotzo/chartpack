@@ -2,17 +2,17 @@
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
-{{ include "universal-helm.metadata" (dict "name" (printf "%s-%s" (include "universal-helm.fullname" $) $name) "context" $ "extraAnnotations" $binding.annotations "extraLabels" $binding.labels) }}
+{{ include "chartpack.metadata" (dict "name" (printf "%s-%s" (include "chartpack.fullname" $) $name) "context" $ "extraAnnotations" $binding.annotations "extraLabels" $binding.labels) }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: {{ default "Role" $binding.roleRef.kind }}
-  name: {{ printf "%s-%s" (include "universal-helm.fullname" $) $binding.roleRef.name }}
+  name: {{ printf "%s-%s" (include "chartpack.fullname" $) $binding.roleRef.name }}
 subjects:
   {{- if $binding.subjects }}
   {{- toYaml $binding.subjects | nindent 2 }}
   {{- else }}
   - kind: ServiceAccount
-    name: {{ include "universal-helm.serviceAccountName" $ }}
+    name: {{ include "chartpack.serviceAccountName" $ }}
     namespace: {{ $.Release.Namespace }}
   {{- end }}
 {{- end }}
