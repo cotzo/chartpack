@@ -40,39 +40,42 @@ jobs:
         id: release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release
-
-      - name: Read new version
-        if: steps.release.outcome == 'success'
-        id: version
         run: |
+          npx semantic-release
+          # After semantic-release, check if Chart.yaml was actually updated
           VERSION=$(grep '^version:' Chart.yaml | awk '{print $2}')
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "Released version: $VERSION"
+          # Check if a GitHub release exists for this version
+          if gh release view "v${VERSION}" --json tagName >/dev/null 2>&1; then
+            echo "new_release=true" >> "$GITHUB_OUTPUT"
+            echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+            echo "New release: v${VERSION}"
+          else
+            echo "new_release=false" >> "$GITHUB_OUTPUT"
+            echo "No new release created"
+          fi
 
       # Publish Helm package to GitHub Releases
       - name: Package Helm chart
-        if: steps.version.outputs.version != ''
-        run: |
-          helm package . --version ${{ steps.version.outputs.version }}
+        if: steps.release.outputs.new_release == 'true'
+        run: helm package . --version ${{ steps.release.outputs.version }}
 
       - name: Upload chart to GitHub Release
-        if: steps.version.outputs.version != ''
+        if: steps.release.outputs.new_release == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload "v${{ steps.version.outputs.version }}" \
-            universal-helm-${{ steps.version.outputs.version }}.tgz \
+          gh release upload "v${{ steps.release.outputs.version }}" \
+            universal-helm-${{ steps.release.outputs.version }}.tgz \
             --clobber
 
       # Publish OCI chart to GitHub Container Registry
       - name: Login to GHCR
-        if: steps.version.outputs.version != ''
+        if: steps.release.outputs.new_release == 'true'
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Push OCI chart to GHCR
-        if: steps.version.outputs.version != ''
+        if: steps.release.outputs.new_release == 'true'
         run: |
-          helm push universal-helm-${{ steps.version.outputs.version }}.tgz \
+          helm push universal-helm-${{ steps.release.outputs.version }}.tgz \
             oci://ghcr.io/${{ github.repository_owner }}/charts
