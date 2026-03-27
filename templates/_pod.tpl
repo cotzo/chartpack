@@ -27,12 +27,12 @@ spec:
   {{- if .Values.initContainers }}
   initContainers:
     {{- range $name, $config := .Values.initContainers }}
-    {{- include "universal-helm.renderContainer" (dict "name" $name "config" $config "context" $ "autoWire" false) | nindent 4 }}
+    {{- include "universal-helm.renderContainer" (dict "name" $name "config" $config "context" $) | nindent 4 }}
     {{- end }}
   {{- end }}
   containers:
     {{- range $name, $config := .Values.containers }}
-    {{- include "universal-helm.renderContainer" (dict "name" $name "config" $config "context" $ "autoWire" true) | nindent 4 }}
+    {{- include "universal-helm.renderContainer" (dict "name" $name "config" $config "context" $) | nindent 4 }}
     {{- end }}
   {{- $volumes := include "universal-helm.volumes" . }}
   {{- if $volumes }}

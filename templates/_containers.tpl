@@ -1,13 +1,11 @@
 {{/*
 Render a single container from the standardized container spec.
-Usage: {{ include "universal-helm.renderContainer" (dict "name" "app" "config" $containerConfig "context" $ "autoWire" true) }}
-- autoWire: if true, mounts are processed (configMap/secret/persistence/volume references)
+Usage: {{ include "universal-helm.renderContainer" (dict "name" "app" "config" $containerConfig "context" $) }}
 */}}
 {{- define "universal-helm.renderContainer" -}}
 {{- $name := .name -}}
 {{- $config := .config -}}
 {{- $ctx := .context -}}
-{{- $autoWire := .autoWire -}}
 {{- $fullName := include "universal-helm.fullname" $ctx -}}
 - name: {{ $name }}
   image: "{{ $config.image.repository }}:{{ $config.image.tag | default $ctx.Chart.AppVersion }}"
@@ -98,7 +96,6 @@ Usage: {{ include "universal-helm.renderContainer" (dict "name" "app" "config" $
   {{- end }}
   {{- /* Build volumeMounts from unified mounts list */ -}}
   {{- $volumeMounts := list -}}
-  {{- if $autoWire -}}
   {{- range $config.mounts -}}
   {{- $mount := dict "mountPath" .path -}}
   {{- if .readOnly }}{{ $_ := set $mount "readOnly" true }}{{ end -}}
@@ -117,7 +114,6 @@ Usage: {{ include "universal-helm.renderContainer" (dict "name" "app" "config" $
   {{- $_ := set $mount "name" .volume -}}
   {{- end -}}
   {{- $volumeMounts = append $volumeMounts $mount -}}
-  {{- end -}}
   {{- end -}}
   {{- if $volumeMounts }}
   volumeMounts:
