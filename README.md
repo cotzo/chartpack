@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="images/banner.svg" alt="Universal Helm Chart" width="800">
+  <img src="images/banner.jpeg" alt="ChartPack" width="800">
 </p>
 
 <p align="center">

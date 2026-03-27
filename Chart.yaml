@@ -11,7 +11,7 @@ keywords:
   - statefulset
   - cronjob
   - daemonset
-icon: https://raw.githubusercontent.com/cotzo/chartpack/main/images/logo.svg
+icon: https://raw.githubusercontent.com/cotzo/chartpack/main/images/logo.png
 home: https://github.com/cotzo/chartpack
 sources:
   - https://github.com/cotzo/chartpack
