@@ -79,3 +79,32 @@ jobs:
         run: |
           helm push chartpack-${{ steps.release.outputs.version }}.tgz \
             oci://ghcr.io/${{ github.repository_owner }}/charts
+
+      # Publish to GitHub Pages Helm repo
+      - name: Checkout gh-pages
+        if: steps.release.outputs.new_release == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update Helm repo index
+        if: steps.release.outputs.new_release == 'true'
+        run: |
+          cp chartpack-${{ steps.release.outputs.version }}.tgz gh-pages/
+          cp artifacthub-repo.yml gh-pages/
+          helm repo index gh-pages \
+            --url https://${{ github.repository_owner }}.github.io/chartpack \
+            --merge gh-pages/index.yaml
+
+      - name: Push to gh-pages
+        if: steps.release.outputs.new_release == 'true'
+        run: |
+          cd gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "chore: publish chart v${{ steps.release.outputs.version }}"
+          git push origin gh-pages
