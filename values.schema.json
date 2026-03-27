@@ -54,9 +54,15 @@
           "additionalProperties": false
         },
         "securityContext": { "type": "object" },
-        "livenessProbe": { "type": "object" },
-        "readinessProbe": { "type": "object" },
-        "startupProbe": { "type": "object" },
+        "healthChecks": {
+          "type": "object",
+          "properties": {
+            "liveness": { "type": "object" },
+            "readiness": { "type": "object" },
+            "startup": { "type": "object" }
+          },
+          "additionalProperties": false
+        },
         "lifecycle": { "type": "object" },
         "workingDir": { "type": "string" },
         "mounts": {

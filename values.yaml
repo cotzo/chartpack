@@ -92,9 +92,25 @@ containers: {}
 #   #   cpu: 500m
 #   #   memory: 256Mi
 #   securityContext: {}
-#   livenessProbe: {}
-#   readinessProbe: {}
-#   startupProbe: {}
+#   healthChecks:
+#     liveness:
+#       httpGet:
+#         path: /healthz
+#         port: http
+#       initialDelaySeconds: 10
+#       periodSeconds: 10
+#     readiness:
+#       httpGet:
+#         path: /ready
+#         port: http
+#       initialDelaySeconds: 5
+#       periodSeconds: 5
+#     startup:
+#       httpGet:
+#         path: /healthz
+#         port: http
+#       failureThreshold: 30
+#       periodSeconds: 10
 #   lifecycle: {}
 #   workingDir: ""
 #   # -- Unified mounts list. Each entry has a path and one source field.

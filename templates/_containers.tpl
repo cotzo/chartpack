@@ -119,17 +119,19 @@ Usage: {{ include "universal-helm.renderContainer" (dict "name" "app" "config" $
   volumeMounts:
     {{- toYaml $volumeMounts | nindent 4 }}
   {{- end }}
-  {{- with $config.livenessProbe }}
+  {{- with $config.healthChecks }}
+  {{- with .liveness }}
   livenessProbe:
     {{- toYaml . | nindent 4 }}
   {{- end }}
-  {{- with $config.readinessProbe }}
+  {{- with .readiness }}
   readinessProbe:
     {{- toYaml . | nindent 4 }}
   {{- end }}
-  {{- with $config.startupProbe }}
+  {{- with .startup }}
   startupProbe:
     {{- toYaml . | nindent 4 }}
+  {{- end }}
   {{- end }}
   {{- with $config.lifecycle }}
   lifecycle:
