@@ -18,13 +18,14 @@ containers:
       - path: /etc/nginx/conf.d
         configMap: nginx-config
         readOnly: true
-services:
-  http:
-    type: ClusterIP
-    ports:
-      http:
-        port: 80
-        containerPort: http
+networking:
+  services:
+    http:
+      type: ClusterIP
+      ports:
+        http:
+          port: 80
+          containerPort: http
 config:
   configMaps:
     nginx-config:

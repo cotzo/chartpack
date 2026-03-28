@@ -16,13 +16,14 @@ containers:
         cpu: 500m
         memory: 256Mi
 
-services:
-  http:
-    type: ClusterIP
-    ports:
-      http:
-        port: 80
-        containerPort: http
+networking:
+  services:
+    http:
+      type: ClusterIP
+      ports:
+        http:
+          port: 80
+          containerPort: http
 
 deployment:
   replicaCount: 3

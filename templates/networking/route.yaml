@@ -1,5 +1,5 @@
 {{- $fullName := include "chartpack.fullname" . -}}
-{{- range $name, $route := .Values.gatewayApi.routes }}
+{{- range $name, $route := .Values.networking.gatewayApi.routes }}
 {{- if $route }}
 {{- $kind := default "HTTPRoute" $route.kind -}}
 {{- $routeName := printf "%s-%s" $fullName $name -}}
@@ -20,7 +20,7 @@
 {{- $proxySvcName := "" -}}
 {{- if $route.oauth2Proxy -}}
 {{- $useOauth2 = true -}}
-{{- $proxyCfg := index $.Values.oauth2Proxies $route.oauth2Proxy -}}
+{{- $proxyCfg := index $.Values.networking.oauth2Proxies $route.oauth2Proxy -}}
 {{- $proxyPort = (default 4180 $proxyCfg.port) -}}
 {{- if eq (default "sidecar" $proxyCfg.mode) "deployment" -}}
 {{- $proxySvcName = include "chartpack.networking.oauth2Proxy.serviceName" (dict "key" $route.oauth2Proxy "context" $) -}}

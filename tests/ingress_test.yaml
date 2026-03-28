@@ -11,18 +11,19 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
-      ingresses:
-        main:
-          hosts:
-            - host: app.example.com
-              paths:
-                - path: /
-                  pathType: Prefix
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+        ingresses:
+          main:
+            hosts:
+              - host: app.example.com
+                paths:
+                  - path: /
+                    pathType: Prefix
     asserts:
       - isKind:
           of: Ingress
@@ -38,19 +39,20 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
-      ingresses:
-        main:
-          className: nginx
-          hosts:
-            - host: app.example.com
-              paths:
-                - path: /
-                  pathType: Prefix
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+        ingresses:
+          main:
+            className: nginx
+            hosts:
+              - host: app.example.com
+                paths:
+                  - path: /
+                    pathType: Prefix
     asserts:
       - equal:
           path: spec.ingressClassName
@@ -65,18 +67,19 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
-      ingresses:
-        main:
-          hosts:
-            - host: app.example.com
-              paths:
-                - path: /api
-                  pathType: Prefix
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+        ingresses:
+          main:
+            hosts:
+              - host: app.example.com
+                paths:
+                  - path: /api
+                    pathType: Prefix
     asserts:
       - equal:
           path: spec.rules[0].host
@@ -97,22 +100,23 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
-      ingresses:
-        main:
-          tls:
-            - secretName: app-tls
-              hosts:
-                - app.example.com
-          hosts:
-            - host: app.example.com
-              paths:
-                - path: /
-                  pathType: Prefix
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+        ingresses:
+          main:
+            tls:
+              - secretName: app-tls
+                hosts:
+                  - app.example.com
+            hosts:
+              - host: app.example.com
+                paths:
+                  - path: /
+                    pathType: Prefix
     asserts:
       - equal:
           path: spec.tls[0].secretName
@@ -130,11 +134,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
     asserts:
       - hasDocuments:
           count: 0
@@ -148,20 +153,21 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
-      ingresses:
-        main:
-          annotations:
-            nginx.ingress.kubernetes.io/rewrite-target: /
-          hosts:
-            - host: app.example.com
-              paths:
-                - path: /
-                  pathType: Prefix
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+        ingresses:
+          main:
+            annotations:
+              nginx.ingress.kubernetes.io/rewrite-target: /
+            hosts:
+              - host: app.example.com
+                paths:
+                  - path: /
+                    pathType: Prefix
     asserts:
       - equal:
           path: metadata.annotations["nginx.ingress.kubernetes.io/rewrite-target"]

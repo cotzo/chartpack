@@ -171,177 +171,182 @@
       },
       "additionalProperties": false
     },
-    "services": {
-      "type": "object",
-      "description": "Map of service name to service config",
-      "additionalProperties": {
-        "type": "object",
-        "required": ["ports"],
-        "properties": {
-          "headless": { "type": "boolean", "description": "Set true for clusterIP: None" },
-          "type": { "type": "string", "enum": ["ClusterIP", "NodePort", "LoadBalancer", "ExternalName"] },
-          "ports": {
-            "type": "object",
-            "minProperties": 1,
-            "description": "Map of port name to port config",
-            "additionalProperties": {
-              "type": "object",
-              "required": ["port"],
-              "properties": {
-                "port": { "type": "integer", "minimum": 1, "maximum": 65535 },
-                "containerPort": { "type": "string", "description": "Container port name, defaults to port key name" },
-                "protocol": { "type": "string" },
-                "nodePort": { "type": "integer" }
-              }
-            }
-          },
-          "clusterIP": { "type": "string" },
-          "loadBalancerIP": { "type": "string" },
-          "loadBalancerSourceRanges": { "type": "array", "items": { "type": "string" } },
-          "externalTrafficPolicy": { "type": "string", "enum": ["Cluster", "Local", ""] },
-          "trafficDistribution": { "type": "string", "description": "Traffic distribution: PreferSameNode or PreferSameZone (K8s 1.35+)" },
-          "sessionAffinity": { "type": "string" },
-          "ipFamilyPolicy": { "type": "string" },
-          "ipFamilies": { "type": "array", "items": { "type": "string" } },
-          "publishNotReadyAddresses": { "type": "boolean" },
-          "selectorLabels": { "type": "object", "additionalProperties": { "type": "string" } },
-          "annotations": { "type": "object" },
-          "labels": { "type": "object" }
-        }
-      }
-    },
-    "oauth2Proxies": {
-      "type": "object",
-      "description": "Map of oauth2 proxy name to proxy config",
-      "additionalProperties": {
-        "type": "object",
-        "properties": {
-          "mode": { "type": "string", "enum": ["sidecar", "deployment"], "description": "sidecar (default) runs in app pod, deployment creates separate pods" },
-          "image": { "type": "object" },
-          "replicas": { "type": "integer", "description": "Only for deployment mode" },
-          "port": { "type": "integer" },
-          "portName": { "type": "string", "description": "Port name suffix (default: proxy)" },
-          "provider": { "type": "string" },
-          "issuerUrl": { "type": "string" },
-          "emailDomains": { "type": "array", "items": { "type": "string" } },
-          "upstream": { "type": "string", "description": "Override auto-derived upstream URL" },
-          "extraArgs": { "type": "object", "additionalProperties": { "type": "string" } },
-          "args": { "type": "array", "items": { "type": "string" } },
-          "env": { "type": "object" },
-          "resources": { "type": "object" },
-          "securityContext": { "type": "object" },
-          "annotations": { "type": "object" },
-          "labels": { "type": "object" }
-        }
-      }
-    },
-    "ingresses": {
-      "type": "object",
-      "description": "Map of ingress name to ingress config",
-      "additionalProperties": {
-        "type": "object",
-        "properties": {
-          "oauth2Proxy": { "type": "string", "description": "Key from oauth2Proxies map" },
-          "className": { "type": "string" },
-          "annotations": { "type": "object" },
-          "labels": { "type": "object" },
-          "hosts": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "required": ["host", "paths"],
-              "properties": {
-                "host": { "type": "string" },
-                "paths": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "required": ["path"],
-                    "properties": {
-                      "path": { "type": "string" },
-                      "pathType": { "type": "string", "enum": ["Prefix", "Exact", "ImplementationSpecific"] },
-                      "serviceName": { "type": "string" },
-                      "servicePort": { "type": "integer" }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "tls": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "secretName": { "type": "string" },
-                "hosts": { "type": "array", "items": { "type": "string" } }
-              }
-            }
-          },
-          "defaultBackend": { "type": "object" }
-        }
-      }
-    },
-    "gatewayApi": {
+    "networking": {
       "type": "object",
       "properties": {
-        "routes": {
+        "services": {
           "type": "object",
-          "description": "Gateway API routes map",
+          "description": "Map of service name to service config",
           "additionalProperties": {
             "type": "object",
+            "required": ["ports"],
             "properties": {
-              "oauth2Proxy": { "type": "string", "description": "Key from oauth2Proxies map" },
-              "kind": { "type": "string", "enum": ["HTTPRoute", "GRPCRoute", "TLSRoute", "TCPRoute", "UDPRoute"] },
-              "parentRefs": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "required": ["name"],
-                  "properties": {
-                    "name": { "type": "string" },
-                    "namespace": { "type": "string" },
-                    "sectionName": { "type": "string" },
-                    "port": { "type": "integer" }
-                  }
-                }
-              },
-              "hostnames": { "type": "array", "items": { "type": "string" } },
-              "rules": { "type": "array", "items": { "type": "object" } },
-              "policies": {
+              "headless": { "type": "boolean", "description": "Set true for clusterIP: None" },
+              "type": { "type": "string", "enum": ["ClusterIP", "NodePort", "LoadBalancer", "ExternalName"] },
+              "ports": {
                 "type": "object",
-                "properties": {
-                  "envoy": {
-                    "type": "object",
-                    "description": "Envoy Gateway BackendTrafficPolicy settings",
-                    "properties": {
-                      "loadBalancer": { "type": "object" },
-                      "circuitBreaker": { "type": "object" },
-                      "retry": { "type": "object" },
-                      "timeout": { "type": "object" },
-                      "rateLimit": { "type": "object" },
-                      "healthCheck": { "type": "object" },
-                      "connection": { "type": "object" },
-                      "tcpKeepalive": { "type": "object" },
-                      "faultInjection": { "type": "object" },
-                      "useClientProtocol": { "type": "boolean" },
-                      "proxyProtocol": { "type": "object" },
-                      "compression": { "type": "array" },
-                      "http2": { "type": "object" },
-                      "dns": { "type": "object" },
-                      "annotations": { "type": "object" },
-                      "labels": { "type": "object" }
-                    }
+                "minProperties": 1,
+                "description": "Map of port name to port config",
+                "additionalProperties": {
+                  "type": "object",
+                  "required": ["port"],
+                  "properties": {
+                    "port": { "type": "integer", "minimum": 1, "maximum": 65535 },
+                    "containerPort": { "type": "string", "description": "Container port name, defaults to port key name" },
+                    "protocol": { "type": "string" },
+                    "nodePort": { "type": "integer" }
                   }
                 }
               },
+              "clusterIP": { "type": "string" },
+              "loadBalancerIP": { "type": "string" },
+              "loadBalancerSourceRanges": { "type": "array", "items": { "type": "string" } },
+              "externalTrafficPolicy": { "type": "string", "enum": ["Cluster", "Local", ""] },
+              "trafficDistribution": { "type": "string", "description": "Traffic distribution: PreferSameNode or PreferSameZone (K8s 1.35+)" },
+              "sessionAffinity": { "type": "string" },
+              "ipFamilyPolicy": { "type": "string" },
+              "ipFamilies": { "type": "array", "items": { "type": "string" } },
+              "publishNotReadyAddresses": { "type": "boolean" },
+              "selectorLabels": { "type": "object", "additionalProperties": { "type": "string" } },
               "annotations": { "type": "object" },
               "labels": { "type": "object" }
             }
           }
+        },
+        "oauth2Proxies": {
+          "type": "object",
+          "description": "Map of oauth2 proxy name to proxy config",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "mode": { "type": "string", "enum": ["sidecar", "deployment"], "description": "sidecar (default) runs in app pod, deployment creates separate pods" },
+              "image": { "type": "object" },
+              "replicas": { "type": "integer", "description": "Only for deployment mode" },
+              "port": { "type": "integer" },
+              "portName": { "type": "string", "description": "Port name suffix (default: proxy)" },
+              "provider": { "type": "string" },
+              "issuerUrl": { "type": "string" },
+              "emailDomains": { "type": "array", "items": { "type": "string" } },
+              "upstream": { "type": "string", "description": "Override auto-derived upstream URL" },
+              "extraArgs": { "type": "object", "additionalProperties": { "type": "string" } },
+              "args": { "type": "array", "items": { "type": "string" } },
+              "env": { "type": "object" },
+              "resources": { "type": "object" },
+              "securityContext": { "type": "object" },
+              "annotations": { "type": "object" },
+              "labels": { "type": "object" }
+            }
+          }
+        },
+        "ingresses": {
+          "type": "object",
+          "description": "Map of ingress name to ingress config",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "oauth2Proxy": { "type": "string", "description": "Key from networking.oauth2Proxies map" },
+              "className": { "type": "string" },
+              "annotations": { "type": "object" },
+              "labels": { "type": "object" },
+              "hosts": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["host", "paths"],
+                  "properties": {
+                    "host": { "type": "string" },
+                    "paths": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": ["path"],
+                        "properties": {
+                          "path": { "type": "string" },
+                          "pathType": { "type": "string", "enum": ["Prefix", "Exact", "ImplementationSpecific"] },
+                          "serviceName": { "type": "string" },
+                          "servicePort": { "type": "integer" }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "tls": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "secretName": { "type": "string" },
+                    "hosts": { "type": "array", "items": { "type": "string" } }
+                  }
+                }
+              },
+              "defaultBackend": { "type": "object" }
+            }
+          }
+        },
+        "gatewayApi": {
+          "type": "object",
+          "properties": {
+            "routes": {
+              "type": "object",
+              "description": "Gateway API routes map",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "oauth2Proxy": { "type": "string", "description": "Key from networking.oauth2Proxies map" },
+                  "kind": { "type": "string", "enum": ["HTTPRoute", "GRPCRoute", "TLSRoute", "TCPRoute", "UDPRoute"] },
+                  "parentRefs": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["name"],
+                      "properties": {
+                        "name": { "type": "string" },
+                        "namespace": { "type": "string" },
+                        "sectionName": { "type": "string" },
+                        "port": { "type": "integer" }
+                      }
+                    }
+                  },
+                  "hostnames": { "type": "array", "items": { "type": "string" } },
+                  "rules": { "type": "array", "items": { "type": "object" } },
+                  "policies": {
+                    "type": "object",
+                    "properties": {
+                      "envoy": {
+                        "type": "object",
+                        "description": "Envoy Gateway BackendTrafficPolicy settings",
+                        "properties": {
+                          "loadBalancer": { "type": "object" },
+                          "circuitBreaker": { "type": "object" },
+                          "retry": { "type": "object" },
+                          "timeout": { "type": "object" },
+                          "rateLimit": { "type": "object" },
+                          "healthCheck": { "type": "object" },
+                          "connection": { "type": "object" },
+                          "tcpKeepalive": { "type": "object" },
+                          "faultInjection": { "type": "object" },
+                          "useClientProtocol": { "type": "boolean" },
+                          "proxyProtocol": { "type": "object" },
+                          "compression": { "type": "array" },
+                          "http2": { "type": "object" },
+                          "dns": { "type": "object" },
+                          "annotations": { "type": "object" },
+                          "labels": { "type": "object" }
+                        }
+                      }
+                    }
+                  },
+                  "annotations": { "type": "object" },
+                  "labels": { "type": "object" }
+                }
+              }
+            }
+          },
+          "additionalProperties": false
         }
-      },
-      "additionalProperties": false
+      }
     },
     "config": {
       "type": "object",

@@ -63,55 +63,56 @@ podSettings:
   volumes:
     - name: tmp
       emptyDir: {}
-services:
-  http:
-    type: ClusterIP
-    ports:
-      http:
-        port: 80
-        containerPort: http
-  metrics:
-    type: ClusterIP
-    ports:
-      metrics:
-        port: 9090
-  headless:
-    headless: true
-    publishNotReadyAddresses: true
-    ports:
-      http:
-        port: 80
-  external:
-    type: NodePort
-    ports:
-      http:
-        port: 80
-        containerPort: http
-ingresses:
-  default:
-    className: ""
-    hosts:
-      - host: ""
-        paths:
-          - path: /
-            pathType: Prefix
-gatewayApi:
-  routes:
+networking:
+  services:
     http:
-      kind: HTTPRoute
-      parentRefs:
-        - name: dummy-gateway
-          namespace: default
-      hostnames:
-        - test.example.com
-      rules:
-        - matches:
-            - path:
-                type: PathPrefix
-                value: /
-          backendRefs:
-            - name: http
-              port: 80
+      type: ClusterIP
+      ports:
+        http:
+          port: 80
+          containerPort: http
+    metrics:
+      type: ClusterIP
+      ports:
+        metrics:
+          port: 9090
+    headless:
+      headless: true
+      publishNotReadyAddresses: true
+      ports:
+        http:
+          port: 80
+    external:
+      type: NodePort
+      ports:
+        http:
+          port: 80
+          containerPort: http
+  ingresses:
+    default:
+      className: ""
+      hosts:
+        - host: ""
+          paths:
+            - path: /
+              pathType: Prefix
+  gatewayApi:
+    routes:
+      http:
+        kind: HTTPRoute
+        parentRefs:
+          - name: dummy-gateway
+            namespace: default
+        hostnames:
+          - test.example.com
+        rules:
+          - matches:
+              - path:
+                  type: PathPrefix
+                  value: /
+            backendRefs:
+              - name: http
+                port: 80
 config:
   configMaps:
     app-config:

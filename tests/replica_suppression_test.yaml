@@ -16,11 +16,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          main:
+            ports:
+              http:
+                port: 80
     asserts:
       - equal:
           path: spec.replicas
@@ -38,11 +39,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          main:
+            ports:
+              http:
+                port: 80
       autoscaling:
         hpa:
           enabled: true
@@ -62,11 +64,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          main:
+            ports:
+              http:
+                port: 80
       autoscaling:
         keda:
           enabled: true
@@ -97,11 +100,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          main:
+            ports:
+              http:
+                port: 80
     asserts:
       - equal:
           path: spec.replicas
@@ -119,11 +123,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          main:
+            ports:
+              http:
+                port: 80
       autoscaling:
         hpa:
           enabled: true
@@ -143,11 +148,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          main:
+            ports:
+              http:
+                port: 80
       autoscaling:
         keda:
           enabled: true
@@ -178,11 +184,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          main:
+            ports:
+              http:
+                port: 80
     asserts:
       - equal:
           path: spec.replicas
@@ -200,11 +207,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          main:
+            ports:
+              http:
+                port: 80
       autoscaling:
         hpa:
           enabled: true
@@ -224,11 +232,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          main:
+            ports:
+              http:
+                port: 80
       autoscaling:
         keda:
           enabled: true

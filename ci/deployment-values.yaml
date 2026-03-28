@@ -38,28 +38,29 @@ containers:
         configMap: app-config
         readOnly: true
 
-services:
-  http:
-    type: ClusterIP
-    ports:
-      http:
-        port: 80
-        containerPort: http
+networking:
+  services:
+    http:
+      type: ClusterIP
+      ports:
+        http:
+          port: 80
+          containerPort: http
 
-ingresses:
-  public:
-    className: nginx
-    annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-prod
-    hosts:
-      - host: app.example.com
-        paths:
-          - path: /
-            pathType: Prefix
-    tls:
-      - secretName: app-tls
-        hosts:
-          - app.example.com
+  ingresses:
+    public:
+      className: nginx
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-prod
+      hosts:
+        - host: app.example.com
+          paths:
+            - path: /
+              pathType: Prefix
+      tls:
+        - secretName: app-tls
+          hosts:
+            - app.example.com
 
 config:
   configMaps:

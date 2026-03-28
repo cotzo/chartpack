@@ -134,15 +134,16 @@ rollout:
       autoPromotionEnabled: true
       autoPromotionSeconds: 60
 
-services:
-  stable:
-    ports:
-      http:
-        port: 80
-  canary:
-    ports:
-      http:
-        port: 80
+networking:
+  services:
+    stable:
+      ports:
+        http:
+          port: 80
+    canary:
+      ports:
+        http:
+          port: 80
 ```
 
 HPA, PDB, and KEDA all work with Rollouts -- the chart automatically sets `scaleTargetRef` to the Rollout resource.

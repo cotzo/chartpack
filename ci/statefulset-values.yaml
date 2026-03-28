@@ -28,12 +28,13 @@ containers:
       - path: /var/lib/postgresql/data
         persistence: data
 
-services:
-  postgres:
-    type: ClusterIP
-    ports:
-      postgres:
-        port: 5432
+networking:
+  services:
+    postgres:
+      type: ClusterIP
+      ports:
+        postgres:
+          port: 5432
 
 statefulSet:
   replicaCount: 3

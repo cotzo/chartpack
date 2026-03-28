@@ -12,11 +12,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
       deployment:
         strategy:
           type: RollingUpdate
@@ -36,11 +37,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
       deployment:
         revisionHistoryLimit: 5
     asserts:
@@ -59,11 +61,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
       deployment:
         minReadySeconds: 30
     asserts:
@@ -84,11 +87,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
       statefulSet:
         podManagementPolicy: Parallel
     asserts:
@@ -108,11 +112,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
       statefulSet:
         updateStrategy:
           type: RollingUpdate
@@ -134,11 +139,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
       daemonSet:
         updateStrategy:
           type: OnDelete
@@ -160,11 +166,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
       cronJob:
         schedule: "*/5 * * * *"
     asserts:
@@ -184,11 +191,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
       cronJob:
         schedule: "*/5 * * * *"
         concurrencyPolicy: Forbid
@@ -209,11 +217,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
       cronJob:
         schedule: "0 0 * * *"
         timeZone: "America/New_York"
@@ -235,11 +244,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
       job:
         backoffLimit: 3
     asserts:
@@ -259,11 +269,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
       job:
         ttlSecondsAfterFinished: 600
     asserts:
@@ -283,11 +294,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
       job:
         completionMode: Indexed
     asserts:
@@ -308,11 +320,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
       rollout:
         strategy:
           canary:
@@ -337,11 +350,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
       rollout:
         restartAt: "2024-06-01T00:00:00Z"
     asserts:
@@ -360,11 +374,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
       rollout:
         analysis:
           successfulRunHistoryLimit: 3

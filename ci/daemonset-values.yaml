@@ -42,15 +42,16 @@ podSettings:
         path: /
         type: Directory
 
-services:
-  http:
-    ports:
-      http:
-        port: 8080
-  metrics:
-    ports:
-      metrics:
-        port: 9090
+networking:
+  services:
+    http:
+      ports:
+        http:
+          port: 8080
+    metrics:
+      ports:
+        metrics:
+          port: 9090
 
 daemonSet:
   updateStrategy:

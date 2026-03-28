@@ -313,259 +313,260 @@ podSettings:
         value: "2"
 
 # =============================================================================
-# OAuth2 Proxies
+# Networking — OAuth2 Proxies, Services, Ingresses, Gateway API
 # =============================================================================
 
-oauth2Proxies:
-  corporate:
-    mode: sidecar
-    image:
-      repository: quay.io/oauth2-proxy/oauth2-proxy
-      tag: v7.7.0
-    provider: oidc
-    issuerUrl: https://auth.corp.example.com
-    emailDomains:
-      - corp.example.com
-    env:
-      CLIENT_ID:
-        valueFrom:
-          secretKeyRef:
-            name: oauth2-corp-secret
-            key: client-id
-            external: true
-      CLIENT_SECRET:
-        valueFrom:
-          secretKeyRef:
-            name: oauth2-corp-secret
-            key: client-secret
-            external: true
-      COOKIE_SECRET:
-        valueFrom:
-          secretKeyRef:
-            name: oauth2-corp-secret
-            key: cookie-secret
-            external: true
-    resources:
-      requests:
-        cpu: 50m
-        memory: 64Mi
-      limits:
-        cpu: 100m
-        memory: 128Mi
-  gateway-auth:
-    mode: deployment
-    upstream: http://localhost:80
-    image:
-      repository: quay.io/oauth2-proxy/oauth2-proxy
-      tag: v7.7.0
-    provider: oidc
-    issuerUrl: https://auth.corp.example.com
-    emailDomains:
-      - corp.example.com
-    env:
-      CLIENT_ID:
-        value: "test-client"
-      CLIENT_SECRET:
-        value: "test-secret"
-      COOKIE_SECRET:
-        value: "test-cookie-secret-1234567890ab"
-    resources:
-      requests:
-        cpu: 50m
-        memory: 64Mi
+networking:
+  oauth2Proxies:
+    corporate:
+      mode: sidecar
+      image:
+        repository: quay.io/oauth2-proxy/oauth2-proxy
+        tag: v7.7.0
+      provider: oidc
+      issuerUrl: https://auth.corp.example.com
+      emailDomains:
+        - corp.example.com
+      env:
+        CLIENT_ID:
+          valueFrom:
+            secretKeyRef:
+              name: oauth2-corp-secret
+              key: client-id
+              external: true
+        CLIENT_SECRET:
+          valueFrom:
+            secretKeyRef:
+              name: oauth2-corp-secret
+              key: client-secret
+              external: true
+        COOKIE_SECRET:
+          valueFrom:
+            secretKeyRef:
+              name: oauth2-corp-secret
+              key: cookie-secret
+              external: true
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+        limits:
+          cpu: 100m
+          memory: 128Mi
+    gateway-auth:
+      mode: deployment
+      upstream: http://localhost:80
+      image:
+        repository: quay.io/oauth2-proxy/oauth2-proxy
+        tag: v7.7.0
+      provider: oidc
+      issuerUrl: https://auth.corp.example.com
+      emailDomains:
+        - corp.example.com
+      env:
+        CLIENT_ID:
+          value: "test-client"
+        CLIENT_SECRET:
+          value: "test-secret"
+        COOKIE_SECRET:
+          value: "test-cookie-secret-1234567890ab"
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
 
-# =============================================================================
-# Services — ClusterIP, NodePort, headless, LoadBalancer
-# =============================================================================
+  # ===========================================================================
+  # Services — ClusterIP, NodePort, headless, LoadBalancer
+  # ===========================================================================
 
-services:
-  http:
-    type: ClusterIP
-    trafficDistribution: PreferSameNode
-    ports:
-      http:
-        port: 80
-        containerPort: http
-    annotations:
-      service.beta.kubernetes.io/aws-load-balancer-internal: "true"
-  grpc:
-    type: ClusterIP
-    ports:
-      grpc:
-        port: 9090
-  metrics:
-    type: ClusterIP
-    ports:
-      metrics:
-        port: 9091
-    annotations:
-      prometheus.io/scrape: "true"
-      prometheus.io/port: "9091"
-  external:
-    type: NodePort
-    ports:
-      http:
-        port: 80
-        containerPort: http
-        nodePort: 30080
-    externalTrafficPolicy: Local
-  discovery:
-    headless: true
-    publishNotReadyAddresses: true
-    ports:
-      http:
-        port: 8080
-      grpc:
-        port: 9090
-
-# =============================================================================
-# Ingresses — public + internal with different ingress classes
-# =============================================================================
-
-ingresses:
-  public:
-    oauth2Proxy: corporate
-    className: nginx
-    annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-prod
-      nginx.ingress.kubernetes.io/proxy-body-size: "50m"
-      nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
-      nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    hosts:
-      - host: app.example.com
-        paths:
-          - path: /
-            pathType: Prefix
-      - host: www.example.com
-        paths:
-          - path: /
-            pathType: Prefix
-    tls:
-      - secretName: app-tls
-        hosts:
-          - app.example.com
-          - www.example.com
-  api:
-    className: nginx
-    annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-prod
-      nginx.ingress.kubernetes.io/proxy-body-size: "10m"
-      nginx.ingress.kubernetes.io/enable-cors: "true"
-    hosts:
-      - host: api.example.com
-        paths:
-          - path: /v1
-            pathType: Prefix
-          - path: /v2
-            pathType: Prefix
-    tls:
-      - secretName: api-tls
-        hosts:
-          - api.example.com
-  internal:
-    className: nginx-internal
-    annotations:
-      nginx.ingress.kubernetes.io/whitelist-source-range: "10.0.0.0/8,172.16.0.0/12"
-    hosts:
-      - host: app.internal.example.com
-        paths:
-          - path: /
-            pathType: Prefix
-          - path: /admin
-            pathType: Prefix
-
-# =============================================================================
-# Gateway API Routes — HTTPRoute, GRPCRoute, TLSRoute
-# =============================================================================
-
-gatewayApi:
-  routes:
+  services:
     http:
-      kind: HTTPRoute
-      oauth2Proxy: gateway-auth
-      parentRefs:
-        - name: main-gateway
-          namespace: gateway-system
-          sectionName: https
-      hostnames:
-        - app.example.com
-      rules:
-        - matches:
-            - path:
-                type: PathPrefix
-                value: /
-          backendRefs:
-            - name: http
-              port: 80
-        - matches:
-            - path:
-                type: PathPrefix
-                value: /api
-            - headers:
-                - name: X-Api-Version
-                  value: v2
-          backendRefs:
-            - name: http
-              port: 80
-              weight: 90
-            - name: http
-              port: 80
-              weight: 10
-          timeouts:
-            request: 30s
-            backendRequest: 15s
-      policies:
-        envoy:
-          loadBalancer:
-            type: LeastRequest
-          circuitBreaker:
-            maxConnections: 2048
-            maxPendingRequests: 512
-          retry:
-            numRetries: 3
-          timeout:
-            tcp:
-              connectTimeout: 10s
-            http:
-              connectionIdleTimeout: 60s
-          rateLimit:
-            global:
-              rules:
-                - limit:
-                    requests: 100
-                    unit: Second
-          tcpKeepalive:
-            probes: 3
-            idleTime: 60s
-            interval: 10s
+      type: ClusterIP
+      trafficDistribution: PreferSameNode
+      ports:
+        http:
+          port: 80
+          containerPort: http
+      annotations:
+        service.beta.kubernetes.io/aws-load-balancer-internal: "true"
     grpc:
-      kind: GRPCRoute
-      parentRefs:
-        - name: main-gateway
-          namespace: gateway-system
-          sectionName: grpc
-      hostnames:
-        - grpc.example.com
-      rules:
-        - matches:
-            - method:
-                service: myapp.v1.ItemService
-                method: GetItem
-          backendRefs:
-            - name: grpc
-              port: 9090
-    tls-passthrough:
-      kind: TLSRoute
-      parentRefs:
-        - name: main-gateway
-          namespace: gateway-system
-          sectionName: tls-passthrough
-      hostnames:
-        - secure.example.com
-      rules:
-        - backendRefs:
-            - name: http
-              port: 443
+      type: ClusterIP
+      ports:
+        grpc:
+          port: 9090
+    metrics:
+      type: ClusterIP
+      ports:
+        metrics:
+          port: 9091
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9091"
+    external:
+      type: NodePort
+      ports:
+        http:
+          port: 80
+          containerPort: http
+          nodePort: 30080
+      externalTrafficPolicy: Local
+    discovery:
+      headless: true
+      publishNotReadyAddresses: true
+      ports:
+        http:
+          port: 8080
+        grpc:
+          port: 9090
+
+  # ===========================================================================
+  # Ingresses — public + internal with different ingress classes
+  # ===========================================================================
+
+  ingresses:
+    public:
+      oauth2Proxy: corporate
+      className: nginx
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-prod
+        nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+        nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+        nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      hosts:
+        - host: app.example.com
+          paths:
+            - path: /
+              pathType: Prefix
+        - host: www.example.com
+          paths:
+            - path: /
+              pathType: Prefix
+      tls:
+        - secretName: app-tls
+          hosts:
+            - app.example.com
+            - www.example.com
+    api:
+      className: nginx
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-prod
+        nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+        nginx.ingress.kubernetes.io/enable-cors: "true"
+      hosts:
+        - host: api.example.com
+          paths:
+            - path: /v1
+              pathType: Prefix
+            - path: /v2
+              pathType: Prefix
+      tls:
+        - secretName: api-tls
+          hosts:
+            - api.example.com
+    internal:
+      className: nginx-internal
+      annotations:
+        nginx.ingress.kubernetes.io/whitelist-source-range: "10.0.0.0/8,172.16.0.0/12"
+      hosts:
+        - host: app.internal.example.com
+          paths:
+            - path: /
+              pathType: Prefix
+            - path: /admin
+              pathType: Prefix
+
+  # ===========================================================================
+  # Gateway API Routes — HTTPRoute, GRPCRoute, TLSRoute
+  # ===========================================================================
+
+  gatewayApi:
+    routes:
+      http:
+        kind: HTTPRoute
+        oauth2Proxy: gateway-auth
+        parentRefs:
+          - name: main-gateway
+            namespace: gateway-system
+            sectionName: https
+        hostnames:
+          - app.example.com
+        rules:
+          - matches:
+              - path:
+                  type: PathPrefix
+                  value: /
+            backendRefs:
+              - name: http
+                port: 80
+          - matches:
+              - path:
+                  type: PathPrefix
+                  value: /api
+              - headers:
+                  - name: X-Api-Version
+                    value: v2
+            backendRefs:
+              - name: http
+                port: 80
+                weight: 90
+              - name: http
+                port: 80
+                weight: 10
+            timeouts:
+              request: 30s
+              backendRequest: 15s
+        policies:
+          envoy:
+            loadBalancer:
+              type: LeastRequest
+            circuitBreaker:
+              maxConnections: 2048
+              maxPendingRequests: 512
+            retry:
+              numRetries: 3
+            timeout:
+              tcp:
+                connectTimeout: 10s
+              http:
+                connectionIdleTimeout: 60s
+            rateLimit:
+              global:
+                rules:
+                  - limit:
+                      requests: 100
+                      unit: Second
+            tcpKeepalive:
+              probes: 3
+              idleTime: 60s
+              interval: 10s
+      grpc:
+        kind: GRPCRoute
+        parentRefs:
+          - name: main-gateway
+            namespace: gateway-system
+            sectionName: grpc
+        hostnames:
+          - grpc.example.com
+        rules:
+          - matches:
+              - method:
+                  service: myapp.v1.ItemService
+                  method: GetItem
+            backendRefs:
+              - name: grpc
+                port: 9090
+      tls-passthrough:
+        kind: TLSRoute
+        parentRefs:
+          - name: main-gateway
+            namespace: gateway-system
+            sectionName: tls-passthrough
+        hostnames:
+          - secure.example.com
+        rules:
+          - backendRefs:
+              - name: http
+                port: 443
 
 # =============================================================================
 # ConfigMaps — app config, env vars, sidecar config

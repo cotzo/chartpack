@@ -29,19 +29,20 @@ containers:
         initialDelaySeconds: 5
         periodSeconds: 5
 
-services:
-  stable:
-    type: ClusterIP
-    ports:
-      http:
-        port: 80
-        containerPort: http
-  canary:
-    type: ClusterIP
-    ports:
-      http:
-        port: 80
-        containerPort: http
+networking:
+  services:
+    stable:
+      type: ClusterIP
+      ports:
+        http:
+          port: 80
+          containerPort: http
+    canary:
+      type: ClusterIP
+      ports:
+        http:
+          port: 80
+          containerPort: http
 
 rollout:
   replicaCount: 3

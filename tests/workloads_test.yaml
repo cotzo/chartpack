@@ -17,11 +17,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          main:
+            ports:
+              http:
+                port: 80
     asserts:
       - isKind:
           of: Deployment
@@ -55,11 +56,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          main:
+            ports:
+              http:
+                port: 80
     asserts:
       - isKind:
           of: StatefulSet
@@ -93,11 +95,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          main:
+            ports:
+              http:
+                port: 80
     asserts:
       - isKind:
           of: DaemonSet
@@ -133,11 +136,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          main:
+            ports:
+              http:
+                port: 80
     asserts:
       - isKind:
           of: CronJob
@@ -171,11 +175,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          main:
+            ports:
+              http:
+                port: 80
     asserts:
       - isKind:
           of: Job
@@ -209,11 +214,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          main:
+            ports:
+              http:
+                port: 80
     asserts:
       - isKind:
           of: Rollout
@@ -247,11 +253,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          main:
+            ports:
+              http:
+                port: 80
       autoscaling:
         keda:
           enabled: true

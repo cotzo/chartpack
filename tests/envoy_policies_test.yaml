@@ -9,11 +9,12 @@ set:
       ports:
         http:
           port: 80
-  services:
-    http:
-      ports:
-        http:
-          port: 80
+  networking:
+    services:
+      http:
+        ports:
+          http:
+            port: 80
 tests:
   - it: should not render when no envoy policies defined
     asserts:
@@ -22,40 +23,42 @@ tests:
 
   - it: should not render when route has no policies
     set:
-      gatewayApi:
-        routes:
-          web:
-            kind: HTTPRoute
-            parentRefs:
-              - name: my-gateway
-                namespace: gateway-ns
-            rules:
-              - backendRefs:
-                  - name: http
-                    port: 80
+      networking:
+        gatewayApi:
+          routes:
+            web:
+              kind: HTTPRoute
+              parentRefs:
+                - name: my-gateway
+                  namespace: gateway-ns
+              rules:
+                - backendRefs:
+                    - name: http
+                      port: 80
     asserts:
       - hasDocuments:
           count: 0
 
   - it: should render BackendTrafficPolicy when route has envoy policies
     set:
-      gatewayApi:
-        routes:
-          web:
-            kind: HTTPRoute
-            parentRefs:
-              - name: my-gateway
-                namespace: gateway-ns
-            rules:
-              - backendRefs:
-                  - name: http
-                    port: 80
-            policies:
-              envoy:
-                loadBalancer:
-                  type: RoundRobin
-                retry:
-                  numRetries: 3
+      networking:
+        gatewayApi:
+          routes:
+            web:
+              kind: HTTPRoute
+              parentRefs:
+                - name: my-gateway
+                  namespace: gateway-ns
+              rules:
+                - backendRefs:
+                    - name: http
+                      port: 80
+              policies:
+                envoy:
+                  loadBalancer:
+                    type: RoundRobin
+                  retry:
+                    numRetries: 3
     asserts:
       - isAPIVersion:
           of: gateway.envoyproxy.io/v1alpha1
@@ -70,21 +73,22 @@ tests:
 
   - it: should set targetRef to correct route
     set:
-      gatewayApi:
-        routes:
-          web:
-            kind: HTTPRoute
-            parentRefs:
-              - name: my-gateway
-                namespace: gateway-ns
-            rules:
-              - backendRefs:
-                  - name: http
-                    port: 80
-            policies:
-              envoy:
-                loadBalancer:
-                  type: RoundRobin
+      networking:
+        gatewayApi:
+          routes:
+            web:
+              kind: HTTPRoute
+              parentRefs:
+                - name: my-gateway
+                  namespace: gateway-ns
+              rules:
+                - backendRefs:
+                    - name: http
+                      port: 80
+              policies:
+                envoy:
+                  loadBalancer:
+                    type: RoundRobin
     asserts:
       - equal:
           path: spec.targetRefs[0].group

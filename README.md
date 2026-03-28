@@ -61,11 +61,11 @@ These are only required if you enable the corresponding feature in your values. 
 | Feature | Operator / CRD | Values key | Minimum version |
 |---------|----------------|------------|-----------------|
 | Argo Rollouts | [Argo Rollouts](https://argoproj.github.io/rollouts/) | `workloadType: Rollout` | v1.6+ |
-| Gateway API routes | [Gateway API CRDs](https://gateway-api.sigs.k8s.io/) | `gatewayApi.routes` | v1.2+ |
-| Envoy traffic policies | [Envoy Gateway](https://gateway.envoyproxy.io/) | `gatewayApi.routes.*.policies.envoy` | v1.0+ |
+| Gateway API routes | [Gateway API CRDs](https://gateway-api.sigs.k8s.io/) | `networking.gatewayApi.routes` | v1.2+ |
+| Envoy traffic policies | [Envoy Gateway](https://gateway.envoyproxy.io/) | `networking.gatewayApi.routes.*.policies.envoy` | v1.0+ |
 | KEDA autoscaling | [KEDA](https://keda.sh/) | `autoscaling.keda.enabled: true` | v2.12+ |
-| External secrets | [External Secrets Operator](https://external-secrets.io/) | `externalSecrets` | v0.9+ / v2.0+ |
-| Generated secrets | [External Secrets Operator](https://external-secrets.io/) (Password generator) | `secrets.*.generate` | v0.9+ / v2.0+ |
+| External secrets | [External Secrets Operator](https://external-secrets.io/) | `config.externalSecrets` | v0.9+ / v2.0+ |
+| Generated secrets | [External Secrets Operator](https://external-secrets.io/) (Password generator) | `config.secrets.*.generate` | v0.9+ / v2.0+ |
 | Prometheus monitoring | [Prometheus Operator](https://prometheus-operator.dev/) | `monitors` (operator: prometheus) | v0.70+ |
 | VictoriaMetrics monitoring | [VictoriaMetrics Operator](https://docs.victoriametrics.com/operator/) | `monitors` (operator: victoriametrics) | v0.44+ |
 
@@ -87,11 +87,12 @@ containers:
       http:
         port: 80
 
-services:
-  http:
-    ports:
-      http:
-        port: 80
+networking:
+  services:
+    http:
+      ports:
+        http:
+          port: 80
 ```
 
 This produces a Deployment with 1 replica, a ClusterIP Service, and a ServiceAccount.

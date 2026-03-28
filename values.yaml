@@ -231,13 +231,14 @@ podSettings:
   restartPolicy: ""
 
 # =============================================================================
-# Services
+# Networking (Services, Ingresses, Gateway API, OAuth2 Proxies)
 # =============================================================================
 
-# -- Services to create (map of name -> config).
-# Services are named <fullname>-<key>. Not created for CronJob/Job workloads.
-# For StatefulSets, a headless service is auto-generated from all service ports.
-services: {}
+networking:
+  # -- Services to create (map of name -> config).
+  # Services are named <fullname>-<key>. Not created for CronJob/Job workloads.
+  # For StatefulSets, a headless service is auto-generated from all service ports.
+  services: {}
 # http:
 #   type: ClusterIP  # ClusterIP | NodePort | LoadBalancer | ExternalName
 #   headless: false            # set true for clusterIP: None
@@ -274,15 +275,15 @@ services: {}
 #   annotations:
 #     prometheus.io/scrape: "true"
 
-# =============================================================================
-# OAuth2 Proxies
-# =============================================================================
+  # =============================================================================
+  # OAuth2 Proxies
+  # =============================================================================
 
-# -- OAuth2 proxies (map of name -> config).
-# Each proxy gets its own Deployment + Service, created only if referenced by
-# an ingress or route via the oauth2Proxy field.
-# Traffic flow: Ingress/Route → oauth2-proxy → original backend service.
-oauth2Proxies: {}
+  # -- OAuth2 proxies (map of name -> config).
+  # Each proxy gets its own Deployment + Service, created only if referenced by
+  # an ingress or route via the oauth2Proxy field.
+  # Traffic flow: Ingress/Route → oauth2-proxy → original backend service.
+  oauth2Proxies: {}
 # corporate:
 #   mode: sidecar                # sidecar (default) | deployment
 #   image:
@@ -322,15 +323,15 @@ oauth2Proxies: {}
 #   annotations: {}
 #   labels: {}
 
-# =============================================================================
-# Ingresses
-# =============================================================================
+  # =============================================================================
+  # Ingresses
+  # =============================================================================
 
-# -- Ingresses to create (map of name -> config).
-# Ingresses are named <fullname>-<key>. Path backends default to the first
-# enabled service unless serviceName/servicePort are specified per path.
-# Set oauth2Proxy to a key from oauth2Proxies to route through the proxy.
-ingresses: {}
+  # -- Ingresses to create (map of name -> config).
+  # Ingresses are named <fullname>-<key>. Path backends default to the first
+  # enabled service unless serviceName/servicePort are specified per path.
+  # Set oauth2Proxy to a key from oauth2Proxies to route through the proxy.
+  ingresses: {}
 # public:
 #   oauth2Proxy: corporate         # routes traffic through oauth2Proxies.corporate
 #   className: nginx
@@ -359,21 +360,21 @@ ingresses: {}
 #         - path: /
 #           pathType: Prefix
 
-# =============================================================================
-# Gateway API Routes
-# =============================================================================
+  # =============================================================================
+  # Gateway API Routes
+  # =============================================================================
 
-# -- Gateway API configuration.
-# Gateways are NOT created by this chart — they are pre-existing infrastructure.
-# Routes reference Gateways via parentRefs.
-gatewayApi:
-  # -- Routes to create (map of name -> config).
-  # Each route specifies its kind to determine the CRD type.
-  #   kind: HTTPRoute | GRPCRoute | TLSRoute | TCPRoute | UDPRoute
-  #
-  # HTTPRoute/GRPCRoute/TLSRoute use gateway.networking.k8s.io/v1
-  # TCPRoute/UDPRoute use gateway.networking.k8s.io/v1alpha2
-  routes: {}
+  # -- Gateway API configuration.
+  # Gateways are NOT created by this chart — they are pre-existing infrastructure.
+  # Routes reference Gateways via parentRefs.
+  gatewayApi:
+    # -- Routes to create (map of name -> config).
+    # Each route specifies its kind to determine the CRD type.
+    #   kind: HTTPRoute | GRPCRoute | TLSRoute | TCPRoute | UDPRoute
+    #
+    # HTTPRoute/GRPCRoute/TLSRoute use gateway.networking.k8s.io/v1
+    # TCPRoute/UDPRoute use gateway.networking.k8s.io/v1alpha2
+    routes: {}
 # http:
 #   kind: HTTPRoute                    # defaults to HTTPRoute
 #   parentRefs:

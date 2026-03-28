@@ -12,19 +12,20 @@ containers:
         httpGet:
           path: /
           port: http
-services:
-  stable:
-    type: ClusterIP
-    ports:
-      http:
-        port: 80
-        containerPort: http
-  canary:
-    type: ClusterIP
-    ports:
-      http:
-        port: 80
-        containerPort: http
+networking:
+  services:
+    stable:
+      type: ClusterIP
+      ports:
+        http:
+          port: 80
+          containerPort: http
+    canary:
+      type: ClusterIP
+      ports:
+        http:
+          port: 80
+          containerPort: http
 rollout:
   replicaCount: 1
   strategy:

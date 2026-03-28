@@ -2,7 +2,7 @@
 {{- /* Resolve default service name: first enabled service in the map */ -}}
 {{- $defaultSvcName := "" -}}
 {{- $defaultSvcPort := 80 -}}
-{{- range $name, $svc := .Values.services -}}
+{{- range $name, $svc := .Values.networking.services -}}
 {{- if and $svc (not $defaultSvcName) -}}
 {{- $defaultSvcName = printf "%s-%s" $fullName $name -}}
 {{- range $portName, $portCfg := $svc.ports -}}
@@ -11,14 +11,14 @@
 {{- end -}}
 {{- end -}}
 
-{{- range $name, $ing := .Values.ingresses }}
+{{- range $name, $ing := .Values.networking.ingresses }}
 {{- if $ing }}
 
 {{- /* Determine backend: oauth2-proxy (deployment or sidecar) or direct */ -}}
 {{- $backendSvcName := $defaultSvcName -}}
 {{- $backendSvcPort := $defaultSvcPort -}}
 {{- if $ing.oauth2Proxy -}}
-{{- $proxyCfg := index $.Values.oauth2Proxies $ing.oauth2Proxy -}}
+{{- $proxyCfg := index $.Values.networking.oauth2Proxies $ing.oauth2Proxy -}}
 {{- $proxyPort := (default 4180 $proxyCfg.port) -}}
 {{- if eq (default "sidecar" $proxyCfg.mode) "deployment" -}}
 {{- $backendSvcName = include "chartpack.networking.oauth2Proxy.serviceName" (dict "key" $ing.oauth2Proxy "context" $) -}}
