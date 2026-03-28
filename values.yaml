@@ -49,41 +49,43 @@ containers: {}
 #       protocol: TCP  # optional, defaults to TCP
 #     grpc:
 #       port: 9090
-#   env: []
-#   # Literal value
-#   # - name: APP_ENV
-#   #   value: "production"
+#   env: {}
+#   # Literal value — key = env var name
+#   #   APP_ENV:
+#   #     value: "production"
 #   # From pod field
-#   # - name: POD_NAME
-#   #   valueFrom:
-#   #     fieldRef:
-#   #       fieldPath: metadata.name
-#   # From chart-managed configMap key (name auto-prefixed with <fullname>-)
-#   # - name: LOG_LEVEL
-#   #   valueFrom:
-#   #     configMapKeyRef:
-#   #       name: app-config
-#   #       key: log-level
+#   #   POD_NAME:
+#   #     valueFrom:
+#   #       fieldRef:
+#   #         fieldPath: metadata.name
+#   # From chart-managed configMap key (auto-prefixed)
+#   #   LOG_LEVEL:
+#   #     valueFrom:
+#   #       configMapKeyRef:
+#   #         name: app-config
+#   #         key: log-level
 #   # From chart-managed secret key
-#   # - name: DB_PASSWORD
-#   #   valueFrom:
-#   #     secretKeyRef:
-#   #       name: db-creds
-#   #       key: password
-#   # From external resource (not managed by this chart, name NOT prefixed)
-#   # - name: EXT_VAR
-#   #   valueFrom:
-#   #     secretKeyRef:
-#   #       name: external-secret
-#   #       key: api-key
-#   #       external: true
-#   # Bulk inject all keys from chart-managed configMap (generates envFrom)
-#   # - configMapRef:
-#   #     name: app-config
+#   #   DB_PASSWORD:
+#   #     valueFrom:
+#   #       secretKeyRef:
+#   #         name: db-creds
+#   #         key: password
+#   # From external resource (NOT prefixed)
+#   #   EXT_VAR:
+#   #     valueFrom:
+#   #       secretKeyRef:
+#   #         name: external-secret
+#   #         key: api-key
+#   #         external: true
+#   # Bulk inject from chart-managed configMap (→ envFrom) — key is identifier
+#   #   bulk-app-config:
+#   #     configMapRef:
+#   #       name: app-config
 #   # Bulk inject from external secret
-#   # - secretRef:
-#   #     name: external-secret
-#   #     external: true
+#   #   bulk-ext-secret:
+#   #     secretRef:
+#   #       name: external-secret
+#   #       external: true
 #   resources: {}
 #   # requests:
 #   #   cpu: 100m

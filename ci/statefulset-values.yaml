@@ -9,9 +9,9 @@ containers:
       postgres:
         port: 5432
     env:
-      - name: POSTGRES_DB
+      POSTGRES_DB:
         value: "mydb"
-      - name: POSTGRES_PASSWORD
+      POSTGRES_PASSWORD:
         valueFrom:
           secretKeyRef:
             name: postgres-secret

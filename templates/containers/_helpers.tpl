@@ -26,47 +26,40 @@ Usage: {{ include "chartpack.containers.renderContainer" (dict "name" "app" "con
       protocol: {{ default "TCP" $portCfg.protocol }}
     {{- end }}
   {{- end }}
-  {{- /* Build K8s env list from entries that have a name field */ -}}
+  {{- /* Build K8s env list from map entries with value/valueFrom (key = env var name) */ -}}
   {{- $envList := list -}}
-  {{- range $config.env -}}
-  {{- if .name -}}
-  {{- if .value }}
-  {{- $envList = append $envList (dict "name" .name "value" .value) -}}
-  {{- else if .valueFrom }}
+  {{- $envFrom := list -}}
+  {{- range $envName, $envCfg := $config.env -}}
+  {{- if or $envCfg.value $envCfg.valueFrom -}}
+  {{- /* Individual env var — key is the env var name */ -}}
+  {{- if $envCfg.value }}
+  {{- $envList = append $envList (dict "name" $envName "value" $envCfg.value) -}}
+  {{- else if $envCfg.valueFrom }}
   {{- $vf := dict -}}
-  {{- if .valueFrom.fieldRef }}
-  {{- $_ := set $vf "fieldRef" .valueFrom.fieldRef -}}
-  {{- else if .valueFrom.resourceFieldRef }}
-  {{- $_ := set $vf "resourceFieldRef" .valueFrom.resourceFieldRef -}}
-  {{- else if .valueFrom.configMapKeyRef }}
-  {{- $ref := .valueFrom.configMapKeyRef -}}
+  {{- if $envCfg.valueFrom.fieldRef }}
+  {{- $_ := set $vf "fieldRef" $envCfg.valueFrom.fieldRef -}}
+  {{- else if $envCfg.valueFrom.resourceFieldRef }}
+  {{- $_ := set $vf "resourceFieldRef" $envCfg.valueFrom.resourceFieldRef -}}
+  {{- else if $envCfg.valueFrom.configMapKeyRef }}
+  {{- $ref := $envCfg.valueFrom.configMapKeyRef -}}
   {{- $resolvedName := $ref.name -}}
   {{- if not $ref.external }}
   {{- $resolvedName = printf "%s-%s" $fullName $ref.name -}}
   {{- end }}
   {{- $_ := set $vf "configMapKeyRef" (dict "name" $resolvedName "key" $ref.key) -}}
-  {{- else if .valueFrom.secretKeyRef }}
-  {{- $ref := .valueFrom.secretKeyRef -}}
+  {{- else if $envCfg.valueFrom.secretKeyRef }}
+  {{- $ref := $envCfg.valueFrom.secretKeyRef -}}
   {{- $resolvedName := $ref.name -}}
   {{- if not $ref.external }}
   {{- $resolvedName = printf "%s-%s" $fullName $ref.name -}}
   {{- end }}
   {{- $_ := set $vf "secretKeyRef" (dict "name" $resolvedName "key" $ref.key) -}}
   {{- end }}
-  {{- $envList = append $envList (dict "name" .name "valueFrom" $vf) -}}
+  {{- $envList = append $envList (dict "name" $envName "valueFrom" $vf) -}}
   {{- end }}
-  {{- end -}}
-  {{- end -}}
-  {{- if $envList }}
-  env:
-    {{- toYaml $envList | nindent 4 }}
-  {{- end }}
-  {{- /* Build K8s envFrom list from entries without a name field */ -}}
-  {{- $envFrom := list -}}
-  {{- range $config.env -}}
-  {{- if not .name -}}
-  {{- if .configMapRef }}
-  {{- $ref := .configMapRef -}}
+  {{- else if $envCfg.configMapRef -}}
+  {{- /* Bulk envFrom — configMapRef */ -}}
+  {{- $ref := $envCfg.configMapRef -}}
   {{- $resolvedName := $ref.name -}}
   {{- if not $ref.external }}
   {{- $resolvedName = printf "%s-%s" $fullName $ref.name -}}
@@ -74,8 +67,9 @@ Usage: {{ include "chartpack.containers.renderContainer" (dict "name" "app" "con
   {{- $entry := dict "configMapRef" (dict "name" $resolvedName) -}}
   {{- if $ref.optional }}{{ $_ := set (index $entry "configMapRef") "optional" $ref.optional }}{{ end -}}
   {{- $envFrom = append $envFrom $entry -}}
-  {{- else if .secretRef }}
-  {{- $ref := .secretRef -}}
+  {{- else if $envCfg.secretRef -}}
+  {{- /* Bulk envFrom — secretRef */ -}}
+  {{- $ref := $envCfg.secretRef -}}
   {{- $resolvedName := $ref.name -}}
   {{- if not $ref.external }}
   {{- $resolvedName = printf "%s-%s" $fullName $ref.name -}}
@@ -85,7 +79,10 @@ Usage: {{ include "chartpack.containers.renderContainer" (dict "name" "app" "con
   {{- $envFrom = append $envFrom $entry -}}
   {{- end -}}
   {{- end -}}
-  {{- end -}}
+  {{- if $envList }}
+  env:
+    {{- toYaml $envList | nindent 4 }}
+  {{- end }}
   {{- if $envFrom }}
   envFrom:
     {{- toYaml $envFrom | nindent 4 }}

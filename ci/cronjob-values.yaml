@@ -11,7 +11,8 @@ containers:
     args:
       - "echo 'Running batch job' && /app/run-job"
     env:
-      - secretRef:
+      bulk-db-credentials:
+        secretRef:
           name: db-credentials
     resources:
       requests:

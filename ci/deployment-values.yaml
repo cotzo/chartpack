@@ -9,9 +9,9 @@ containers:
       http:
         port: 8080
     env:
-      - name: APP_ENV
+      APP_ENV:
         value: "production"
-      - name: LOG_LEVEL
+      LOG_LEVEL:
         value: "info"
     resources:
       requests:

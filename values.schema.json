@@ -32,12 +32,11 @@
           }
         },
         "env": {
-          "type": "array",
-          "description": "Unified env list. Entries with 'name' become K8s env vars. Entries with only configMapRef/secretRef become envFrom.",
-          "items": {
+          "type": "object",
+          "description": "Unified env map. Key = env var name (for value/valueFrom entries) or identifier (for configMapRef/secretRef bulk entries).",
+          "additionalProperties": {
             "type": "object",
             "properties": {
-              "name": { "type": "string" },
               "value": { "type": "string" },
               "valueFrom": { "type": "object" },
               "configMapRef": { "type": "object" },

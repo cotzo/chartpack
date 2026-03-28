@@ -41,55 +41,58 @@ containers:
         port: 9091
     env:
       # Literal values
-      - name: APP_ENV
+      APP_ENV:
         value: "production"
-      - name: LOG_FORMAT
+      LOG_FORMAT:
         value: "json"
       # From pod fields
-      - name: POD_NAME
+      POD_NAME:
         valueFrom:
           fieldRef:
             fieldPath: metadata.name
-      - name: POD_NAMESPACE
+      POD_NAMESPACE:
         valueFrom:
           fieldRef:
             fieldPath: metadata.namespace
-      - name: POD_IP
+      POD_IP:
         valueFrom:
           fieldRef:
             fieldPath: status.podIP
       # From resource field
-      - name: CPU_LIMIT
+      CPU_LIMIT:
         valueFrom:
           resourceFieldRef:
             resource: limits.cpu
       # From chart-managed secret key (auto-prefixed)
-      - name: API_KEY
+      API_KEY:
         valueFrom:
           secretKeyRef:
             name: app-credentials
             key: api-key
       # From chart-managed configMap key (auto-prefixed)
-      - name: LOG_LEVEL
+      LOG_LEVEL:
         valueFrom:
           configMapKeyRef:
             name: app-config
             key: log-level
       # From external secret (NOT prefixed)
-      - name: DATABASE_URL
+      DATABASE_URL:
         valueFrom:
           secretKeyRef:
             name: external-db-secret
             key: url
             external: true
       # Bulk inject all keys from chart-managed configMap
-      - configMapRef:
+      bulk-env-config:
+        configMapRef:
           name: env-config
       # Bulk inject from chart-managed secret
-      - secretRef:
+      bulk-env-secrets:
+        secretRef:
           name: env-secrets
       # Bulk inject from external configMap
-      - configMapRef:
+      bulk-external-config:
+        configMapRef:
           name: external-shared-config
           external: true
     resources:
@@ -177,19 +180,19 @@ containers:
       - --email-domain=*
       - --cookie-secure=true
     env:
-      - name: OAUTH2_PROXY_CLIENT_ID
+      OAUTH2_PROXY_CLIENT_ID:
         valueFrom:
           secretKeyRef:
             name: oauth2-secret
             key: client-id
             external: true
-      - name: OAUTH2_PROXY_CLIENT_SECRET
+      OAUTH2_PROXY_CLIENT_SECRET:
         valueFrom:
           secretKeyRef:
             name: oauth2-secret
             key: client-secret
             external: true
-      - name: OAUTH2_PROXY_COOKIE_SECRET
+      OAUTH2_PROXY_COOKIE_SECRET:
         valueFrom:
           secretKeyRef:
             name: oauth2-secret
@@ -235,7 +238,7 @@ initContainers:
     command: ["sh", "-c"]
     args: ["until nc -z db-service 5432; do echo waiting for db; sleep 2; done"]
     env:
-      - name: DB_HOST
+      DB_HOST:
         valueFrom:
           secretKeyRef:
             name: external-db-secret
@@ -261,7 +264,7 @@ initContainers:
       tag: "2.0.0"
     command: ["/app/migrate", "--up"]
     env:
-      - name: DATABASE_URL
+      DATABASE_URL:
         valueFrom:
           secretKeyRef:
             name: external-db-secret
