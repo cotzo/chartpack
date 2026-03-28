@@ -37,6 +37,9 @@ Manage [ConfigMaps](https://kubernetes.io/docs/concepts/configuration/configmap/
 ### Monitoring
 [Prometheus Operator](https://prometheus-operator.dev/) and [VictoriaMetrics Operator](https://docs.victoriametrics.com/operator/) support. Create multiple ServiceMonitors, PodMonitors, VMServiceScrapes, and VMPodScrapes from a single `monitors` map.
 
+### Dashboards
+[Grafana Operator](https://grafana-operator.github.io/grafana-operator/) GrafanaDashboard resources from the `dashboards.grafana` map. Supports inline JSON, grafana.com references, URL-sourced dashboards, ConfigMap references, and Jsonnet.
+
 ### OAuth2 Proxy
 Declarative [oauth2-proxy](https://oauth2-proxy.github.io/oauth2-proxy/) integration. Define proxies with their provider settings, then reference them on any ingress or route. The chart auto-creates the proxy infrastructure and rewires traffic. Supports sidecar mode (native K8s 1.33+ sidecar in the app pod) or deployment mode (separate pods). Upstream URL auto-derived from your service configuration.
 
@@ -68,6 +71,7 @@ These are only required if you enable the corresponding feature in your values. 
 | Generated secrets | [External Secrets Operator](https://external-secrets.io/) (Password generator) | `config.secrets.*.generate` | v0.9+ / v2.0+ |
 | Prometheus monitoring | [Prometheus Operator](https://prometheus-operator.dev/) | `monitors` (operator: prometheus) | v0.70+ |
 | VictoriaMetrics monitoring | [VictoriaMetrics Operator](https://docs.victoriametrics.com/operator/) | `monitors` (operator: victoriametrics) | v0.44+ |
+| Grafana dashboards | [Grafana Operator](https://grafana-operator.github.io/grafana-operator/) | `dashboards.grafana` | v5.22+ |
 
 ## Quick Start
 
@@ -111,6 +115,7 @@ This produces a Deployment with 1 replica, a ClusterIP Service, and a ServiceAcc
 | [Autoscaling & Availability](docs/autoscaling.md) | HPA, KEDA (ScaledObject, ScaledJob), PDB |
 | [RBAC](docs/rbac.md) | ServiceAccount, Roles, ClusterRoles, Bindings |
 | [Monitoring](docs/monitoring.md) | Prometheus and VictoriaMetrics monitors |
+| [Dashboards](docs/dashboards.md) | Grafana Operator dashboards (inline JSON, grafana.com, URL) |
 | [Scheduling](docs/scheduling.md) | Node settings, affinity, tolerations, topology spread |
 | [Advanced](docs/advanced.md) | Extra resources, global settings, pod settings |
 

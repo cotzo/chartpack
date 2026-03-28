@@ -72,6 +72,8 @@ kubectl apply --server-side -f https://raw.githubusercontent.com/external-secret
 
 kubectl apply --server-side -f https://github.com/envoyproxy/gateway/releases/download/v1.7.1/envoy-gateway-crds.yaml 2>/dev/null
 
+kubectl apply --server-side -f https://raw.githubusercontent.com/grafana-operator/grafana-operator/v5.22.2/config/crd/bases/grafana.integreatly.org_grafanadashboards.yaml 2>/dev/null
+
 END=$(date +%s)
 log_info "CRDs installed in $((END - START))s"
 

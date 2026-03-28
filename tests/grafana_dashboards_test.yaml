@@ -1,0 +1,194 @@
+suite: Grafana dashboards
+templates:
+  - templates/monitoring/grafana-dashboard.yaml
+tests:
+  - it: should not render when no dashboards defined
+    set:
+      containers:
+        app:
+          image:
+            repository: nginx
+          ports:
+            http:
+              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should render GrafanaDashboard with inline JSON
+    set:
+      containers:
+        app:
+          image:
+            repository: nginx
+          ports:
+            http:
+              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+      dashboards:
+        grafana:
+          app-overview:
+            instanceSelector:
+              matchLabels:
+                dashboards: grafana
+            folder: My App
+            json: '{"title": "App Overview", "panels": []}'
+    asserts:
+      - isKind:
+          of: GrafanaDashboard
+      - isAPIVersion:
+          of: grafana.integreatly.org/v1beta1
+      - equal:
+          path: spec.instanceSelector.matchLabels.dashboards
+          value: grafana
+      - equal:
+          path: spec.folder
+          value: My App
+      - equal:
+          path: spec.json
+          value: '{"title": "App Overview", "panels": []}'
+
+  - it: should render GrafanaDashboard with grafana.com reference
+    set:
+      containers:
+        app:
+          image:
+            repository: nginx
+          ports:
+            http:
+              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+      dashboards:
+        grafana:
+          node-exporter:
+            instanceSelector:
+              matchLabels:
+                dashboards: grafana
+            grafanaCom:
+              id: 1860
+              revision: 37
+    asserts:
+      - isKind:
+          of: GrafanaDashboard
+      - equal:
+          path: spec.grafanaCom.id
+          value: 1860
+      - equal:
+          path: spec.grafanaCom.revision
+          value: 37
+
+  - it: should render GrafanaDashboard with URL source
+    set:
+      containers:
+        app:
+          image:
+            repository: nginx
+          ports:
+            http:
+              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+      dashboards:
+        grafana:
+          from-url:
+            instanceSelector:
+              matchLabels:
+                dashboards: grafana
+            url: https://example.com/dashboard.json
+            contentCacheDuration: 1h
+    asserts:
+      - isKind:
+          of: GrafanaDashboard
+      - equal:
+          path: spec.url
+          value: https://example.com/dashboard.json
+      - equal:
+          path: spec.contentCacheDuration
+          value: 1h
+
+  - it: should render multiple dashboards
+    set:
+      containers:
+        app:
+          image:
+            repository: nginx
+          ports:
+            http:
+              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+      dashboards:
+        grafana:
+          first:
+            instanceSelector:
+              matchLabels:
+                dashboards: grafana
+            json: '{"title": "First"}'
+          second:
+            instanceSelector:
+              matchLabels:
+                dashboards: grafana
+            json: '{"title": "Second"}'
+    asserts:
+      - hasDocuments:
+          count: 2
+
+  - it: should set folder, folderUID, and datasources
+    set:
+      containers:
+        app:
+          image:
+            repository: nginx
+          ports:
+            http:
+              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+      dashboards:
+        grafana:
+          with-datasource:
+            instanceSelector:
+              matchLabels:
+                dashboards: grafana
+            folderUID: abc123
+            json: '{"title": "Test"}'
+            datasources:
+              - inputName: DS_PROMETHEUS
+                datasourceName: Prometheus
+    asserts:
+      - equal:
+          path: spec.folderUID
+          value: abc123
+      - contains:
+          path: spec.datasources
+          content:
+            inputName: DS_PROMETHEUS
+            datasourceName: Prometheus

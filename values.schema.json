@@ -559,6 +559,43 @@
         }
       }
     },
+    "dashboards": {
+      "type": "object",
+      "properties": {
+        "grafana": {
+          "type": "object",
+          "description": "Map of Grafana dashboard name to dashboard config",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["instanceSelector"],
+            "properties": {
+              "instanceSelector": { "type": "object", "description": "Label selector for target Grafana instances" },
+              "folder": { "type": "string" },
+              "folderUID": { "type": "string" },
+              "folderRef": { "type": "string" },
+              "resyncPeriod": { "type": "string" },
+              "allowCrossNamespaceImport": { "type": "boolean" },
+              "suspend": { "type": "boolean" },
+              "uid": { "type": "string", "maxLength": 40 },
+              "json": { "type": "string", "description": "Inline dashboard JSON" },
+              "gzipJson": { "type": "string", "description": "Gzip-compressed dashboard JSON (base64)" },
+              "url": { "type": "string", "description": "URL to fetch dashboard JSON from" },
+              "urlAuthorization": { "type": "object" },
+              "configMapRef": { "type": "object", "description": "Reference to ConfigMap key containing dashboard JSON" },
+              "grafanaCom": { "type": "object", "description": "grafana.com dashboard reference (id + revision)" },
+              "jsonnet": { "type": "string" },
+              "contentCacheDuration": { "type": "string" },
+              "datasources": { "type": "array", "items": { "type": "object" } },
+              "envs": { "type": "array", "items": { "type": "object" } },
+              "envFrom": { "type": "array", "items": { "type": "object" } },
+              "plugins": { "type": "array", "items": { "type": "object" } },
+              "annotations": { "type": "object" },
+              "labels": { "type": "object" }
+            }
+          }
+        }
+      }
+    },
     "workloads": {
       "type": "object",
       "properties": {

@@ -786,6 +786,38 @@ monitors: {}
 #     - app
 
 # =============================================================================
+# Grafana Dashboards
+# =============================================================================
+
+# -- Grafana dashboards (map of name -> config).
+# Creates GrafanaDashboard resources for the Grafana Operator.
+# Requires grafana-operator (grafana.integreatly.org/v1beta1).
+dashboards:
+  grafana: {}
+  # app-overview:
+  #   instanceSelector:
+  #     matchLabels:
+  #       dashboards: "grafana"
+  #   folder: My App
+  #   json: |
+  #     { "title": "App Overview", "panels": [] }
+  # node-exporter:
+  #   instanceSelector:
+  #     matchLabels:
+  #       dashboards: "grafana"
+  #   grafanaCom:
+  #     id: 1860
+  #     revision: 37
+  # from-url:
+  #   instanceSelector:
+  #     matchLabels:
+  #       dashboards: "grafana"
+  #   url: https://raw.githubusercontent.com/org/repo/main/dashboards/app.json
+  #   contentCacheDuration: 1h
+  #   annotations: {}
+  #   labels: {}
+
+# =============================================================================
 # Workload-Specific Settings
 # =============================================================================
 

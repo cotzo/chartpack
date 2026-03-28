@@ -871,6 +871,26 @@ monitors:
       - app.kubernetes.io/name
 
 # =============================================================================
+# Grafana Dashboards
+# =============================================================================
+
+dashboards:
+  grafana:
+    app-overview:
+      instanceSelector:
+        matchLabels:
+          dashboards: grafana
+      folder: My App
+      json: '{"title": "App Overview", "uid": "app-overview", "panels": []}'
+    node-exporter:
+      instanceSelector:
+        matchLabels:
+          dashboards: grafana
+      grafanaCom:
+        id: 1860
+        revision: 37
+
+# =============================================================================
 # Extra Resources — escape hatch
 # =============================================================================
 
