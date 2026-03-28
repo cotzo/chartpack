@@ -23,7 +23,7 @@ tier1_test() {
   local expected_kinds=("$@")
 
   log_info "Tier 1: Installing '$name' from $values_file"
-  if ! helm install "$name" "$CHART_DIR" -n "$NAMESPACE" -f "$values_file" --wait=false --timeout 60s 2>&1; then
+  if ! helm install "$name" "$CHART_DIR" -n "$NAMESPACE" -f "$values_file" --wait=hookOnly --timeout 60s 2>&1; then
     log_fail "$name: helm install failed"
     return
   fi
@@ -93,7 +93,7 @@ echo "  Tier 1.5: Autowiring Content Tests"
 echo "============================================"
 
 log_info "Tier 1.5: Installing 't1-wiring' from ci/full-values.yaml"
-if helm install "t1-wiring" "$CHART_DIR" -n "$NAMESPACE" -f "ci/full-values.yaml" --wait=false --timeout 60s 2>&1; then
+if helm install "t1-wiring" "$CHART_DIR" -n "$NAMESPACE" -f "ci/full-values.yaml" --wait=hookOnly --timeout 60s 2>&1; then
   RELEASE_NAME="t1-wiring-full-test"
 
   # oauth2Proxy deployment mode: proxy Deployment + Service created

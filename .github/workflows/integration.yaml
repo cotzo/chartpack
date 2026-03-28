@@ -49,7 +49,7 @@ jobs:
           kubectl apply --server-side -f https://raw.githubusercontent.com/external-secrets/external-secrets/v2.2.0/deploy/crds/bundle.yaml
 
           # Envoy Gateway
-          kubectl apply --server-side -f https://github.com/envoyproxy/gateway/releases/download/v1.37.1/envoy-gateway-crds.yaml
+          kubectl apply --server-side -f https://github.com/envoyproxy/gateway/releases/download/v1.7.1/envoy-gateway-crds.yaml
       - name: Run integration tests
         run: |
           chmod +x ci/kind/test.sh
