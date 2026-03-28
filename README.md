@@ -2,10 +2,6 @@
   <img src="images/banner.jpeg" alt="ChartPack" width="800">
 </p>
 
-<p align="center">
-  <strong>A single, opinionated Helm chart for deploying any Kubernetes application workload.</strong><br>
-  Instead of maintaining separate charts per application, define your entire deployment through values.
-</p>
 
 <p align="center">
   <a href="https://artifacthub.io/packages/search?repo=chartpack"><img src="https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/chartpack" alt="Artifact Hub"></a>
@@ -14,17 +10,39 @@
   <img src="https://img.shields.io/badge/license-Apache%202.0-green" alt="License">
 </p>
 
+# Chartpack
+
+A single, opinionated Helm chart for deploying any Kubernetes application workload.
+Instead of maintaining separate charts per application, define your entire deployment through values
+
 ## Features
 
-- **Any workload type** -- [Deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/), [StatefulSet](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/), [DaemonSet](https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/), [CronJob](https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/), [Job](https://kubernetes.io/docs/concepts/workloads/controllers/job/)
-- **Map-based configuration** -- every resource type uses named maps for consistency and multi-instance support
-- **Unified container spec** -- containers, init containers, and sidecars share the same schema
-- **Unified env** -- single `env` list handles literals, refs, bulk injection, chart-managed and external resources
-- **Unified mounts** -- single `mounts` list for configMaps, secrets, persistence, and volumes
-- **Auto-wiring** -- volumes and checksums auto-generated from container references
-- **Multi-operator monitoring** -- Prometheus and VictoriaMetrics, ServiceMonitor and PodMonitor
-- **Full RBAC** -- ServiceAccount, Roles, ClusterRoles, Bindings
-- **Schema validation** -- `values.schema.json` catches errors at install time
+### Workloads
+Deploy any Kubernetes workload type from a single chart: [Deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/), [StatefulSet](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/), [DaemonSet](https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/), [CronJob](https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/), and [Job](https://kubernetes.io/docs/concepts/workloads/controllers/job/). StatefulSets get automatic headless services and volume claim templates.
+
+### Networking
+Multiple [Services](https://kubernetes.io/docs/concepts/services-networking/service/) per release (ClusterIP, NodePort, LoadBalancer, headless), multiple [Ingresses](https://kubernetes.io/docs/concepts/services-networking/ingress/) with different controllers and TLS configs. Service ports reference container ports by name for type-safe wiring.
+
+### Configuration & Secrets
+Manage [ConfigMaps](https://kubernetes.io/docs/concepts/configuration/configmap/), [Secrets](https://kubernetes.io/docs/concepts/configuration/secret/) (Opaque, TLS, Docker registry), and [External Secrets](https://external-secrets.io/) (AWS Secrets Manager, Vault, etc.). Auto-rollout on config changes via checksum annotations.
+
+### Storage
+[Persistent volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) with automatic PVC creation for Deployments and volumeClaimTemplate generation for StatefulSets. Supports existing claims, storage classes, and access modes.
+
+### Autoscaling & Availability
+[HPA v2](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) with CPU, memory, and custom metrics. [Pod Disruption Budgets](https://kubernetes.io/docs/tasks/run-application/configure-pdb/) for safe rollouts and node maintenance.
+
+### Monitoring
+[Prometheus Operator](https://prometheus-operator.dev/) and [VictoriaMetrics Operator](https://docs.victoriametrics.com/operator/) support. Create multiple ServiceMonitors, PodMonitors, VMServiceScrapes, and VMPodScrapes from a single `monitors` map.
+
+### RBAC
+Full [RBAC](https://kubernetes.io/docs/reference/access-authn-authz/rbac/) support: ServiceAccount with IAM annotations (EKS, GKE), Roles, ClusterRoles, and Bindings with automatic name resolution.
+
+### Scheduling
+[Node affinity](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity) with simple OS/architecture targeting, [tolerations](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/), [topology spread constraints](https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/), and priority classes.
+
+### Validation
+Schema validation catches misconfigurations at install time. Cross-resource validation ensures mounts reference existing ConfigMaps, env vars reference existing Secrets, service ports match container ports, and role bindings point to real roles.
 
 ## Requirements
 
