@@ -10,7 +10,38 @@ entries:
           url: https://github.com/cotzo/chartpack
     apiVersion: v2
     appVersion: 1.0.0
-    created: "2026-03-28T09:26:03.450201023Z"
+    created: "2026-03-28T19:54:46.177808349Z"
+    description: A universal Helm chart for deploying any Kubernetes application workload
+    digest: af9475c739d076d800be94d4670af0696bc711570886978627fb8f3d4d17cfb2
+    home: https://github.com/cotzo/chartpack
+    icon: https://raw.githubusercontent.com/cotzo/chartpack/main/docs/images/logo.png
+    keywords:
+    - universal
+    - deployment
+    - statefulset
+    - cronjob
+    - daemonset
+    - argo-rollouts
+    kubeVersion: '>=1.28.0-0'
+    maintainers:
+    - name: cotzo
+    name: chartpack
+    sources:
+    - https://github.com/cotzo/chartpack
+    type: application
+    urls:
+    - https://cotzo.github.io/chartpack/chartpack-1.3.0.tgz
+    version: 1.3.0
+  - annotations:
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: |
+        - name: Documentation
+          url: https://github.com/cotzo/chartpack/tree/main/docs
+        - name: Source
+          url: https://github.com/cotzo/chartpack
+    apiVersion: v2
+    appVersion: 1.0.0
+    created: "2026-03-28T19:54:46.175037088Z"
     description: A universal Helm chart for deploying any Kubernetes application workload
     digest: b03baeeb48ba360aecd7a9faceb01dd926e30567dc7eadd76c74cf7a96ccf8d6
     home: https://github.com/cotzo/chartpack
@@ -40,7 +71,7 @@ entries:
           url: https://github.com/cotzo/chartpack
     apiVersion: v2
     appVersion: 1.0.0
-    created: "2026-03-28T09:26:03.447914223Z"
+    created: "2026-03-28T19:54:46.173605725Z"
     description: A universal Helm chart for deploying any Kubernetes application workload
     digest: 56c752591132cfb05f917f413834a99860f0c01808e831292f6dd278a50206a4
     home: https://github.com/cotzo/chartpack
@@ -61,4 +92,4 @@ entries:
     urls:
     - https://cotzo.github.io/chartpack/chartpack-1.0.3.tgz
     version: 1.0.3
-generated: "2026-03-28T09:26:03.446188686Z"
+generated: "2026-03-28T19:54:46.17207749Z"

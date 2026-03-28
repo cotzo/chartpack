@@ -1,0 +1,11 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+apiVersion: v2
+appVersion: "1.3.0"
+description: Signed with cosign keyless (Sigstore)
+name: chartpack
+version: 1.3.0
+...
+files:
+  chartpack-1.3.0.tgz: sha256:af9475c739d076d800be94d4670af0696bc711570886978627fb8f3d4d17cfb2
