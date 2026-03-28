@@ -493,6 +493,30 @@ gatewayApi:
           timeouts:
             request: 30s
             backendRequest: 15s
+      policies:
+        envoy:
+          loadBalancer:
+            type: LeastRequest
+          circuitBreaker:
+            maxConnections: 2048
+            maxPendingRequests: 512
+          retry:
+            numRetries: 3
+          timeout:
+            tcp:
+              connectTimeout: 10s
+            http:
+              connectionIdleTimeout: 60s
+          rateLimit:
+            type: Local
+            rules:
+              - limit:
+                  requests: 100
+                  unit: Second
+          tcpKeepalive:
+            probes: 3
+            idleTime: 60s
+            interval: 10s
     grpc:
       kind: GRPCRoute
       parentRefs:

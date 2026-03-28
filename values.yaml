@@ -342,6 +342,48 @@ gatewayApi:
 #           port: 80
 #       filters: []                     # optional: requestHeaderModifier, requestRedirect, etc.
 #       timeouts: {}                    # optional: request, backendRequest
+#   # -- Policies attached to this route
+#   policies:
+#     # -- Envoy Gateway BackendTrafficPolicy (gateway.envoyproxy.io/v1alpha1)
+#     envoy:
+#       loadBalancer:
+#         type: LeastRequest            # RoundRobin | LeastRequest | Random | ConsistentHash
+#       circuitBreaker:
+#         maxConnections: 1024
+#         maxPendingRequests: 1024
+#         maxParallelRequests: 1024
+#       retry:
+#         numRetries: 3
+#       timeout:
+#         tcp:
+#           connectTimeout: 10s
+#         http:
+#           connectionIdleTimeout: 60s
+#       rateLimit:
+#         type: Local
+#         rules:
+#           - limit:
+#               requests: 100
+#               unit: Second
+#       healthCheck:
+#         active:
+#           type: HTTP
+#           http:
+#             path: /healthz
+#       tcpKeepalive:
+#         probes: 3
+#         idleTime: 60s
+#         interval: 10s
+#       faultInjection:
+#         delay:
+#           fixedDelay: 100ms
+#           percentage: 1
+#       useClientProtocol: false
+#       # compression: []
+#       # http2: {}
+#       # dns: {}
+#       # proxyProtocol: {}
+#       # connection: {}
 #   annotations: {}
 #   labels: {}
 # grpc:

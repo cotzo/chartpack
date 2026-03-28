@@ -2,6 +2,7 @@
 {{- range $name, $route := .Values.gatewayApi.routes }}
 {{- if $route }}
 {{- $kind := default "HTTPRoute" $route.kind -}}
+{{- $routeName := printf "%s-%s" $fullName $name -}}
 
 {{- /* Resolve apiVersion from kind */ -}}
 {{- $apiVersion := "" -}}
@@ -10,12 +11,12 @@
 {{- else if or (eq $kind "TCPRoute") (eq $kind "UDPRoute") -}}
   {{- $apiVersion = "gateway.networking.k8s.io/v1alpha2" -}}
 {{- else -}}
-  {{- fail (printf "routes.%s: invalid kind %q. Must be HTTPRoute, GRPCRoute, TLSRoute, TCPRoute, or UDPRoute" $name $kind) -}}
+  {{- fail (printf "gatewayApi.routes.%s: invalid kind %q. Must be HTTPRoute, GRPCRoute, TLSRoute, TCPRoute, or UDPRoute" $name $kind) -}}
 {{- end }}
 ---
 apiVersion: {{ $apiVersion }}
 kind: {{ $kind }}
-{{ include "chartpack.metadata" (dict "name" (printf "%s-%s" $fullName $name) "context" $ "extraAnnotations" $route.annotations "extraLabels" $route.labels) }}
+{{ include "chartpack.metadata" (dict "name" $routeName "context" $ "extraAnnotations" $route.annotations "extraLabels" $route.labels) }}
 spec:
   parentRefs:
     {{- range $route.parentRefs }}

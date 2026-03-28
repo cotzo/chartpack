@@ -272,6 +272,33 @@
               },
               "hostnames": { "type": "array", "items": { "type": "string" } },
               "rules": { "type": "array", "items": { "type": "object" } },
+              "policies": {
+                "type": "object",
+                "properties": {
+                  "envoy": {
+                    "type": "object",
+                    "description": "Envoy Gateway BackendTrafficPolicy settings",
+                    "properties": {
+                      "loadBalancer": { "type": "object" },
+                      "circuitBreaker": { "type": "object" },
+                      "retry": { "type": "object" },
+                      "timeout": { "type": "object" },
+                      "rateLimit": { "type": "object" },
+                      "healthCheck": { "type": "object" },
+                      "connection": { "type": "object" },
+                      "tcpKeepalive": { "type": "object" },
+                      "faultInjection": { "type": "object" },
+                      "useClientProtocol": { "type": "boolean" },
+                      "proxyProtocol": { "type": "object" },
+                      "compression": { "type": "array" },
+                      "http2": { "type": "object" },
+                      "dns": { "type": "object" },
+                      "annotations": { "type": "object" },
+                      "labels": { "type": "object" }
+                    }
+                  }
+                }
+              },
               "annotations": { "type": "object" },
               "labels": { "type": "object" }
             }

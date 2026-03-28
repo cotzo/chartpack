@@ -1,0 +1,75 @@
+{{- $fullName := include "chartpack.fullname" . -}}
+{{- range $name, $route := .Values.gatewayApi.routes }}
+{{- if $route }}
+{{- with $route.policies }}
+{{- with .envoy }}
+{{- $kind := default "HTTPRoute" $route.kind -}}
+{{- $routeName := printf "%s-%s" $fullName $name }}
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+{{ include "chartpack.metadata" (dict "name" (printf "%s-%s-btp" $fullName $name) "context" $ "extraAnnotations" .annotations "extraLabels" .labels) }}
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: {{ $kind }}
+      name: {{ $routeName }}
+  {{- with .loadBalancer }}
+  loadBalancer:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .rateLimit }}
+  rateLimit:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .circuitBreaker }}
+  circuitBreaker:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .retry }}
+  retry:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .timeout }}
+  timeout:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .healthCheck }}
+  healthCheck:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .connection }}
+  connection:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .tcpKeepalive }}
+  tcpKeepalive:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .faultInjection }}
+  faultInjection:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- if not (kindIs "invalid" .useClientProtocol) }}
+  useClientProtocol: {{ .useClientProtocol }}
+  {{- end }}
+  {{- with .proxyProtocol }}
+  proxyProtocol:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .compression }}
+  compression:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .http2 }}
+  http2:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .dns }}
+  dns:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
