@@ -559,76 +559,82 @@
         }
       }
     },
-    "rollout": {
+    "workloads": {
       "type": "object",
       "properties": {
-        "replicaCount": { "type": "integer", "minimum": 0, "description": "Number of replicas" },
-        "strategy": { "type": "object", "description": "Argo Rollout strategy (canary or blueGreen)" },
-        "minReadySeconds": { "type": ["integer", "string"] },
-        "revisionHistoryLimit": { "type": ["integer", "string"] },
-        "restartAt": { "type": "string", "description": "Restart at time (RFC 3339 format)" },
-        "analysis": { "type": "object", "description": "Background analysis configuration" }
-      },
-      "additionalProperties": false
-    },
-    "deployment": {
-      "type": "object",
-      "properties": {
-        "replicaCount": { "type": "integer", "minimum": 0, "description": "Number of replicas" },
-        "strategy": { "type": "object" },
-        "minReadySeconds": { "type": ["integer", "string"] },
-        "revisionHistoryLimit": { "type": ["integer", "string"] }
-      },
-      "additionalProperties": false
-    },
-    "statefulSet": {
-      "type": "object",
-      "properties": {
-        "replicaCount": { "type": "integer", "minimum": 0, "description": "Number of replicas" },
-        "serviceName": { "type": "string" },
-        "publishNotReadyAddresses": { "type": "boolean" },
-        "podManagementPolicy": { "type": "string", "enum": ["OrderedReady", "Parallel", ""] },
-        "updateStrategy": { "type": "object" },
-        "minReadySeconds": { "type": ["integer", "string"] },
-        "revisionHistoryLimit": { "type": ["integer", "string"] },
-        "ordinals": { "type": "object" },
-        "persistentVolumeClaimRetentionPolicy": { "type": "object" }
-      },
-      "additionalProperties": false
-    },
-    "daemonSet": {
-      "type": "object",
-      "properties": {
-        "updateStrategy": { "type": "object" },
-        "minReadySeconds": { "type": ["integer", "string"] },
-        "revisionHistoryLimit": { "type": ["integer", "string"] }
-      },
-      "additionalProperties": false
-    },
-    "cronJob": {
-      "type": "object",
-      "properties": {
-        "schedule": { "type": "string" },
-        "timeZone": { "type": "string" },
-        "concurrencyPolicy": { "type": "string", "enum": ["Allow", "Forbid", "Replace", ""] },
-        "suspend": { "type": "boolean" },
-        "successfulJobsHistoryLimit": { "type": ["integer", "string"] },
-        "failedJobsHistoryLimit": { "type": ["integer", "string"] },
-        "startingDeadlineSeconds": { "type": ["integer", "string"] }
-      },
-      "additionalProperties": false
-    },
-    "job": {
-      "type": "object",
-      "properties": {
-        "backoffLimit": { "type": ["integer", "string"] },
-        "activeDeadlineSeconds": { "type": ["integer", "string"] },
-        "ttlSecondsAfterFinished": { "type": ["integer", "string"] },
-        "completions": { "type": ["integer", "string"] },
-        "parallelism": { "type": ["integer", "string"] },
-        "completionMode": { "type": "string", "enum": ["NonIndexed", "Indexed", ""] },
-        "podReplacementPolicy": { "type": "string", "enum": ["Failed", "TerminatingOrFailed", ""], "description": "Pod replacement policy (K8s 1.34+)" },
-        "suspend": { "type": "boolean" }
+        "rollout": {
+          "type": "object",
+          "properties": {
+            "replicaCount": { "type": "integer", "minimum": 0, "description": "Number of replicas" },
+            "strategy": { "type": "object", "description": "Argo Rollout strategy (canary or blueGreen)" },
+            "minReadySeconds": { "type": ["integer", "string"] },
+            "revisionHistoryLimit": { "type": ["integer", "string"] },
+            "restartAt": { "type": "string", "description": "Restart at time (RFC 3339 format)" },
+            "analysis": { "type": "object", "description": "Background analysis configuration" }
+          },
+          "additionalProperties": false
+        },
+        "deployment": {
+          "type": "object",
+          "properties": {
+            "replicaCount": { "type": "integer", "minimum": 0, "description": "Number of replicas" },
+            "strategy": { "type": "object" },
+            "minReadySeconds": { "type": ["integer", "string"] },
+            "revisionHistoryLimit": { "type": ["integer", "string"] }
+          },
+          "additionalProperties": false
+        },
+        "statefulSet": {
+          "type": "object",
+          "properties": {
+            "replicaCount": { "type": "integer", "minimum": 0, "description": "Number of replicas" },
+            "serviceName": { "type": "string" },
+            "publishNotReadyAddresses": { "type": "boolean" },
+            "podManagementPolicy": { "type": "string", "enum": ["OrderedReady", "Parallel", ""] },
+            "updateStrategy": { "type": "object" },
+            "minReadySeconds": { "type": ["integer", "string"] },
+            "revisionHistoryLimit": { "type": ["integer", "string"] },
+            "ordinals": { "type": "object" },
+            "persistentVolumeClaimRetentionPolicy": { "type": "object" }
+          },
+          "additionalProperties": false
+        },
+        "daemonSet": {
+          "type": "object",
+          "properties": {
+            "updateStrategy": { "type": "object" },
+            "minReadySeconds": { "type": ["integer", "string"] },
+            "revisionHistoryLimit": { "type": ["integer", "string"] }
+          },
+          "additionalProperties": false
+        },
+        "cronJob": {
+          "type": "object",
+          "properties": {
+            "schedule": { "type": "string" },
+            "timeZone": { "type": "string" },
+            "concurrencyPolicy": { "type": "string", "enum": ["Allow", "Forbid", "Replace", ""] },
+            "suspend": { "type": "boolean" },
+            "successfulJobsHistoryLimit": { "type": ["integer", "string"] },
+            "failedJobsHistoryLimit": { "type": ["integer", "string"] },
+            "startingDeadlineSeconds": { "type": ["integer", "string"] }
+          },
+          "additionalProperties": false
+        },
+        "job": {
+          "type": "object",
+          "properties": {
+            "backoffLimit": { "type": ["integer", "string"] },
+            "activeDeadlineSeconds": { "type": ["integer", "string"] },
+            "ttlSecondsAfterFinished": { "type": ["integer", "string"] },
+            "completions": { "type": ["integer", "string"] },
+            "parallelism": { "type": ["integer", "string"] },
+            "completionMode": { "type": "string", "enum": ["NonIndexed", "Indexed", ""] },
+            "podReplacementPolicy": { "type": "string", "enum": ["Failed", "TerminatingOrFailed", ""], "description": "Pod replacement policy (K8s 1.34+)" },
+            "suspend": { "type": "boolean" }
+          },
+          "additionalProperties": false
+        }
       },
       "additionalProperties": false
     },

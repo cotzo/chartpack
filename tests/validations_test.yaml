@@ -19,8 +19,9 @@ tests:
   - it: should fail when CronJob has no schedule
     set:
       workloadType: CronJob
-      cronJob:
-        schedule: ""
+      workloads:
+        cronJob:
+          schedule: ""
       containers:
         app:
           image:

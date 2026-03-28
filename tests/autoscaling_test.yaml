@@ -303,8 +303,9 @@ tests:
             ports:
               http:
                 port: 80
-      cronJob:
-        schedule: "* * * * *"
+      workloads:
+        cronJob:
+          schedule: "* * * * *"
       pdb:
         enabled: true
         minAvailable: 1
@@ -544,8 +545,9 @@ tests:
             ports:
               http:
                 port: 80
-      job:
-        backoffLimit: 3
+      workloads:
+        job:
+          backoffLimit: 3
       autoscaling:
         keda:
           enabled: true

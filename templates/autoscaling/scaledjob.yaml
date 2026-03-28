@@ -4,22 +4,22 @@ kind: ScaledJob
 {{ include "chartpack.metadata" (dict "context" $ "extraAnnotations" .Values.autoscaling.keda.annotations "extraLabels" .Values.autoscaling.keda.labels) }}
 spec:
   jobTargetRef:
-    {{- with .Values.job.backoffLimit }}
+    {{- with .Values.workloads.job.backoffLimit }}
     backoffLimit: {{ . }}
     {{- end }}
-    {{- with .Values.job.activeDeadlineSeconds }}
+    {{- with .Values.workloads.job.activeDeadlineSeconds }}
     activeDeadlineSeconds: {{ . }}
     {{- end }}
-    {{- with .Values.job.ttlSecondsAfterFinished }}
+    {{- with .Values.workloads.job.ttlSecondsAfterFinished }}
     ttlSecondsAfterFinished: {{ . }}
     {{- end }}
-    {{- with .Values.job.completions }}
+    {{- with .Values.workloads.job.completions }}
     completions: {{ . }}
     {{- end }}
-    {{- with .Values.job.parallelism }}
+    {{- with .Values.workloads.job.parallelism }}
     parallelism: {{ . }}
     {{- end }}
-    {{- with .Values.job.completionMode }}
+    {{- with .Values.workloads.job.completionMode }}
     completionMode: {{ . }}
     {{- end }}
     template:

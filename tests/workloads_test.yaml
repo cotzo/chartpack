@@ -127,8 +127,9 @@ tests:
   - it: should render only CronJob when workloadType is CronJob
     set:
       workloadType: CronJob
-      cronJob:
-        schedule: "* * * * *"
+      workloads:
+        cronJob:
+          schedule: "* * * * *"
       containers:
         app:
           image:

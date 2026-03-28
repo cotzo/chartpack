@@ -18,9 +18,10 @@ tests:
             ports:
               http:
                 port: 80
-      deployment:
-        strategy:
-          type: RollingUpdate
+      workloads:
+        deployment:
+          strategy:
+            type: RollingUpdate
     asserts:
       - equal:
           path: spec.strategy.type
@@ -43,8 +44,9 @@ tests:
             ports:
               http:
                 port: 80
-      deployment:
-        revisionHistoryLimit: 5
+      workloads:
+        deployment:
+          revisionHistoryLimit: 5
     asserts:
       - equal:
           path: spec.revisionHistoryLimit
@@ -67,8 +69,9 @@ tests:
             ports:
               http:
                 port: 80
-      deployment:
-        minReadySeconds: 30
+      workloads:
+        deployment:
+          minReadySeconds: 30
     asserts:
       - equal:
           path: spec.minReadySeconds
@@ -93,8 +96,9 @@ tests:
             ports:
               http:
                 port: 80
-      statefulSet:
-        podManagementPolicy: Parallel
+      workloads:
+        statefulSet:
+          podManagementPolicy: Parallel
     asserts:
       - equal:
           path: spec.podManagementPolicy
@@ -118,9 +122,10 @@ tests:
             ports:
               http:
                 port: 80
-      statefulSet:
-        updateStrategy:
-          type: RollingUpdate
+      workloads:
+        statefulSet:
+          updateStrategy:
+            type: RollingUpdate
     asserts:
       - equal:
           path: spec.updateStrategy.type
@@ -145,9 +150,10 @@ tests:
             ports:
               http:
                 port: 80
-      daemonSet:
-        updateStrategy:
-          type: OnDelete
+      workloads:
+        daemonSet:
+          updateStrategy:
+            type: OnDelete
     asserts:
       - equal:
           path: spec.updateStrategy.type
@@ -172,8 +178,9 @@ tests:
             ports:
               http:
                 port: 80
-      cronJob:
-        schedule: "*/5 * * * *"
+      workloads:
+        cronJob:
+          schedule: "*/5 * * * *"
     asserts:
       - equal:
           path: spec.schedule
@@ -197,9 +204,10 @@ tests:
             ports:
               http:
                 port: 80
-      cronJob:
-        schedule: "*/5 * * * *"
-        concurrencyPolicy: Forbid
+      workloads:
+        cronJob:
+          schedule: "*/5 * * * *"
+          concurrencyPolicy: Forbid
     asserts:
       - equal:
           path: spec.concurrencyPolicy
@@ -223,9 +231,10 @@ tests:
             ports:
               http:
                 port: 80
-      cronJob:
-        schedule: "0 0 * * *"
-        timeZone: "America/New_York"
+      workloads:
+        cronJob:
+          schedule: "0 0 * * *"
+          timeZone: "America/New_York"
     asserts:
       - equal:
           path: spec.timeZone
@@ -250,8 +259,9 @@ tests:
             ports:
               http:
                 port: 80
-      job:
-        backoffLimit: 3
+      workloads:
+        job:
+          backoffLimit: 3
     asserts:
       - equal:
           path: spec.backoffLimit
@@ -275,8 +285,9 @@ tests:
             ports:
               http:
                 port: 80
-      job:
-        ttlSecondsAfterFinished: 600
+      workloads:
+        job:
+          ttlSecondsAfterFinished: 600
     asserts:
       - equal:
           path: spec.ttlSecondsAfterFinished
@@ -300,8 +311,9 @@ tests:
             ports:
               http:
                 port: 80
-      job:
-        completionMode: Indexed
+      workloads:
+        job:
+          completionMode: Indexed
     asserts:
       - equal:
           path: spec.completionMode
@@ -326,13 +338,14 @@ tests:
             ports:
               http:
                 port: 80
-      rollout:
-        strategy:
-          canary:
-            steps:
-              - setWeight: 20
-              - pause:
-                  duration: 60s
+      workloads:
+        rollout:
+          strategy:
+            canary:
+              steps:
+                - setWeight: 20
+                - pause:
+                    duration: 60s
     asserts:
       - equal:
           path: spec.strategy.canary.steps[0].setWeight
@@ -356,8 +369,9 @@ tests:
             ports:
               http:
                 port: 80
-      rollout:
-        restartAt: "2024-06-01T00:00:00Z"
+      workloads:
+        rollout:
+          restartAt: "2024-06-01T00:00:00Z"
     asserts:
       - isNotNull:
           path: spec.restartAt
@@ -380,10 +394,11 @@ tests:
             ports:
               http:
                 port: 80
-      rollout:
-        analysis:
-          successfulRunHistoryLimit: 3
-          unsuccessfulRunHistoryLimit: 1
+      workloads:
+        rollout:
+          analysis:
+            successfulRunHistoryLimit: 3
+            unsuccessfulRunHistoryLimit: 1
     asserts:
       - equal:
           path: spec.analysis.successfulRunHistoryLimit

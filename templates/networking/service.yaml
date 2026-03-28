@@ -17,7 +17,7 @@ kind: Service
 spec:
   type: ClusterIP
   clusterIP: None
-  {{- if .Values.statefulSet.publishNotReadyAddresses }}
+  {{- if .Values.workloads.statefulSet.publishNotReadyAddresses }}
   publishNotReadyAddresses: true
   {{- end }}
   ports:

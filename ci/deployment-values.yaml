@@ -72,8 +72,9 @@ config:
           logging:
             level: info
 
-deployment:
-  replicaCount: 3
+workloads:
+  deployment:
+    replicaCount: 3
 
 autoscaling:
   hpa:

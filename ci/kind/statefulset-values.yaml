@@ -22,9 +22,10 @@ networking:
       ports:
         http:
           port: 80
-statefulSet:
-  replicaCount: 2
-  podManagementPolicy: Parallel
+workloads:
+  statefulSet:
+    replicaCount: 2
+    podManagementPolicy: Parallel
 persistence:
   data:
     size: 1Gi

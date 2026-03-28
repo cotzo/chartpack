@@ -40,8 +40,9 @@ tests:
           ports:
             http:
               port: 80
-      cronJob:
-        schedule: "* * * * *"
+      workloads:
+        cronJob:
+          schedule: "* * * * *"
       networking:
         services:
           http:

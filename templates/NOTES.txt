@@ -3,7 +3,7 @@ Deployed {{ $fullName }} as {{ .Values.workloadType }}.
 
 {{- if eq .Values.workloadType "CronJob" }}
 
-CronJob schedule: {{ .Values.cronJob.schedule }}
+CronJob schedule: {{ .Values.workloads.cronJob.schedule }}
 
 View upcoming jobs:
   kubectl get cronjobs -n {{ .Release.Namespace }} {{ $fullName }}

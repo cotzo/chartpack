@@ -25,8 +25,9 @@ networking:
           port: 80
           containerPort: http
 
-deployment:
-  replicaCount: 3
+workloads:
+  deployment:
+    replicaCount: 3
 
 autoscaling:
   keda:

@@ -53,11 +53,12 @@ networking:
         metrics:
           port: 9090
 
-daemonSet:
-  updateStrategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxUnavailable: 1
+workloads:
+  daemonSet:
+    updateStrategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxUnavailable: 1
 
 monitors:
   metrics:

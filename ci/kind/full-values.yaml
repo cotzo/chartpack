@@ -131,13 +131,14 @@ persistence:
     size: 1Gi
     accessModes:
       - ReadWriteOnce
-deployment:
-  replicaCount: 2
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
+workloads:
+  deployment:
+    replicaCount: 2
+    strategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 0
 autoscaling:
   hpa:
     enabled: true

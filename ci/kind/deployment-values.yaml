@@ -32,8 +32,9 @@ config:
       data:
         default.conf: |
           server { listen 80; location / { return 200 'ok\n'; add_header Content-Type text/plain; } }
-deployment:
-  replicaCount: 2
+workloads:
+  deployment:
+    replicaCount: 2
 autoscaling:
   hpa:
     enabled: true

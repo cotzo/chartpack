@@ -36,15 +36,16 @@ networking:
         postgres:
           port: 5432
 
-statefulSet:
-  replicaCount: 3
-  publishNotReadyAddresses: true
-  podManagementPolicy: OrderedReady
-  updateStrategy:
-    type: RollingUpdate
-  persistentVolumeClaimRetentionPolicy:
-    whenDeleted: Retain
-    whenScaled: Retain
+workloads:
+  statefulSet:
+    replicaCount: 3
+    publishNotReadyAddresses: true
+    podManagementPolicy: OrderedReady
+    updateStrategy:
+      type: RollingUpdate
+    persistentVolumeClaimRetentionPolicy:
+      whenDeleted: Retain
+      whenScaled: Retain
 
 persistence:
   data:

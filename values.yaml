@@ -789,129 +789,130 @@ monitors: {}
 # Workload-Specific Settings
 # =============================================================================
 
-# -- Argo Rollout-specific settings (requires Argo Rollouts controller)
-rollout:
-  # -- Number of replicas
-  replicaCount: 1
-  # -- Rollout strategy (canary or blueGreen)
-  strategy: {}
-  # canary:
-  #   steps:
-  #     - setWeight: 20
-  #     - pause: { duration: 30s }
-  #     - setWeight: 50
-  #     - pause: { duration: 30s }
-  #   canaryService: my-app-canary
-  #   stableService: my-app-stable
-  #   trafficRouting:
-  #     nginx:
-  #       stableIngress: my-app
-  # blueGreen:
-  #   activeService: my-app-active
-  #   previewService: my-app-preview
-  #   autoPromotionEnabled: true
-  #   autoPromotionSeconds: 30
-  # -- Min ready seconds
-  minReadySeconds: ""
-  # -- Revision history limit
-  revisionHistoryLimit: ""
-  # -- Restart at time (RFC 3339 format)
-  restartAt: ""
-  # -- Background analysis to run during an update
-  analysis: {}
-  # successfulRunHistoryLimit: 1
-  # unsuccessfulRunHistoryLimit: 3
-  # templates:
-  #   - templateName: my-analysis
+workloads:
+  # -- Argo Rollout-specific settings (requires Argo Rollouts controller)
+  rollout:
+    # -- Number of replicas
+    replicaCount: 1
+    # -- Rollout strategy (canary or blueGreen)
+    strategy: {}
+    # canary:
+    #   steps:
+    #     - setWeight: 20
+    #     - pause: { duration: 30s }
+    #     - setWeight: 50
+    #     - pause: { duration: 30s }
+    #   canaryService: my-app-canary
+    #   stableService: my-app-stable
+    #   trafficRouting:
+    #     nginx:
+    #       stableIngress: my-app
+    # blueGreen:
+    #   activeService: my-app-active
+    #   previewService: my-app-preview
+    #   autoPromotionEnabled: true
+    #   autoPromotionSeconds: 30
+    # -- Min ready seconds
+    minReadySeconds: ""
+    # -- Revision history limit
+    revisionHistoryLimit: ""
+    # -- Restart at time (RFC 3339 format)
+    restartAt: ""
+    # -- Background analysis to run during an update
+    analysis: {}
+    # successfulRunHistoryLimit: 1
+    # unsuccessfulRunHistoryLimit: 3
+    # templates:
+    #   - templateName: my-analysis
 
-# -- Deployment-specific settings
-deployment:
-  # -- Number of replicas
-  replicaCount: 1
-  # -- Deployment strategy
-  strategy: {}
-  # type: RollingUpdate
-  # rollingUpdate:
-  #   maxSurge: 25%
-  #   maxUnavailable: 25%
-  # -- Min ready seconds
-  minReadySeconds: ""
-  # -- Revision history limit
-  revisionHistoryLimit: ""
+  # -- Deployment-specific settings
+  deployment:
+    # -- Number of replicas
+    replicaCount: 1
+    # -- Deployment strategy
+    strategy: {}
+    # type: RollingUpdate
+    # rollingUpdate:
+    #   maxSurge: 25%
+    #   maxUnavailable: 25%
+    # -- Min ready seconds
+    minReadySeconds: ""
+    # -- Revision history limit
+    revisionHistoryLimit: ""
 
-# -- StatefulSet-specific settings
-statefulSet:
-  # -- Number of replicas
-  replicaCount: 1
-  # -- Headless service name (defaults to <fullname>-headless)
-  serviceName: ""
-  # -- Publish not ready addresses on headless service
-  publishNotReadyAddresses: false
-  # -- Pod management policy: OrderedReady or Parallel
-  podManagementPolicy: ""
-  # -- Update strategy
-  updateStrategy: {}
-  # type: RollingUpdate
-  # rollingUpdate:
-  #   partition: 0
-  # -- Min ready seconds
-  minReadySeconds: ""
-  # -- Revision history limit
-  revisionHistoryLimit: ""
-  # -- Ordinals configuration
-  ordinals: {}
-  # -- PVC retention policy
-  persistentVolumeClaimRetentionPolicy: {}
-  # whenDeleted: Retain
-  # whenScaled: Retain
+  # -- StatefulSet-specific settings
+  statefulSet:
+    # -- Number of replicas
+    replicaCount: 1
+    # -- Headless service name (defaults to <fullname>-headless)
+    serviceName: ""
+    # -- Publish not ready addresses on headless service
+    publishNotReadyAddresses: false
+    # -- Pod management policy: OrderedReady or Parallel
+    podManagementPolicy: ""
+    # -- Update strategy
+    updateStrategy: {}
+    # type: RollingUpdate
+    # rollingUpdate:
+    #   partition: 0
+    # -- Min ready seconds
+    minReadySeconds: ""
+    # -- Revision history limit
+    revisionHistoryLimit: ""
+    # -- Ordinals configuration
+    ordinals: {}
+    # -- PVC retention policy
+    persistentVolumeClaimRetentionPolicy: {}
+    # whenDeleted: Retain
+    # whenScaled: Retain
 
-# -- DaemonSet-specific settings
-daemonSet:
-  # -- Update strategy
-  updateStrategy: {}
-  # type: RollingUpdate
-  # rollingUpdate:
-  #   maxUnavailable: 1
-  # -- Min ready seconds
-  minReadySeconds: ""
-  # -- Revision history limit
-  revisionHistoryLimit: ""
+  # -- DaemonSet-specific settings
+  daemonSet:
+    # -- Update strategy
+    updateStrategy: {}
+    # type: RollingUpdate
+    # rollingUpdate:
+    #   maxUnavailable: 1
+    # -- Min ready seconds
+    minReadySeconds: ""
+    # -- Revision history limit
+    revisionHistoryLimit: ""
 
-# -- CronJob-specific settings
-cronJob:
-  # -- Cron schedule expression (required for CronJob workloadType)
-  schedule: "0 * * * *"
-  # -- Timezone
-  timeZone: ""
-  # -- Concurrency policy: Allow, Forbid, Replace
-  concurrencyPolicy: ""
-  # -- Suspend the cron job
-  suspend: false
-  # -- Successful jobs history limit
-  successfulJobsHistoryLimit: ""
-  # -- Failed jobs history limit
-  failedJobsHistoryLimit: ""
-  # -- Starting deadline seconds
-  startingDeadlineSeconds: ""
+  # -- CronJob-specific settings
+  cronJob:
+    # -- Cron schedule expression (required for CronJob workloadType)
+    schedule: "0 * * * *"
+    # -- Timezone
+    timeZone: ""
+    # -- Concurrency policy: Allow, Forbid, Replace
+    concurrencyPolicy: ""
+    # -- Suspend the cron job
+    suspend: false
+    # -- Successful jobs history limit
+    successfulJobsHistoryLimit: ""
+    # -- Failed jobs history limit
+    failedJobsHistoryLimit: ""
+    # -- Starting deadline seconds
+    startingDeadlineSeconds: ""
 
-# -- Job-specific settings (also used by CronJob's jobTemplate)
-job:
-  # -- Backoff limit
-  backoffLimit: ""
-  # -- Active deadline seconds
-  activeDeadlineSeconds: ""
-  # -- TTL seconds after finished
-  ttlSecondsAfterFinished: ""
-  # -- Number of completions
-  completions: ""
-  # -- Parallelism
-  parallelism: ""
-  # -- Completion mode: NonIndexed or Indexed
-  completionMode: ""
-  # -- Pod replacement policy: Failed or TerminatingOrFailed (K8s 1.34+)
-  podReplacementPolicy: ""
-  # -- Suspend the job
-  suspend: false
+  # -- Job-specific settings (also used by CronJob's jobTemplate)
+  job:
+    # -- Backoff limit
+    backoffLimit: ""
+    # -- Active deadline seconds
+    activeDeadlineSeconds: ""
+    # -- TTL seconds after finished
+    ttlSecondsAfterFinished: ""
+    # -- Number of completions
+    completions: ""
+    # -- Parallelism
+    parallelism: ""
+    # -- Completion mode: NonIndexed or Indexed
+    completionMode: ""
+    # -- Pod replacement policy: Failed or TerminatingOrFailed (K8s 1.34+)
+    podReplacementPolicy: ""
+    # -- Suspend the job
+    suspend: false
 
 # =============================================================================
 # Extra Resources (escape hatch)

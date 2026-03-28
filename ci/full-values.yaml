@@ -764,14 +764,15 @@ pdb:
 # Deployment settings
 # =============================================================================
 
-deployment:
-  replicaCount: 3
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: "25%"
-      maxUnavailable: 0
-  revisionHistoryLimit: 5
+workloads:
+  deployment:
+    replicaCount: 3
+    strategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxSurge: "25%"
+        maxUnavailable: 0
+    revisionHistoryLimit: 5
 
 # =============================================================================
 # Service Account + RBAC

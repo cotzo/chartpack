@@ -2,8 +2,8 @@
 Return the appropriate headless service name for StatefulSets
 */}}
 {{- define "chartpack.networking.headlessServiceName" -}}
-{{- if .Values.statefulSet.serviceName }}
-{{- .Values.statefulSet.serviceName }}
+{{- if .Values.workloads.statefulSet.serviceName }}
+{{- .Values.workloads.statefulSet.serviceName }}
 {{- else }}
 {{- printf "%s-headless" (include "chartpack.fullname" .) }}
 {{- end }}

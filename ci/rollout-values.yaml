@@ -44,19 +44,20 @@ networking:
           port: 80
           containerPort: http
 
-rollout:
-  replicaCount: 3
-  strategy:
-    canary:
-      canaryService: RELEASE-NAME-canary
-      stableService: RELEASE-NAME-stable
-      steps:
-        - setWeight: 20
-        - pause: { duration: 30s }
-        - setWeight: 50
-        - pause: { duration: 30s }
-        - setWeight: 80
-        - pause: { duration: 30s }
+workloads:
+  rollout:
+    replicaCount: 3
+    strategy:
+      canary:
+        canaryService: RELEASE-NAME-canary
+        stableService: RELEASE-NAME-stable
+        steps:
+          - setWeight: 20
+          - pause: { duration: 30s }
+          - setWeight: 50
+          - pause: { duration: 30s }
+          - setWeight: 80
+          - pause: { duration: 30s }
 
 autoscaling:
   hpa:

@@ -5,22 +5,22 @@ kind: Rollout
 {{ include "chartpack.metadata" (dict "context" $) }}
 spec:
   {{- if not (or .Values.autoscaling.hpa.enabled .Values.autoscaling.keda.enabled) }}
-  replicas: {{ .Values.rollout.replicaCount }}
+  replicas: {{ .Values.workloads.rollout.replicaCount }}
   {{- end }}
-  {{- with .Values.rollout.strategy }}
+  {{- with .Values.workloads.rollout.strategy }}
   strategy:
     {{- toYaml . | nindent 4 }}
   {{- end }}
-  {{- with .Values.rollout.minReadySeconds }}
+  {{- with .Values.workloads.rollout.minReadySeconds }}
   minReadySeconds: {{ . }}
   {{- end }}
-  {{- with .Values.rollout.revisionHistoryLimit }}
+  {{- with .Values.workloads.rollout.revisionHistoryLimit }}
   revisionHistoryLimit: {{ . }}
   {{- end }}
-  {{- with .Values.rollout.restartAt }}
+  {{- with .Values.workloads.rollout.restartAt }}
   restartAt: {{ . }}
   {{- end }}
-  {{- with .Values.rollout.analysis }}
+  {{- with .Values.workloads.rollout.analysis }}
   analysis:
     {{- toYaml . | nindent 4 }}
   {{- end }}

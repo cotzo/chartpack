@@ -14,8 +14,9 @@ networking:
       ports:
         http:
           port: 80
-deployment:
-  replicaCount: 1
+workloads:
+  deployment:
+    replicaCount: 1
 autoscaling:
   keda:
     enabled: true

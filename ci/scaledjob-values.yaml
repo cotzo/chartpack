@@ -16,9 +16,10 @@ containers:
         cpu: 500m
         memory: 256Mi
 
-job:
-  backoffLimit: 3
-  ttlSecondsAfterFinished: 300
+workloads:
+  job:
+    backoffLimit: 3
+    ttlSecondsAfterFinished: 300
 
 autoscaling:
   keda:

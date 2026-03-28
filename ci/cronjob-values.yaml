@@ -22,17 +22,18 @@ containers:
         cpu: 500m
         memory: 512Mi
 
-cronJob:
-  schedule: "0 2 * * *"
-  timeZone: "UTC"
-  concurrencyPolicy: Forbid
-  successfulJobsHistoryLimit: 3
-  failedJobsHistoryLimit: 1
+workloads:
+  cronJob:
+    schedule: "0 2 * * *"
+    timeZone: "UTC"
+    concurrencyPolicy: Forbid
+    successfulJobsHistoryLimit: 3
+    failedJobsHistoryLimit: 1
 
-job:
-  backoffLimit: 3
-  activeDeadlineSeconds: 3600
-  ttlSecondsAfterFinished: 86400
+  job:
+    backoffLimit: 3
+    activeDeadlineSeconds: 3600
+    ttlSecondsAfterFinished: 86400
 
 config:
   secrets:
