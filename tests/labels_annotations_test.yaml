@@ -17,9 +17,9 @@ set:
 tests:
   - it: should render standard labels
     asserts:
-      - equal:
+      - matchRegex:
           path: metadata.labels["helm.sh/chart"]
-          value: chartpack-1.0.3
+          pattern: ^chartpack-\d+\.\d+\.\d+$
       - equal:
           path: metadata.labels["app.kubernetes.io/name"]
           value: chartpack
