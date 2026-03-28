@@ -1,4 +1,4 @@
-{{- range $name, $config := .Values.configMaps }}
+{{- range $name, $config := .Values.config.configMaps }}
 {{- if $config }}
 ---
 apiVersion: v1

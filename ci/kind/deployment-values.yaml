@@ -18,37 +18,41 @@ containers:
       - path: /etc/nginx/conf.d
         configMap: nginx-config
         readOnly: true
-services:
-  http:
-    type: ClusterIP
-    ports:
-      http:
-        port: 80
-        containerPort: http
-configMaps:
-  nginx-config:
-    data:
-      default.conf: |
-        server { listen 80; location / { return 200 'ok\n'; add_header Content-Type text/plain; } }
-deployment:
-  replicaCount: 2
+networking:
+  services:
+    http:
+      type: ClusterIP
+      ports:
+        http:
+          port: 80
+          containerPort: http
+config:
+  configMaps:
+    nginx-config:
+      data:
+        default.conf: |
+          server { listen 80; location / { return 200 'ok\n'; add_header Content-Type text/plain; } }
+workloads:
+  deployment:
+    replicaCount: 2
 autoscaling:
-  enabled: true
-  minReplicas: 2
-  maxReplicas: 5
-  metrics:
-    - type: Resource
-      resource:
-        name: cpu
-        target:
-          type: Utilization
-          averageUtilization: 80
+  hpa:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    metrics:
+      - type: Resource
+        resource:
+          name: cpu
+          target:
+            type: Utilization
+            averageUtilization: 80
 pdb:
   enabled: true
   minAvailable: 1
-serviceAccount:
-  create: true
 rbac:
+  serviceAccount:
+    create: true
   roles:
     reader:
       rules:

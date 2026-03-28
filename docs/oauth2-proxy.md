@@ -1,6 +1,6 @@
 # OAuth2 Proxy
 
-Automatic [oauth2-proxy](https://oauth2-proxy.github.io/oauth2-proxy/) integration. Define proxies in the `oauth2Proxies` map with their provider settings, then reference them on any ingress or Gateway API route. The chart handles all the wiring.
+Automatic [oauth2-proxy](https://oauth2-proxy.github.io/oauth2-proxy/) integration. Define proxies in the `networking.oauth2Proxies` map with their provider settings, then reference them on any ingress or Gateway API route. The chart handles all the wiring.
 
 ## How It Works
 
@@ -8,7 +8,7 @@ Automatic [oauth2-proxy](https://oauth2-proxy.github.io/oauth2-proxy/) integrati
 User → Ingress/Route → oauth2-proxy → Your App
 ```
 
-1. Define a proxy with provider credentials in `oauth2Proxies`
+1. Define a proxy with provider credentials in `networking.oauth2Proxies`
 2. Set `oauth2Proxy: <name>` on an ingress or route
 3. The chart automatically:
    - Creates the proxy infrastructure (sidecar or deployment)
@@ -23,42 +23,43 @@ User → Ingress/Route → oauth2-proxy → Your App
 The proxy runs as a [native sidecar](https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/) in the app pod using `restartPolicy: Always` (K8s 1.33+). No separate Deployment or Service needed.
 
 ```yaml
-oauth2Proxies:
-  corporate:
-    # mode: sidecar          # default
-    provider: oidc
-    issuerUrl: https://auth.corp.example.com
-    emailDomains:
-      - corp.example.com
-    env:
-      CLIENT_ID:
-        valueFrom:
-          secretKeyRef:
-            name: oauth2-secret
-            key: client-id
-            external: true
-      CLIENT_SECRET:
-        valueFrom:
-          secretKeyRef:
-            name: oauth2-secret
-            key: client-secret
-            external: true
-      COOKIE_SECRET:
-        valueFrom:
-          secretKeyRef:
-            name: oauth2-secret
-            key: cookie-secret
-            external: true
+networking:
+  oauth2Proxies:
+    corporate:
+      # mode: sidecar          # default
+      provider: oidc
+      issuerUrl: https://auth.corp.example.com
+      emailDomains:
+        - corp.example.com
+      env:
+        CLIENT_ID:
+          valueFrom:
+            secretKeyRef:
+              name: oauth2-secret
+              key: client-id
+              external: true
+        CLIENT_SECRET:
+          valueFrom:
+            secretKeyRef:
+              name: oauth2-secret
+              key: client-secret
+              external: true
+        COOKIE_SECRET:
+          valueFrom:
+            secretKeyRef:
+              name: oauth2-secret
+              key: cookie-secret
+              external: true
 
-ingresses:
-  public:
-    oauth2Proxy: corporate
-    className: nginx
-    hosts:
-      - host: app.example.com
-        paths:
-          - path: /
-            pathType: Prefix
+  ingresses:
+    public:
+      oauth2Proxy: corporate
+      className: nginx
+      hosts:
+        - host: app.example.com
+          paths:
+            - path: /
+              pathType: Prefix
 ```
 
 **What happens:**
@@ -71,18 +72,19 @@ ingresses:
 The proxy runs as a separate Deployment + Service. Useful when you want independent scaling or share a proxy across multiple pods.
 
 ```yaml
-oauth2Proxies:
-  corporate:
-    mode: deployment
-    replicas: 2
-    provider: oidc
-    issuerUrl: https://auth.corp.example.com
-    emailDomains:
-      - corp.example.com
-    env:
-      CLIENT_ID: ...
-      CLIENT_SECRET: ...
-      COOKIE_SECRET: ...
+networking:
+  oauth2Proxies:
+    corporate:
+      mode: deployment
+      replicas: 2
+      provider: oidc
+      issuerUrl: https://auth.corp.example.com
+      emailDomains:
+        - corp.example.com
+      env:
+        CLIENT_ID: ...
+        CLIENT_SECRET: ...
+        COOKIE_SECRET: ...
 ```
 
 **What happens:**
@@ -96,61 +98,63 @@ oauth2Proxies:
 Different ingresses/routes can use different proxies:
 
 ```yaml
-oauth2Proxies:
-  corporate:
-    provider: oidc
-    issuerUrl: https://auth.corp.example.com
-    emailDomains: [corp.example.com]
-    env: ...
+networking:
+  oauth2Proxies:
+    corporate:
+      provider: oidc
+      issuerUrl: https://auth.corp.example.com
+      emailDomains: [corp.example.com]
+      env: ...
 
-  github:
-    provider: github
-    emailDomains: ["*"]
-    env: ...
+    github:
+      provider: github
+      emailDomains: ["*"]
+      env: ...
 
-ingresses:
-  app:
-    oauth2Proxy: corporate    # OIDC for the main app
-    hosts:
-      - host: app.example.com
-        paths:
-          - path: /
+  ingresses:
+    app:
+      oauth2Proxy: corporate    # OIDC for the main app
+      hosts:
+        - host: app.example.com
+          paths:
+            - path: /
 
-  admin:
-    oauth2Proxy: github       # GitHub auth for admin
-    hosts:
-      - host: admin.example.com
-        paths:
-          - path: /
+    admin:
+      oauth2Proxy: github       # GitHub auth for admin
+      hosts:
+        - host: admin.example.com
+          paths:
+            - path: /
 
-  api:
-    # no oauth2Proxy — direct access
-    hosts:
-      - host: api.example.com
-        paths:
-          - path: /
+    api:
+      # no oauth2Proxy — direct access
+      hosts:
+        - host: api.example.com
+          paths:
+            - path: /
 ```
 
 ## Works with Gateway API Routes
 
 ```yaml
-gatewayApi:
-  routes:
-    web:
-      oauth2Proxy: corporate
-      kind: HTTPRoute
-      parentRefs:
-        - name: my-gateway
-      hostnames:
-        - app.example.com
-      rules:
-        - matches:
-            - path:
-                type: PathPrefix
-                value: /
-          backendRefs:
-            - name: http
-              port: 80
+networking:
+  gatewayApi:
+    routes:
+      web:
+        oauth2Proxy: corporate
+        kind: HTTPRoute
+        parentRefs:
+          - name: my-gateway
+        hostnames:
+          - app.example.com
+        rules:
+          - matches:
+              - path:
+                  type: PathPrefix
+                  value: /
+            backendRefs:
+              - name: http
+                port: 80
 ```
 
 ## Upstream Auto-Detection
@@ -165,39 +169,41 @@ The proxy's `--upstream` argument is auto-derived:
 Override with an explicit `upstream` if auto-detection doesn't match your setup:
 
 ```yaml
-oauth2Proxies:
-  custom:
-    upstream: http://my-custom-backend:3000
-    provider: oidc
-    ...
+networking:
+  oauth2Proxies:
+    custom:
+      upstream: http://my-custom-backend:3000
+      provider: oidc
+      ...
 ```
 
 ## All Options
 
 ```yaml
-oauth2Proxies:
-  example:
-    mode: sidecar              # sidecar | deployment (default: sidecar)
-    image:
-      repository: quay.io/oauth2-proxy/oauth2-proxy
-      tag: v7.15.1
-      pullPolicy: IfNotPresent
-    replicas: 1                # deployment mode only
-    port: 4180
-    provider: oidc             # oidc | google | github | azure | gitlab | etc.
-    issuerUrl: ""              # OIDC issuer URL
-    emailDomains:              # allowed email domains
-      - "*"
-    upstream: ""               # auto-derived if not set
-    extraArgs:                 # key-value → --key=value
-      cookie-secure: "true"
-      skip-auth-regex: "^/health"
-    args: []                   # additional raw args
-    env: {}                    # same unified env map as containers
-    resources: {}
-    securityContext: {}
-    annotations: {}
-    labels: {}
+networking:
+  oauth2Proxies:
+    example:
+      mode: sidecar              # sidecar | deployment (default: sidecar)
+      image:
+        repository: quay.io/oauth2-proxy/oauth2-proxy
+        tag: v7.15.1
+        pullPolicy: IfNotPresent
+      replicas: 1                # deployment mode only
+      port: 4180
+      provider: oidc             # oidc | google | github | azure | gitlab | etc.
+      issuerUrl: ""              # OIDC issuer URL
+      emailDomains:              # allowed email domains
+        - "*"
+      upstream: ""               # auto-derived if not set
+      extraArgs:                 # key-value → --key=value
+        cookie-secure: "true"
+        skip-auth-regex: "^/health"
+      args: []                   # additional raw args
+      env: {}                    # same unified env map as containers
+      resources: {}
+      securityContext: {}
+      annotations: {}
+      labels: {}
 ```
 
 ## Credentials
@@ -230,7 +236,7 @@ Or generate the cookie secret automatically using the chart's [secret generation
 
 ## Validation
 
-The chart validates that `oauth2Proxy` references on ingresses and routes point to existing keys in the `oauth2Proxies` map.
+The chart validates that `oauth2Proxy` references on ingresses and routes point to existing keys in the `networking.oauth2Proxies` map.
 
 [oauth2-proxy documentation](https://oauth2-proxy.github.io/oauth2-proxy/) |
 [oauth2-proxy providers](https://oauth2-proxy.github.io/oauth2-proxy/configuration/providers/)

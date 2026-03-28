@@ -13,11 +13,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
     asserts:
       - equal:
           path: spec.template.spec.containers[0].image
@@ -33,11 +34,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
     asserts:
       - equal:
           path: spec.template.spec.containers[0].image
@@ -54,11 +56,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
     asserts:
       - equal:
           path: spec.template.spec.containers[0].imagePullPolicy
@@ -79,11 +82,12 @@ tests:
             - -c
           args:
             - echo hello
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
     asserts:
       - equal:
           path: spec.template.spec.containers[0].command
@@ -105,11 +109,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
     asserts:
       - contains:
           path: spec.template.spec.containers[0].ports
@@ -131,11 +136,12 @@ tests:
           env:
             APP_ENV:
               value: "test"
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
     asserts:
       - contains:
           path: spec.template.spec.containers[0].env
@@ -158,11 +164,12 @@ tests:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
     asserts:
       - contains:
           path: spec.template.spec.containers[0].env
@@ -188,15 +195,17 @@ tests:
                 configMapKeyRef:
                   name: myconfig
                   key: log-level
-      services:
-        http:
-          ports:
-            http:
-              port: 80
-      configMaps:
-        myconfig:
-          data:
-            log-level: info
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+      config:
+        configMaps:
+          myconfig:
+            data:
+              log-level: info
     asserts:
       - contains:
           path: spec.template.spec.containers[0].env
@@ -224,11 +233,12 @@ tests:
                   name: external-secret
                   key: api-key
                   external: true
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
     asserts:
       - contains:
           path: spec.template.spec.containers[0].env
@@ -253,15 +263,17 @@ tests:
             bulk-app-config:
               configMapRef:
                 name: myconfig
-      services:
-        http:
-          ports:
-            http:
-              port: 80
-      configMaps:
-        myconfig:
-          data:
-            key: val
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+      config:
+        configMaps:
+          myconfig:
+            data:
+              key: val
     asserts:
       - contains:
           path: spec.template.spec.containers[0].envFrom
@@ -286,11 +298,12 @@ tests:
             limits:
               cpu: "500m"
               memory: "256Mi"
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
     asserts:
       - equal:
           path: spec.template.spec.containers[0].resources.requests.cpu
@@ -320,11 +333,12 @@ tests:
                 path: /ready
                 port: http
               initialDelaySeconds: 5
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
     asserts:
       - equal:
           path: spec.template.spec.containers[0].livenessProbe.httpGet.path
@@ -346,16 +360,18 @@ tests:
           mounts:
             - path: /etc/config
               configMap: myconfig
-      services:
-        http:
-          ports:
-            http:
-              port: 80
-      configMaps:
-        myconfig:
-          data:
-            config.yaml: |
-              key: value
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+      config:
+        configMaps:
+          myconfig:
+            data:
+              config.yaml: |
+                key: value
     asserts:
       - contains:
           path: spec.template.spec.containers[0].volumeMounts
@@ -377,11 +393,12 @@ tests:
         init:
           image:
             repository: busybox
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
     asserts:
       - equal:
           path: spec.template.spec.initContainers[0].name
@@ -406,11 +423,12 @@ tests:
           ports:
             proxy:
               port: 8080
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
     asserts:
       - isNotNull:
           path: spec.template.spec.containers[0]

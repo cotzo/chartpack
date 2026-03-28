@@ -14,12 +14,12 @@ Returns "true" or "".
 {{- define "chartpack.networking.oauth2Proxy.needed" -}}
 {{- $key := .key -}}
 {{- $needed := false -}}
-{{- range $name, $ing := .context.Values.ingresses -}}
+{{- range $name, $ing := .context.Values.networking.ingresses -}}
 {{- if and $ing (eq (default "" $ing.oauth2Proxy) $key) -}}
 {{- $needed = true -}}
 {{- end -}}
 {{- end -}}
-{{- range $name, $route := .context.Values.gatewayApi.routes -}}
+{{- range $name, $route := .context.Values.networking.gatewayApi.routes -}}
 {{- if and $route (eq (default "" $route.oauth2Proxy) $key) -}}
 {{- $needed = true -}}
 {{- end -}}
@@ -34,7 +34,7 @@ Returns "true" or "".
 */}}
 {{- define "chartpack.networking.oauth2Proxy.hasSidecars" -}}
 {{- $found := false -}}
-{{- range $name, $proxy := .Values.oauth2Proxies -}}
+{{- range $name, $proxy := .Values.networking.oauth2Proxies -}}
 {{- if and $proxy (eq (default "sidecar" $proxy.mode) "sidecar") -}}
 {{- if include "chartpack.networking.oauth2Proxy.needed" (dict "key" $name "context" $) -}}
 {{- $found = true -}}
@@ -137,7 +137,7 @@ Usage: {{ include "chartpack.networking.oauth2Proxy.sidecars" . }}
 {{- $fullName := include "chartpack.fullname" . -}}
 {{- /* Derive first non-headless service port for sidecar upstream */ -}}
 {{- $firstServicePort := "" -}}
-{{- range $svcName, $svc := .Values.services -}}
+{{- range $svcName, $svc := .Values.networking.services -}}
 {{- if and $svc (not $svc.headless) (not $firstServicePort) -}}
 {{- range $pName, $pCfg := $svc.ports -}}
 {{- if not $firstServicePort -}}
@@ -155,7 +155,7 @@ Usage: {{ include "chartpack.networking.oauth2Proxy.sidecars" . }}
 {{- end -}}
 {{- end -}}
 {{- $defaultSidecarUpstream := printf "http://localhost:%s" (default "8080" $firstServicePort) -}}
-{{- range $name, $proxy := .Values.oauth2Proxies -}}
+{{- range $name, $proxy := .Values.networking.oauth2Proxies -}}
 {{- if and $proxy (eq (default "sidecar" $proxy.mode) "sidecar") -}}
 {{- if include "chartpack.networking.oauth2Proxy.needed" (dict "key" $name "context" $) -}}
 {{- $port := default 4180 $proxy.port }}

@@ -1,31 +1,31 @@
-{{- if and .Values.keda.enabled (ne .Values.workloadType "Job") }}
+{{- if and .Values.autoscaling.keda.enabled (ne .Values.workloadType "Job") }}
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
-{{ include "chartpack.metadata" (dict "context" $ "extraAnnotations" .Values.keda.annotations "extraLabels" .Values.keda.labels) }}
+{{ include "chartpack.metadata" (dict "context" $ "extraAnnotations" .Values.autoscaling.keda.annotations "extraLabels" .Values.autoscaling.keda.labels) }}
 spec:
   scaleTargetRef:
     apiVersion: {{ if eq .Values.workloadType "Rollout" }}argoproj.io/v1alpha1{{ else }}apps/v1{{ end }}
     kind: {{ .Values.workloadType }}
     name: {{ include "chartpack.fullname" . }}
-  {{- with .Values.keda.pollingInterval }}
+  {{- with .Values.autoscaling.keda.pollingInterval }}
   pollingInterval: {{ . }}
   {{- end }}
-  {{- with .Values.keda.cooldownPeriod }}
+  {{- with .Values.autoscaling.keda.cooldownPeriod }}
   cooldownPeriod: {{ . }}
   {{- end }}
-  {{- if or (kindIs "int64" .Values.keda.idleReplicaCount) (kindIs "float64" .Values.keda.idleReplicaCount) }}
-  idleReplicaCount: {{ .Values.keda.idleReplicaCount }}
+  {{- if or (kindIs "int64" .Values.autoscaling.keda.idleReplicaCount) (kindIs "float64" .Values.autoscaling.keda.idleReplicaCount) }}
+  idleReplicaCount: {{ .Values.autoscaling.keda.idleReplicaCount }}
   {{- end }}
-  minReplicaCount: {{ .Values.keda.minReplicaCount }}
-  maxReplicaCount: {{ .Values.keda.maxReplicaCount }}
-  {{- with .Values.keda.fallback }}
+  minReplicaCount: {{ .Values.autoscaling.keda.minReplicaCount }}
+  maxReplicaCount: {{ .Values.autoscaling.keda.maxReplicaCount }}
+  {{- with .Values.autoscaling.keda.fallback }}
   fallback:
     {{- toYaml . | nindent 4 }}
   {{- end }}
-  {{- with .Values.keda.advanced }}
+  {{- with .Values.autoscaling.keda.advanced }}
   advanced:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   triggers:
-    {{- toYaml .Values.keda.triggers | nindent 4 }}
+    {{- toYaml .Values.autoscaling.keda.triggers | nindent 4 }}
 {{- end }}

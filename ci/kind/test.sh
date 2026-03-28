@@ -85,7 +85,7 @@ tier1_test "t1-job" "ci/job-values.yaml" job serviceaccount
 tier1_test "t1-rollout" "ci/rollout-values.yaml" rollout service horizontalpodautoscaler poddisruptionbudget serviceaccount
 tier1_test "t1-keda" "ci/keda-values.yaml" deployment scaledobject service serviceaccount
 tier1_test "t1-sj" "ci/scaledjob-values.yaml" scaledjob serviceaccount
-tier1_test "t1-full" "ci/full-values.yaml" deployment service configmap secret ingress horizontalpodautoscaler poddisruptionbudget serviceaccount role rolebinding clusterrole clusterrolebinding persistentvolumeclaim httproute grpcroute tlsroute backendtrafficpolicy servicemonitor podmonitor vmservicescrape vmpodscrape externalsecret
+tier1_test "t1-full" "ci/full-values.yaml" deployment service configmap secret ingress horizontalpodautoscaler poddisruptionbudget serviceaccount role rolebinding clusterrole clusterrolebinding persistentvolumeclaim httproute grpcroute tlsroute backendtrafficpolicy servicemonitor podmonitor vmservicescrape vmpodscrape externalsecret grafanadashboard prometheusrule vmrule
 
 echo ""
 echo "============================================"

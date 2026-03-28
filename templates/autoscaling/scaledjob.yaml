@@ -1,48 +1,48 @@
-{{- if and .Values.keda.enabled (eq .Values.workloadType "Job") }}
+{{- if and .Values.autoscaling.keda.enabled (eq .Values.workloadType "Job") }}
 apiVersion: keda.sh/v1alpha1
 kind: ScaledJob
-{{ include "chartpack.metadata" (dict "context" $ "extraAnnotations" .Values.keda.annotations "extraLabels" .Values.keda.labels) }}
+{{ include "chartpack.metadata" (dict "context" $ "extraAnnotations" .Values.autoscaling.keda.annotations "extraLabels" .Values.autoscaling.keda.labels) }}
 spec:
   jobTargetRef:
-    {{- with .Values.job.backoffLimit }}
+    {{- with .Values.workloads.job.backoffLimit }}
     backoffLimit: {{ . }}
     {{- end }}
-    {{- with .Values.job.activeDeadlineSeconds }}
+    {{- with .Values.workloads.job.activeDeadlineSeconds }}
     activeDeadlineSeconds: {{ . }}
     {{- end }}
-    {{- with .Values.job.ttlSecondsAfterFinished }}
+    {{- with .Values.workloads.job.ttlSecondsAfterFinished }}
     ttlSecondsAfterFinished: {{ . }}
     {{- end }}
-    {{- with .Values.job.completions }}
+    {{- with .Values.workloads.job.completions }}
     completions: {{ . }}
     {{- end }}
-    {{- with .Values.job.parallelism }}
+    {{- with .Values.workloads.job.parallelism }}
     parallelism: {{ . }}
     {{- end }}
-    {{- with .Values.job.completionMode }}
+    {{- with .Values.workloads.job.completionMode }}
     completionMode: {{ . }}
     {{- end }}
     template:
       {{- include "chartpack.podTemplate" . | nindent 6 }}
-  {{- with .Values.keda.pollingInterval }}
+  {{- with .Values.autoscaling.keda.pollingInterval }}
   pollingInterval: {{ . }}
   {{- end }}
-  {{- with .Values.keda.minReplicaCount }}
+  {{- with .Values.autoscaling.keda.minReplicaCount }}
   minReplicaCount: {{ . }}
   {{- end }}
-  {{- with .Values.keda.maxReplicaCount }}
+  {{- with .Values.autoscaling.keda.maxReplicaCount }}
   maxReplicaCount: {{ . }}
   {{- end }}
-  {{- with .Values.keda.successfulJobsHistoryLimit }}
+  {{- with .Values.autoscaling.keda.successfulJobsHistoryLimit }}
   successfulJobsHistoryLimit: {{ . }}
   {{- end }}
-  {{- with .Values.keda.failedJobsHistoryLimit }}
+  {{- with .Values.autoscaling.keda.failedJobsHistoryLimit }}
   failedJobsHistoryLimit: {{ . }}
   {{- end }}
-  {{- with .Values.keda.scalingStrategy }}
+  {{- with .Values.autoscaling.keda.scalingStrategy }}
   scalingStrategy:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   triggers:
-    {{- toYaml .Values.keda.triggers | nindent 4 }}
+    {{- toYaml .Values.autoscaling.keda.triggers | nindent 4 }}
 {{- end }}

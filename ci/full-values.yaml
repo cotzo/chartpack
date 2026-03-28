@@ -313,375 +313,377 @@ podSettings:
         value: "2"
 
 # =============================================================================
-# OAuth2 Proxies
+# Networking — OAuth2 Proxies, Services, Ingresses, Gateway API
 # =============================================================================
 
-oauth2Proxies:
-  corporate:
-    mode: sidecar
-    image:
-      repository: quay.io/oauth2-proxy/oauth2-proxy
-      tag: v7.7.0
-    provider: oidc
-    issuerUrl: https://auth.corp.example.com
-    emailDomains:
-      - corp.example.com
-    env:
-      CLIENT_ID:
-        valueFrom:
-          secretKeyRef:
-            name: oauth2-corp-secret
-            key: client-id
-            external: true
-      CLIENT_SECRET:
-        valueFrom:
-          secretKeyRef:
-            name: oauth2-corp-secret
-            key: client-secret
-            external: true
-      COOKIE_SECRET:
-        valueFrom:
-          secretKeyRef:
-            name: oauth2-corp-secret
-            key: cookie-secret
-            external: true
-    resources:
-      requests:
-        cpu: 50m
-        memory: 64Mi
-      limits:
-        cpu: 100m
-        memory: 128Mi
-  gateway-auth:
-    mode: deployment
-    upstream: http://localhost:80
-    image:
-      repository: quay.io/oauth2-proxy/oauth2-proxy
-      tag: v7.7.0
-    provider: oidc
-    issuerUrl: https://auth.corp.example.com
-    emailDomains:
-      - corp.example.com
-    env:
-      CLIENT_ID:
-        value: "test-client"
-      CLIENT_SECRET:
-        value: "test-secret"
-      COOKIE_SECRET:
-        value: "test-cookie-secret-1234567890ab"
-    resources:
-      requests:
-        cpu: 50m
-        memory: 64Mi
+networking:
+  oauth2Proxies:
+    corporate:
+      mode: sidecar
+      image:
+        repository: quay.io/oauth2-proxy/oauth2-proxy
+        tag: v7.7.0
+      provider: oidc
+      issuerUrl: https://auth.corp.example.com
+      emailDomains:
+        - corp.example.com
+      env:
+        CLIENT_ID:
+          valueFrom:
+            secretKeyRef:
+              name: oauth2-corp-secret
+              key: client-id
+              external: true
+        CLIENT_SECRET:
+          valueFrom:
+            secretKeyRef:
+              name: oauth2-corp-secret
+              key: client-secret
+              external: true
+        COOKIE_SECRET:
+          valueFrom:
+            secretKeyRef:
+              name: oauth2-corp-secret
+              key: cookie-secret
+              external: true
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+        limits:
+          cpu: 100m
+          memory: 128Mi
+    gateway-auth:
+      mode: deployment
+      upstream: http://localhost:80
+      image:
+        repository: quay.io/oauth2-proxy/oauth2-proxy
+        tag: v7.7.0
+      provider: oidc
+      issuerUrl: https://auth.corp.example.com
+      emailDomains:
+        - corp.example.com
+      env:
+        CLIENT_ID:
+          value: "test-client"
+        CLIENT_SECRET:
+          value: "test-secret"
+        COOKIE_SECRET:
+          value: "test-cookie-secret-1234567890ab"
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
 
-# =============================================================================
-# Services — ClusterIP, NodePort, headless, LoadBalancer
-# =============================================================================
+  # ===========================================================================
+  # Services — ClusterIP, NodePort, headless, LoadBalancer
+  # ===========================================================================
 
-services:
-  http:
-    type: ClusterIP
-    trafficDistribution: PreferSameNode
-    ports:
-      http:
-        port: 80
-        containerPort: http
-    annotations:
-      service.beta.kubernetes.io/aws-load-balancer-internal: "true"
-  grpc:
-    type: ClusterIP
-    ports:
-      grpc:
-        port: 9090
-  metrics:
-    type: ClusterIP
-    ports:
-      metrics:
-        port: 9091
-    annotations:
-      prometheus.io/scrape: "true"
-      prometheus.io/port: "9091"
-  external:
-    type: NodePort
-    ports:
-      http:
-        port: 80
-        containerPort: http
-        nodePort: 30080
-    externalTrafficPolicy: Local
-  discovery:
-    headless: true
-    publishNotReadyAddresses: true
-    ports:
-      http:
-        port: 8080
-      grpc:
-        port: 9090
-
-# =============================================================================
-# Ingresses — public + internal with different ingress classes
-# =============================================================================
-
-ingresses:
-  public:
-    oauth2Proxy: corporate
-    className: nginx
-    annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-prod
-      nginx.ingress.kubernetes.io/proxy-body-size: "50m"
-      nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
-      nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    hosts:
-      - host: app.example.com
-        paths:
-          - path: /
-            pathType: Prefix
-      - host: www.example.com
-        paths:
-          - path: /
-            pathType: Prefix
-    tls:
-      - secretName: app-tls
-        hosts:
-          - app.example.com
-          - www.example.com
-  api:
-    className: nginx
-    annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-prod
-      nginx.ingress.kubernetes.io/proxy-body-size: "10m"
-      nginx.ingress.kubernetes.io/enable-cors: "true"
-    hosts:
-      - host: api.example.com
-        paths:
-          - path: /v1
-            pathType: Prefix
-          - path: /v2
-            pathType: Prefix
-    tls:
-      - secretName: api-tls
-        hosts:
-          - api.example.com
-  internal:
-    className: nginx-internal
-    annotations:
-      nginx.ingress.kubernetes.io/whitelist-source-range: "10.0.0.0/8,172.16.0.0/12"
-    hosts:
-      - host: app.internal.example.com
-        paths:
-          - path: /
-            pathType: Prefix
-          - path: /admin
-            pathType: Prefix
-
-# =============================================================================
-# Gateway API Routes — HTTPRoute, GRPCRoute, TLSRoute
-# =============================================================================
-
-gatewayApi:
-  routes:
+  services:
     http:
-      kind: HTTPRoute
-      oauth2Proxy: gateway-auth
-      parentRefs:
-        - name: main-gateway
-          namespace: gateway-system
-          sectionName: https
-      hostnames:
-        - app.example.com
-      rules:
-        - matches:
-            - path:
-                type: PathPrefix
-                value: /
-          backendRefs:
-            - name: http
-              port: 80
-        - matches:
-            - path:
-                type: PathPrefix
-                value: /api
-            - headers:
-                - name: X-Api-Version
-                  value: v2
-          backendRefs:
-            - name: http
-              port: 80
-              weight: 90
-            - name: http
-              port: 80
-              weight: 10
-          timeouts:
-            request: 30s
-            backendRequest: 15s
-      policies:
-        envoy:
-          loadBalancer:
-            type: LeastRequest
-          circuitBreaker:
-            maxConnections: 2048
-            maxPendingRequests: 512
-          retry:
-            numRetries: 3
-          timeout:
-            tcp:
-              connectTimeout: 10s
-            http:
-              connectionIdleTimeout: 60s
-          rateLimit:
-            global:
-              rules:
-                - limit:
-                    requests: 100
-                    unit: Second
-          tcpKeepalive:
-            probes: 3
-            idleTime: 60s
-            interval: 10s
+      type: ClusterIP
+      trafficDistribution: PreferSameNode
+      ports:
+        http:
+          port: 80
+          containerPort: http
+      annotations:
+        service.beta.kubernetes.io/aws-load-balancer-internal: "true"
     grpc:
-      kind: GRPCRoute
-      parentRefs:
-        - name: main-gateway
-          namespace: gateway-system
-          sectionName: grpc
-      hostnames:
-        - grpc.example.com
-      rules:
-        - matches:
-            - method:
-                service: myapp.v1.ItemService
-                method: GetItem
-          backendRefs:
-            - name: grpc
-              port: 9090
-    tls-passthrough:
-      kind: TLSRoute
-      parentRefs:
-        - name: main-gateway
-          namespace: gateway-system
-          sectionName: tls-passthrough
-      hostnames:
-        - secure.example.com
-      rules:
-        - backendRefs:
-            - name: http
-              port: 443
+      type: ClusterIP
+      ports:
+        grpc:
+          port: 9090
+    metrics:
+      type: ClusterIP
+      ports:
+        metrics:
+          port: 9091
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9091"
+    external:
+      type: NodePort
+      ports:
+        http:
+          port: 80
+          containerPort: http
+          nodePort: 30080
+      externalTrafficPolicy: Local
+    discovery:
+      headless: true
+      publishNotReadyAddresses: true
+      ports:
+        http:
+          port: 8080
+        grpc:
+          port: 9090
+
+  # ===========================================================================
+  # Ingresses — public + internal with different ingress classes
+  # ===========================================================================
+
+  ingresses:
+    public:
+      oauth2Proxy: corporate
+      className: nginx
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-prod
+        nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+        nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+        nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      hosts:
+        - host: app.example.com
+          paths:
+            - path: /
+              pathType: Prefix
+        - host: www.example.com
+          paths:
+            - path: /
+              pathType: Prefix
+      tls:
+        - secretName: app-tls
+          hosts:
+            - app.example.com
+            - www.example.com
+    api:
+      className: nginx
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-prod
+        nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+        nginx.ingress.kubernetes.io/enable-cors: "true"
+      hosts:
+        - host: api.example.com
+          paths:
+            - path: /v1
+              pathType: Prefix
+            - path: /v2
+              pathType: Prefix
+      tls:
+        - secretName: api-tls
+          hosts:
+            - api.example.com
+    internal:
+      className: nginx-internal
+      annotations:
+        nginx.ingress.kubernetes.io/whitelist-source-range: "10.0.0.0/8,172.16.0.0/12"
+      hosts:
+        - host: app.internal.example.com
+          paths:
+            - path: /
+              pathType: Prefix
+            - path: /admin
+              pathType: Prefix
+
+  # ===========================================================================
+  # Gateway API Routes — HTTPRoute, GRPCRoute, TLSRoute
+  # ===========================================================================
+
+  gatewayApi:
+    routes:
+      http:
+        kind: HTTPRoute
+        oauth2Proxy: gateway-auth
+        parentRefs:
+          - name: main-gateway
+            namespace: gateway-system
+            sectionName: https
+        hostnames:
+          - app.example.com
+        rules:
+          - matches:
+              - path:
+                  type: PathPrefix
+                  value: /
+            backendRefs:
+              - name: http
+                port: 80
+          - matches:
+              - path:
+                  type: PathPrefix
+                  value: /api
+              - headers:
+                  - name: X-Api-Version
+                    value: v2
+            backendRefs:
+              - name: http
+                port: 80
+                weight: 90
+              - name: http
+                port: 80
+                weight: 10
+            timeouts:
+              request: 30s
+              backendRequest: 15s
+        policies:
+          envoy:
+            loadBalancer:
+              type: LeastRequest
+            circuitBreaker:
+              maxConnections: 2048
+              maxPendingRequests: 512
+            retry:
+              numRetries: 3
+            timeout:
+              tcp:
+                connectTimeout: 10s
+              http:
+                connectionIdleTimeout: 60s
+            rateLimit:
+              global:
+                rules:
+                  - limit:
+                      requests: 100
+                      unit: Second
+            tcpKeepalive:
+              probes: 3
+              idleTime: 60s
+              interval: 10s
+      grpc:
+        kind: GRPCRoute
+        parentRefs:
+          - name: main-gateway
+            namespace: gateway-system
+            sectionName: grpc
+        hostnames:
+          - grpc.example.com
+        rules:
+          - matches:
+              - method:
+                  service: myapp.v1.ItemService
+                  method: GetItem
+            backendRefs:
+              - name: grpc
+                port: 9090
+      tls-passthrough:
+        kind: TLSRoute
+        parentRefs:
+          - name: main-gateway
+            namespace: gateway-system
+            sectionName: tls-passthrough
+        hostnames:
+          - secure.example.com
+        rules:
+          - backendRefs:
+              - name: http
+                port: 443
 
 # =============================================================================
 # ConfigMaps — app config, env vars, sidecar config
 # =============================================================================
 
-configMaps:
-  app-config:
-    data:
-      config.yaml: |
-        server:
-          port: 8080
-          grpcPort: 9090
-          readTimeout: 30s
-          writeTimeout: 30s
-        logging:
-          level: info
-          format: json
-        cache:
-          enabled: true
-          ttl: 300s
-      log-level: info
-  env-config:
-    data:
-      FEATURE_FLAG_NEW_UI: "true"
-      CACHE_TTL: "300"
-      MAX_CONNECTIONS: "100"
-  fluent-bit-config:
-    data:
-      fluent-bit.conf: |
-        [SERVICE]
-            Flush 5
-            Log_Level info
-        [INPUT]
-            Name tail
-            Path /var/log/app/*.log
-            Tag app.*
-        [OUTPUT]
-            Name forward
-            Match *
-            Host fluentd.logging.svc
-            Port 24224
+config:
+  configMaps:
+    app-config:
+      data:
+        config.yaml: |
+          server:
+            port: 8080
+            grpcPort: 9090
+            readTimeout: 30s
+            writeTimeout: 30s
+          logging:
+            level: info
+            format: json
+          cache:
+            enabled: true
+            ttl: 300s
+        log-level: info
+    env-config:
+      data:
+        FEATURE_FLAG_NEW_UI: "true"
+        CACHE_TTL: "300"
+        MAX_CONNECTIONS: "100"
+    fluent-bit-config:
+      data:
+        fluent-bit.conf: |
+          [SERVICE]
+              Flush 5
+              Log_Level info
+          [INPUT]
+              Name tail
+              Path /var/log/app/*.log
+              Tag app.*
+          [OUTPUT]
+              Name forward
+              Match *
+              Host fluentd.logging.svc
+              Port 24224
 
-# =============================================================================
-# Secrets — app credentials, TLS certs, env vars, various types
-# =============================================================================
+  # =============================================================================
+  # Secrets — app credentials, TLS certs, env vars, various types
+  # =============================================================================
 
-secrets:
-  app-credentials:
-    stringData:
-      api-key: "my-api-key-value"
-      webhook-secret: "whsec_abc123"
-  tls-certs:
-    type: kubernetes.io/tls
-    data:
-      tls.crt: ZHVtbXktY2VydA==
-      tls.key: ZHVtbXkta2V5AA==
-      ca.crt: ZHVtbXktY2EBAA==
-  env-secrets:
-    stringData:
-      SMTP_PASSWORD: "smtp-pass"
-      REDIS_PASSWORD: "redis-pass"
-      JWT_SECRET: "jwt-signing-key"
-  docker-registry:
-    type: kubernetes.io/dockerconfigjson
-    data:
-      .dockerconfigjson: eyJhdXRocyI6e319
+  secrets:
+    app-credentials:
+      stringData:
+        api-key: "my-api-key-value"
+        webhook-secret: "whsec_abc123"
+    tls-certs:
+      type: kubernetes.io/tls
+      data:
+        tls.crt: ZHVtbXktY2VydA==
+        tls.key: ZHVtbXkta2V5AA==
+        ca.crt: ZHVtbXktY2EBAA==
+    env-secrets:
+      stringData:
+        SMTP_PASSWORD: "smtp-pass"
+        REDIS_PASSWORD: "redis-pass"
+        JWT_SECRET: "jwt-signing-key"
+    docker-registry:
+      type: kubernetes.io/dockerconfigjson
+      data:
+        .dockerconfigjson: eyJhdXRocyI6e319
 
-  generated-creds:
-    generate:
-      api-key:
-        length: 32
-        symbols: 0
-      webhook-secret:
-        length: 64
-        encoding: hex
-      session-key:
-        length: 48
-        noUpper: true
-        allowRepeat: true
+    generated-creds:
+      generate:
+        api-key:
+          length: 32
+          symbols: 0
+        webhook-secret:
+          length: 64
+          encoding: hex
+        session-key:
+          length: 48
+          noUpper: true
+          allowRepeat: true
 
-# =============================================================================
-# External Secrets — AWS Secrets Manager + Vault
-# =============================================================================
+  # =============================================================================
+  # External Secrets — AWS Secrets Manager + Vault
+  # =============================================================================
 
-externalSecrets:
-  aws-credentials:
-    refreshInterval: 1h
-    secretStoreRef:
-      name: aws-secrets-manager
-      kind: ClusterSecretStore
-    target:
-      creationPolicy: Owner
-      deletionPolicy: Retain
-    data:
-      - secretKey: access-key-id
-        remoteRef:
-          key: /prod/app/aws-credentials
-          property: access_key_id
-      - secretKey: secret-access-key
-        remoteRef:
-          key: /prod/app/aws-credentials
-          property: secret_access_key
-  vault-db-creds:
-    refreshInterval: 30m
-    secretStoreRef:
-      name: vault-backend
-      kind: SecretStore
-    target:
-      creationPolicy: Owner
-      template:
-        type: Opaque
-        data:
-          connection-string: "postgresql://{{ .username }}:{{ .password }}@db:5432/mydb"
-    dataFrom:
-      - extract:
-          key: database/creds/my-role
+  externalSecrets:
+    aws-credentials:
+      refreshInterval: 1h
+      secretStoreRef:
+        name: aws-secrets-manager
+        kind: ClusterSecretStore
+      target:
+        creationPolicy: Owner
+        deletionPolicy: Retain
+      data:
+        - secretKey: access-key-id
+          remoteRef:
+            key: /prod/app/aws-credentials
+            property: access_key_id
+        - secretKey: secret-access-key
+          remoteRef:
+            key: /prod/app/aws-credentials
+            property: secret_access_key
+    vault-db-creds:
+      refreshInterval: 30m
+      secretStoreRef:
+        name: vault-backend
+        kind: SecretStore
+      target:
+        creationPolicy: Owner
+        template:
+          type: Opaque
+          data:
+            connection-string: "postgresql://{{ .username }}:{{ .password }}@db:5432/mydb"
+      dataFrom:
+        - extract:
+            key: database/creds/my-role
 
 # =============================================================================
 # Persistence — cache SSD, shared data
@@ -708,46 +710,47 @@ persistence:
 # =============================================================================
 
 autoscaling:
-  enabled: true
-  minReplicas: 2
-  maxReplicas: 20
-  metrics:
-    - type: Resource
-      resource:
-        name: cpu
-        target:
-          type: Utilization
-          averageUtilization: 75
-    - type: Resource
-      resource:
-        name: memory
-        target:
-          type: Utilization
-          averageUtilization: 80
-    - type: Pods
-      pods:
-        metric:
-          name: http_requests_per_second
-        target:
-          type: AverageValue
-          averageValue: "1000"
-  behavior:
-    scaleDown:
-      stabilizationWindowSeconds: 300
-      policies:
-        - type: Percent
-          value: 10
-          periodSeconds: 60
-    scaleUp:
-      stabilizationWindowSeconds: 30
-      policies:
-        - type: Percent
-          value: 100
-          periodSeconds: 15
-        - type: Pods
-          value: 4
-          periodSeconds: 15
-      selectPolicy: Max
+  hpa:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 20
+    metrics:
+      - type: Resource
+        resource:
+          name: cpu
+          target:
+            type: Utilization
+            averageUtilization: 75
+      - type: Resource
+        resource:
+          name: memory
+          target:
+            type: Utilization
+            averageUtilization: 80
+      - type: Pods
+        pods:
+          metric:
+            name: http_requests_per_second
+          target:
+            type: AverageValue
+            averageValue: "1000"
+    behavior:
+      scaleDown:
+        stabilizationWindowSeconds: 300
+        policies:
+          - type: Percent
+            value: 10
+            periodSeconds: 60
+      scaleUp:
+        stabilizationWindowSeconds: 30
+        policies:
+          - type: Percent
+            value: 100
+            periodSeconds: 15
+          - type: Pods
+            value: 4
+            periodSeconds: 15
+        selectPolicy: Max
 
 # =============================================================================
 # PDB
@@ -761,27 +764,28 @@ pdb:
 # Deployment settings
 # =============================================================================
 
-deployment:
-  replicaCount: 3
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: "25%"
-      maxUnavailable: 0
-  revisionHistoryLimit: 5
+workloads:
+  deployment:
+    replicaCount: 3
+    strategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxSurge: "25%"
+        maxUnavailable: 0
+    revisionHistoryLimit: 5
 
 # =============================================================================
 # Service Account + RBAC
 # =============================================================================
 
-serviceAccount:
-  create: true
-  annotations:
-    eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/my-app-role
-  labels:
-    app.kubernetes.io/component: serviceaccount
-
 rbac:
+  serviceAccount:
+    create: true
+    annotations:
+      eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/my-app-role
+    labels:
+      app.kubernetes.io/component: serviceaccount
+
   roles:
     configmap-reader:
       rules:
@@ -865,6 +869,67 @@ monitors:
     interval: 30s
     podTargetLabels:
       - app.kubernetes.io/name
+
+# =============================================================================
+# Alerting Rules — PrometheusRule + VMRule
+# =============================================================================
+
+alerting:
+  prom-app-alerts:
+    operator: prometheus
+    groups:
+      - name: app-alerts
+        interval: 1m
+        rules:
+          - alert: HighErrorRate
+            expr: rate(http_errors_total{job="full-test"}[5m]) > 0.1
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: High error rate detected
+          - alert: PodCrashLooping
+            expr: rate(kube_pod_container_status_restarts_total{namespace="default"}[15m]) > 0
+            for: 10m
+            labels:
+              severity: warning
+      - name: recordings
+        rules:
+          - record: job:http_requests:rate5m
+            expr: sum(rate(http_requests_total[5m])) by (job)
+  vm-infra-alerts:
+    operator: victoriametrics
+    groups:
+      - name: infra-alerts
+        concurrency: 2
+        rules:
+          - alert: HighMemoryUsage
+            expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes > 0.9
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: Node memory usage above 90%
+
+# =============================================================================
+# Grafana Dashboards
+# =============================================================================
+
+dashboards:
+  grafana:
+    app-overview:
+      instanceSelector:
+        matchLabels:
+          dashboards: grafana
+      folder: My App
+      json: '{"title": "App Overview", "uid": "app-overview", "panels": []}'
+    node-exporter:
+      instanceSelector:
+        matchLabels:
+          dashboards: grafana
+      grafanaCom:
+        id: 1860
+        revision: 37
 
 # =============================================================================
 # Extra Resources — escape hatch

@@ -19,8 +19,9 @@ containers:
       limits:
         cpu: 50m
         memory: 64Mi
-services:
-  http:
-    ports:
-      http:
-        port: 80
+networking:
+  services:
+    http:
+      ports:
+        http:
+          port: 80

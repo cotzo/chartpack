@@ -3,14 +3,15 @@
 ## Service Account
 
 ```yaml
-serviceAccount:
-  create: true
-  name: ""                       # defaults to <fullname>
-  annotations:
-    eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/my-role
-  labels: {}
-  automountServiceAccountToken: true
-  imagePullSecrets: []
+rbac:
+  serviceAccount:
+    create: true
+    name: ""                       # defaults to <fullname>
+    annotations:
+      eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/my-role
+    labels: {}
+    automountServiceAccountToken: true
+    imagePullSecrets: []
 ```
 
 [ServiceAccount reference](https://kubernetes.io/docs/concepts/security/service-accounts/)

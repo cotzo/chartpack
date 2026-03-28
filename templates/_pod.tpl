@@ -9,7 +9,7 @@ metadata:
     {{- with .Values.podSettings.labels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
-  {{- $checksumAnnotations := include "chartpack.storage.checksumAnnotations" . }}
+  {{- $checksumAnnotations := include "chartpack.persistence.checksumAnnotations" . }}
   {{- if or $checksumAnnotations .Values.podSettings.annotations }}
   annotations:
     {{- $checksumAnnotations | nindent 4 }}
@@ -22,7 +22,7 @@ spec:
   imagePullSecrets:
     {{- toYaml . | nindent 4 }}
   {{- end }}
-  serviceAccountName: {{ include "chartpack.serviceAccountName" . }}
+  serviceAccountName: {{ include "chartpack.rbac.serviceAccountName" . }}
   {{- with .Values.podSettings.securityContext }}
   securityContext:
     {{- toYaml . | nindent 4 }}
@@ -41,7 +41,7 @@ spec:
     {{- range $name, $config := .Values.containers }}
     {{- include "chartpack.containers.renderContainer" (dict "name" $name "config" $config "context" $) | nindent 4 }}
     {{- end }}
-  {{- $volumes := include "chartpack.storage.volumes" . }}
+  {{- $volumes := include "chartpack.persistence.volumes" . }}
   {{- if $volumes }}
   volumes:
     {{- $volumes | nindent 4 }}

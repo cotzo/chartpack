@@ -15,15 +15,17 @@ containers:
     mounts:
       - path: /data
         persistence: data
-services:
-  http:
-    type: ClusterIP
-    ports:
-      http:
-        port: 80
-statefulSet:
-  replicaCount: 2
-  podManagementPolicy: Parallel
+networking:
+  services:
+    http:
+      type: ClusterIP
+      ports:
+        http:
+          port: 80
+workloads:
+  statefulSet:
+    replicaCount: 2
+    podManagementPolicy: Parallel
 persistence:
   data:
     size: 1Gi

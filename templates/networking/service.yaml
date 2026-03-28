@@ -4,7 +4,7 @@
 {{- if eq .Values.workloadType "StatefulSet" }}
 {{- /* Collect all ports from all enabled services for the headless service */ -}}
 {{- $hasHeadlessPorts := false }}
-{{- range $name, $svc := .Values.services }}
+{{- range $name, $svc := .Values.networking.services }}
 {{- if $svc.ports }}
 {{- $hasHeadlessPorts = true }}
 {{- end }}
@@ -13,15 +13,15 @@
 ---
 apiVersion: v1
 kind: Service
-{{ include "chartpack.metadata" (dict "name" (include "chartpack.headlessServiceName" .) "context" $) }}
+{{ include "chartpack.metadata" (dict "name" (include "chartpack.networking.headlessServiceName" .) "context" $) }}
 spec:
   type: ClusterIP
   clusterIP: None
-  {{- if .Values.statefulSet.publishNotReadyAddresses }}
+  {{- if .Values.workloads.statefulSet.publishNotReadyAddresses }}
   publishNotReadyAddresses: true
   {{- end }}
   ports:
-    {{- range $svcName, $svc := .Values.services }}
+    {{- range $svcName, $svc := .Values.networking.services }}
     {{- if $svc }}
     {{- range $portName, $portCfg := $svc.ports }}
     - name: {{ $portName }}
@@ -37,7 +37,7 @@ spec:
 {{- end }}
 
 {{- /* User-defined services */ -}}
-{{- range $name, $svc := .Values.services }}
+{{- range $name, $svc := .Values.networking.services }}
 {{- if $svc }}
 ---
 apiVersion: v1
@@ -90,7 +90,7 @@ spec:
       {{- end }}
     {{- end }}
     {{- /* Auto-inject oauth2 proxy sidecar ports */ -}}
-    {{- range $proxyName, $proxyCfg := $.Values.oauth2Proxies }}
+    {{- range $proxyName, $proxyCfg := $.Values.networking.oauth2Proxies }}
     {{- if and $proxyCfg (eq (default "sidecar" $proxyCfg.mode) "sidecar") }}
     {{- if include "chartpack.networking.oauth2Proxy.needed" (dict "key" $proxyName "context" $) }}
     - name: oauth2-{{ $proxyName }}

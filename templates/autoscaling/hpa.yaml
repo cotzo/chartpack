@@ -1,20 +1,20 @@
-{{- if .Values.autoscaling.enabled }}
+{{- if .Values.autoscaling.hpa.enabled }}
 {{- if not (or (eq .Values.workloadType "CronJob") (eq .Values.workloadType "Job") (eq .Values.workloadType "DaemonSet")) }}
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
-{{ include "chartpack.metadata" (dict "context" $ "extraAnnotations" .Values.autoscaling.annotations "extraLabels" .Values.autoscaling.labels) }}
+{{ include "chartpack.metadata" (dict "context" $ "extraAnnotations" .Values.autoscaling.hpa.annotations "extraLabels" .Values.autoscaling.hpa.labels) }}
 spec:
   scaleTargetRef:
     apiVersion: {{ if eq .Values.workloadType "Rollout" }}argoproj.io/v1alpha1{{ else }}apps/v1{{ end }}
     kind: {{ .Values.workloadType }}
     name: {{ include "chartpack.fullname" . }}
-  minReplicas: {{ .Values.autoscaling.minReplicas }}
-  maxReplicas: {{ .Values.autoscaling.maxReplicas }}
-  {{- with .Values.autoscaling.metrics }}
+  minReplicas: {{ .Values.autoscaling.hpa.minReplicas }}
+  maxReplicas: {{ .Values.autoscaling.hpa.maxReplicas }}
+  {{- with .Values.autoscaling.hpa.metrics }}
   metrics:
     {{- toYaml . | nindent 4 }}
   {{- end }}
-  {{- with .Values.autoscaling.behavior }}
+  {{- with .Values.autoscaling.hpa.behavior }}
   behavior:
     {{- toYaml . | nindent 4 }}
   {{- end }}

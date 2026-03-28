@@ -12,7 +12,7 @@ subjects:
   {{- toYaml $binding.subjects | nindent 2 }}
   {{- else }}
   - kind: ServiceAccount
-    name: {{ include "chartpack.serviceAccountName" $ }}
+    name: {{ include "chartpack.rbac.serviceAccountName" $ }}
     namespace: {{ $.Release.Namespace }}
   {{- end }}
 {{- end }}

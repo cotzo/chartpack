@@ -16,11 +16,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          main:
+            ports:
+              http:
+                port: 80
     asserts:
       - equal:
           path: spec.replicas
@@ -38,13 +39,15 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          main:
+            ports:
+              http:
+                port: 80
       autoscaling:
-        enabled: true
+        hpa:
+          enabled: true
     asserts:
       - isNull:
           path: spec.replicas
@@ -61,20 +64,22 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            http:
-              port: 80
-      keda:
-        enabled: true
-        triggers:
-          - type: cron
-            metadata:
-              timezone: UTC
-              start: "0 8 * * *"
-              end: "0 18 * * *"
-              desiredReplicas: "1"
+      networking:
+        services:
+          main:
+            ports:
+              http:
+                port: 80
+      autoscaling:
+        keda:
+          enabled: true
+          triggers:
+            - type: cron
+              metadata:
+                timezone: UTC
+                start: "0 8 * * *"
+                end: "0 18 * * *"
+                desiredReplicas: "1"
     asserts:
       - isNull:
           path: spec.replicas
@@ -95,11 +100,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          main:
+            ports:
+              http:
+                port: 80
     asserts:
       - equal:
           path: spec.replicas
@@ -117,13 +123,15 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          main:
+            ports:
+              http:
+                port: 80
       autoscaling:
-        enabled: true
+        hpa:
+          enabled: true
     asserts:
       - isNull:
           path: spec.replicas
@@ -140,20 +148,22 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            http:
-              port: 80
-      keda:
-        enabled: true
-        triggers:
-          - type: cron
-            metadata:
-              timezone: UTC
-              start: "0 8 * * *"
-              end: "0 18 * * *"
-              desiredReplicas: "1"
+      networking:
+        services:
+          main:
+            ports:
+              http:
+                port: 80
+      autoscaling:
+        keda:
+          enabled: true
+          triggers:
+            - type: cron
+              metadata:
+                timezone: UTC
+                start: "0 8 * * *"
+                end: "0 18 * * *"
+                desiredReplicas: "1"
     asserts:
       - isNull:
           path: spec.replicas
@@ -174,11 +184,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          main:
+            ports:
+              http:
+                port: 80
     asserts:
       - equal:
           path: spec.replicas
@@ -196,13 +207,15 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          main:
+            ports:
+              http:
+                port: 80
       autoscaling:
-        enabled: true
+        hpa:
+          enabled: true
     asserts:
       - isNull:
           path: spec.replicas
@@ -219,20 +232,22 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            http:
-              port: 80
-      keda:
-        enabled: true
-        triggers:
-          - type: cron
-            metadata:
-              timezone: UTC
-              start: "0 8 * * *"
-              end: "0 18 * * *"
-              desiredReplicas: "1"
+      networking:
+        services:
+          main:
+            ports:
+              http:
+                port: 80
+      autoscaling:
+        keda:
+          enabled: true
+          triggers:
+            - type: cron
+              metadata:
+                timezone: UTC
+                start: "0 8 * * *"
+                end: "0 18 * * *"
+                desiredReplicas: "1"
     asserts:
       - isNull:
           path: spec.replicas

@@ -3,7 +3,7 @@ Deployed {{ $fullName }} as {{ .Values.workloadType }}.
 
 {{- if eq .Values.workloadType "CronJob" }}
 
-CronJob schedule: {{ .Values.cronJob.schedule }}
+CronJob schedule: {{ .Values.workloads.cronJob.schedule }}
 
 View upcoming jobs:
   kubectl get cronjobs -n {{ .Release.Namespace }} {{ $fullName }}
@@ -15,7 +15,7 @@ View job status:
 
 {{- else }}
 
-{{- range $name, $svc := .Values.services }}
+{{- range $name, $svc := .Values.networking.services }}
 {{- if $svc }}
 Service: {{ $fullName }}-{{ $name }} ({{ default "ClusterIP" $svc.type }})
 {{- range $svc.ports }}
@@ -24,7 +24,7 @@ Service: {{ $fullName }}-{{ $name }} ({{ default "ClusterIP" $svc.type }})
 {{- end }}
 {{- end }}
 
-{{- range $name, $ing := .Values.ingresses }}
+{{- range $name, $ing := .Values.networking.ingresses }}
 {{- if $ing }}
 
 Ingress {{ $fullName }}-{{ $name }}:

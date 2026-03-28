@@ -9,11 +9,12 @@ set:
       ports:
         http:
           port: 80
-  services:
-    http:
-      ports:
-        http:
-          port: 80
+  networking:
+    services:
+      http:
+        ports:
+          http:
+            port: 80
 tests:
   - it: should render standard labels
     asserts:

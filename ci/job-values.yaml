@@ -21,9 +21,10 @@ containers:
         cpu: 500m
         memory: 256Mi
 
-job:
-  backoffLimit: 3
-  activeDeadlineSeconds: 600
-  ttlSecondsAfterFinished: 3600
-  completionMode: NonIndexed
-  podReplacementPolicy: Failed
+workloads:
+  job:
+    backoffLimit: 3
+    activeDeadlineSeconds: 600
+    ttlSecondsAfterFinished: 3600
+    completionMode: NonIndexed
+    podReplacementPolicy: Failed

@@ -10,7 +10,7 @@ Validate monitor port references exist in service ports (service kind) or contai
 {{- end }}
 
 {{- $allServicePorts := dict }}
-{{- range $svcName, $svc := .Values.services }}
+{{- range $svcName, $svc := .Values.networking.services }}
 {{- range $portName, $portCfg := $svc.ports }}
 {{- $_ := set $allServicePorts $portName true }}
 {{- end }}

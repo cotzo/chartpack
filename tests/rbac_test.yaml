@@ -19,11 +19,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
     asserts:
       - isKind:
           of: ServiceAccount
@@ -40,13 +41,15 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
-      serviceAccount:
-        create: false
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+      rbac:
+        serviceAccount:
+          create: false
     asserts:
       - hasDocuments:
           count: 0
@@ -61,15 +64,17 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
-      serviceAccount:
-        create: true
-        annotations:
-          eks.amazonaws.com/role-arn: arn:aws:iam::123456789:role/my-role
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+      rbac:
+        serviceAccount:
+          create: true
+          annotations:
+            eks.amazonaws.com/role-arn: arn:aws:iam::123456789:role/my-role
     asserts:
       - equal:
           path: metadata.annotations["eks.amazonaws.com/role-arn"]
@@ -88,11 +93,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
       rbac:
         roles:
           reader:
@@ -123,11 +129,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
       rbac:
         clusterRoles:
           nodes-reader:
@@ -155,11 +162,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
       rbac:
         roleBindings:
           reader-binding:
@@ -188,11 +196,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
       rbac:
         clusterRoleBindings:
           nodes-binding:
@@ -221,11 +230,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
     asserts:
       - hasDocuments:
           count: 0
@@ -240,11 +250,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
     asserts:
       - hasDocuments:
           count: 0

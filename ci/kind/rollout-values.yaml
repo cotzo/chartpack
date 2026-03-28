@@ -12,23 +12,25 @@ containers:
         httpGet:
           path: /
           port: http
-services:
-  stable:
-    type: ClusterIP
-    ports:
-      http:
-        port: 80
-        containerPort: http
-  canary:
-    type: ClusterIP
-    ports:
-      http:
-        port: 80
-        containerPort: http
-rollout:
-  replicaCount: 1
-  strategy:
+networking:
+  services:
+    stable:
+      type: ClusterIP
+      ports:
+        http:
+          port: 80
+          containerPort: http
     canary:
-      steps:
-        - setWeight: 50
-        - pause: { duration: 5s }
+      type: ClusterIP
+      ports:
+        http:
+          port: 80
+          containerPort: http
+workloads:
+  rollout:
+    replicaCount: 1
+    strategy:
+      canary:
+        steps:
+          - setWeight: 50
+          - pause: { duration: 5s }

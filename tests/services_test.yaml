@@ -11,11 +11,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
     asserts:
       - isKind:
           of: Service
@@ -39,13 +40,15 @@ tests:
           ports:
             http:
               port: 80
-      cronJob:
-        schedule: "* * * * *"
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      workloads:
+        cronJob:
+          schedule: "* * * * *"
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
     asserts:
       - hasDocuments:
           count: 0
@@ -60,11 +63,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
     asserts:
       - hasDocuments:
           count: 0
@@ -78,13 +82,14 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          type: NodePort
-          ports:
-            http:
-              port: 80
-              nodePort: 30080
+      networking:
+        services:
+          http:
+            type: NodePort
+            ports:
+              http:
+                port: 80
+                nodePort: 30080
     asserts:
       - equal:
           path: spec.type
@@ -113,12 +118,13 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          headless: true
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            headless: true
+            ports:
+              http:
+                port: 80
     asserts:
       - equal:
           path: spec.clusterIP
@@ -138,15 +144,16 @@ tests:
               port: 80
             grpc:
               port: 9090
-      services:
-        http:
-          ports:
-            http:
-              port: 80
-        grpc:
-          ports:
-            grpc:
-              port: 9090
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+          grpc:
+            ports:
+              grpc:
+                port: 9090
     asserts:
       - isKind:
           of: Service
@@ -169,11 +176,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
     asserts:
       - isKind:
           of: Service
@@ -196,13 +204,14 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
-          annotations:
-            prometheus.io/scrape: "true"
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+            annotations:
+              prometheus.io/scrape: "true"
     asserts:
       - isNotNull:
           path: metadata.annotations
@@ -219,13 +228,14 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          type: LoadBalancer
-          externalTrafficPolicy: Local
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            type: LoadBalancer
+            externalTrafficPolicy: Local
+            ports:
+              http:
+                port: 80
     asserts:
       - equal:
           path: spec.externalTrafficPolicy

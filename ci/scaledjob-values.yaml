@@ -16,21 +16,23 @@ containers:
         cpu: 500m
         memory: 256Mi
 
-job:
-  backoffLimit: 3
-  ttlSecondsAfterFinished: 300
+workloads:
+  job:
+    backoffLimit: 3
+    ttlSecondsAfterFinished: 300
 
-keda:
-  enabled: true
-  pollingInterval: 15
-  maxReplicaCount: 10
-  successfulJobsHistoryLimit: 5
-  failedJobsHistoryLimit: 3
-  scalingStrategy:
-    strategy: default
-  triggers:
-    - type: aws-sqs-queue
-      metadata:
-        queueURL: https://sqs.us-east-1.amazonaws.com/123456789/my-queue
-        queueLength: "5"
-        awsRegion: us-east-1
+autoscaling:
+  keda:
+    enabled: true
+    pollingInterval: 15
+    maxReplicaCount: 10
+    successfulJobsHistoryLimit: 5
+    failedJobsHistoryLimit: 3
+    scalingStrategy:
+      strategy: default
+    triggers:
+      - type: aws-sqs-queue
+        metadata:
+          queueURL: https://sqs.us-east-1.amazonaws.com/123456789/my-queue
+          queueLength: "5"
+          awsRegion: us-east-1

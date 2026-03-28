@@ -1,0 +1,26 @@
+{{- $fullName := include "chartpack.fullname" . -}}
+{{- range $name, $rule := .Values.alerting }}
+{{- if $rule }}
+{{- $operator := default "prometheus" $rule.operator -}}
+
+{{- /* Resolve apiVersion and kind from operator */ -}}
+{{- $apiVersion := "" -}}
+{{- $kind := "" -}}
+{{- if eq $operator "prometheus" -}}
+  {{- $apiVersion = "monitoring.coreos.com/v1" -}}
+  {{- $kind = "PrometheusRule" -}}
+{{- else if eq $operator "victoriametrics" -}}
+  {{- $apiVersion = "operator.victoriametrics.com/v1beta1" -}}
+  {{- $kind = "VMRule" -}}
+{{- else -}}
+  {{- fail (printf "alerting.%s: invalid operator %q. Must be prometheus or victoriametrics" $name $operator) -}}
+{{- end }}
+---
+apiVersion: {{ $apiVersion }}
+kind: {{ $kind }}
+{{ include "chartpack.metadata" (dict "name" (printf "%s-%s" $fullName $name) "context" $ "extraAnnotations" $rule.annotations "extraLabels" $rule.labels) }}
+spec:
+  groups:
+    {{- toYaml $rule.groups | nindent 4 }}
+{{- end }}
+{{- end }}

@@ -3,14 +3,14 @@ apiVersion: apps/v1
 kind: DaemonSet
 {{ include "chartpack.metadata" (dict "context" $) }}
 spec:
-  {{- with .Values.daemonSet.updateStrategy }}
+  {{- with .Values.workloads.daemonSet.updateStrategy }}
   updateStrategy:
     {{- toYaml . | nindent 4 }}
   {{- end }}
-  {{- with .Values.daemonSet.minReadySeconds }}
+  {{- with .Values.workloads.daemonSet.minReadySeconds }}
   minReadySeconds: {{ . }}
   {{- end }}
-  {{- with .Values.daemonSet.revisionHistoryLimit }}
+  {{- with .Values.workloads.daemonSet.revisionHistoryLimit }}
   revisionHistoryLimit: {{ . }}
   {{- end }}
   selector:

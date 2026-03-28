@@ -65,12 +65,15 @@ kubectl apply --server-side -f https://github.com/kedacore/keda/releases/downloa
 
 kubectl apply --server-side -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.90.1/example/prometheus-operator-crd/monitoring.coreos.com_servicemonitors.yaml 2>/dev/null
 kubectl apply --server-side -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.90.1/example/prometheus-operator-crd/monitoring.coreos.com_podmonitors.yaml 2>/dev/null
+kubectl apply --server-side -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.90.1/example/prometheus-operator-crd/monitoring.coreos.com_prometheusrules.yaml 2>/dev/null
 
 kubectl apply --server-side -f https://raw.githubusercontent.com/VictoriaMetrics/operator/v0.68.3/config/crd/overlay/crd.yaml 2>/dev/null
 
 kubectl apply --server-side -f https://raw.githubusercontent.com/external-secrets/external-secrets/v2.2.0/deploy/crds/bundle.yaml 2>/dev/null
 
 kubectl apply --server-side -f https://github.com/envoyproxy/gateway/releases/download/v1.7.1/envoy-gateway-crds.yaml 2>/dev/null
+
+kubectl apply --server-side -f https://raw.githubusercontent.com/grafana-operator/grafana-operator/v5.22.2/config/crd/bases/grafana.integreatly.org_grafanadashboards.yaml 2>/dev/null
 
 END=$(date +%s)
 log_info "CRDs installed in $((END - START))s"

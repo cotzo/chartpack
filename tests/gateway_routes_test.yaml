@@ -9,11 +9,12 @@ set:
       ports:
         http:
           port: 80
-  services:
-    http:
-      ports:
-        http:
-          port: 80
+  networking:
+    services:
+      http:
+        ports:
+          http:
+            port: 80
 tests:
   - it: should not render when no routes defined
     asserts:
@@ -22,17 +23,18 @@ tests:
 
   - it: should render HTTPRoute with correct apiVersion and kind
     set:
-      gatewayApi:
-        routes:
-          web:
-            kind: HTTPRoute
-            parentRefs:
-              - name: my-gateway
-                namespace: gateway-ns
-            rules:
-              - backendRefs:
-                  - name: http
-                    port: 80
+      networking:
+        gatewayApi:
+          routes:
+            web:
+              kind: HTTPRoute
+              parentRefs:
+                - name: my-gateway
+                  namespace: gateway-ns
+              rules:
+                - backendRefs:
+                    - name: http
+                      port: 80
     asserts:
       - isAPIVersion:
           of: gateway.networking.k8s.io/v1
@@ -41,17 +43,18 @@ tests:
 
   - it: should render GRPCRoute with correct apiVersion and kind
     set:
-      gatewayApi:
-        routes:
-          grpc:
-            kind: GRPCRoute
-            parentRefs:
-              - name: my-gateway
-                namespace: gateway-ns
-            rules:
-              - backendRefs:
-                  - name: http
-                    port: 80
+      networking:
+        gatewayApi:
+          routes:
+            grpc:
+              kind: GRPCRoute
+              parentRefs:
+                - name: my-gateway
+                  namespace: gateway-ns
+              rules:
+                - backendRefs:
+                    - name: http
+                      port: 80
     asserts:
       - isAPIVersion:
           of: gateway.networking.k8s.io/v1
@@ -60,17 +63,18 @@ tests:
 
   - it: should render TLSRoute with v1 apiVersion
     set:
-      gatewayApi:
-        routes:
-          tls:
-            kind: TLSRoute
-            parentRefs:
-              - name: my-gateway
-                namespace: gateway-ns
-            rules:
-              - backendRefs:
-                  - name: http
-                    port: 443
+      networking:
+        gatewayApi:
+          routes:
+            tls:
+              kind: TLSRoute
+              parentRefs:
+                - name: my-gateway
+                  namespace: gateway-ns
+              rules:
+                - backendRefs:
+                    - name: http
+                      port: 443
     asserts:
       - isAPIVersion:
           of: gateway.networking.k8s.io/v1
@@ -79,17 +83,18 @@ tests:
 
   - it: should render TCPRoute with v1alpha2 apiVersion
     set:
-      gatewayApi:
-        routes:
-          tcp:
-            kind: TCPRoute
-            parentRefs:
-              - name: my-gateway
-                namespace: gateway-ns
-            rules:
-              - backendRefs:
-                  - name: http
-                    port: 3306
+      networking:
+        gatewayApi:
+          routes:
+            tcp:
+              kind: TCPRoute
+              parentRefs:
+                - name: my-gateway
+                  namespace: gateway-ns
+              rules:
+                - backendRefs:
+                    - name: http
+                      port: 3306
     asserts:
       - isAPIVersion:
           of: gateway.networking.k8s.io/v1alpha2
@@ -98,17 +103,18 @@ tests:
 
   - it: should render UDPRoute with v1alpha2 apiVersion
     set:
-      gatewayApi:
-        routes:
-          udp:
-            kind: UDPRoute
-            parentRefs:
-              - name: my-gateway
-                namespace: gateway-ns
-            rules:
-              - backendRefs:
-                  - name: http
-                    port: 5353
+      networking:
+        gatewayApi:
+          routes:
+            udp:
+              kind: UDPRoute
+              parentRefs:
+                - name: my-gateway
+                  namespace: gateway-ns
+              rules:
+                - backendRefs:
+                    - name: http
+                      port: 5353
     asserts:
       - isAPIVersion:
           of: gateway.networking.k8s.io/v1alpha2
@@ -117,17 +123,18 @@ tests:
 
   - it: should prefix backendRef names with fullname
     set:
-      gatewayApi:
-        routes:
-          web:
-            kind: HTTPRoute
-            parentRefs:
-              - name: my-gateway
-                namespace: gateway-ns
-            rules:
-              - backendRefs:
-                  - name: http
-                    port: 80
+      networking:
+        gatewayApi:
+          routes:
+            web:
+              kind: HTTPRoute
+              parentRefs:
+                - name: my-gateway
+                  namespace: gateway-ns
+              rules:
+                - backendRefs:
+                    - name: http
+                      port: 80
     asserts:
       - equal:
           path: spec.rules[0].backendRefs[0].name
@@ -135,17 +142,18 @@ tests:
 
   - it: should render parentRefs
     set:
-      gatewayApi:
-        routes:
-          web:
-            kind: HTTPRoute
-            parentRefs:
-              - name: my-gateway
-                namespace: gateway-ns
-            rules:
-              - backendRefs:
-                  - name: http
-                    port: 80
+      networking:
+        gatewayApi:
+          routes:
+            web:
+              kind: HTTPRoute
+              parentRefs:
+                - name: my-gateway
+                  namespace: gateway-ns
+              rules:
+                - backendRefs:
+                    - name: http
+                      port: 80
     asserts:
       - equal:
           path: spec.parentRefs[0].name

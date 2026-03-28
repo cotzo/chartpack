@@ -231,13 +231,14 @@ podSettings:
   restartPolicy: ""
 
 # =============================================================================
-# Services
+# Networking (Services, Ingresses, Gateway API, OAuth2 Proxies)
 # =============================================================================
 
-# -- Services to create (map of name -> config).
-# Services are named <fullname>-<key>. Not created for CronJob/Job workloads.
-# For StatefulSets, a headless service is auto-generated from all service ports.
-services: {}
+networking:
+  # -- Services to create (map of name -> config).
+  # Services are named <fullname>-<key>. Not created for CronJob/Job workloads.
+  # For StatefulSets, a headless service is auto-generated from all service ports.
+  services: {}
 # http:
 #   type: ClusterIP  # ClusterIP | NodePort | LoadBalancer | ExternalName
 #   headless: false            # set true for clusterIP: None
@@ -274,15 +275,15 @@ services: {}
 #   annotations:
 #     prometheus.io/scrape: "true"
 
-# =============================================================================
-# OAuth2 Proxies
-# =============================================================================
+  # =============================================================================
+  # OAuth2 Proxies
+  # =============================================================================
 
-# -- OAuth2 proxies (map of name -> config).
-# Each proxy gets its own Deployment + Service, created only if referenced by
-# an ingress or route via the oauth2Proxy field.
-# Traffic flow: Ingress/Route → oauth2-proxy → original backend service.
-oauth2Proxies: {}
+  # -- OAuth2 proxies (map of name -> config).
+  # Each proxy gets its own Deployment + Service, created only if referenced by
+  # an ingress or route via the oauth2Proxy field.
+  # Traffic flow: Ingress/Route → oauth2-proxy → original backend service.
+  oauth2Proxies: {}
 # corporate:
 #   mode: sidecar                # sidecar (default) | deployment
 #   image:
@@ -322,15 +323,15 @@ oauth2Proxies: {}
 #   annotations: {}
 #   labels: {}
 
-# =============================================================================
-# Ingresses
-# =============================================================================
+  # =============================================================================
+  # Ingresses
+  # =============================================================================
 
-# -- Ingresses to create (map of name -> config).
-# Ingresses are named <fullname>-<key>. Path backends default to the first
-# enabled service unless serviceName/servicePort are specified per path.
-# Set oauth2Proxy to a key from oauth2Proxies to route through the proxy.
-ingresses: {}
+  # -- Ingresses to create (map of name -> config).
+  # Ingresses are named <fullname>-<key>. Path backends default to the first
+  # enabled service unless serviceName/servicePort are specified per path.
+  # Set oauth2Proxy to a key from oauth2Proxies to route through the proxy.
+  ingresses: {}
 # public:
 #   oauth2Proxy: corporate         # routes traffic through oauth2Proxies.corporate
 #   className: nginx
@@ -359,21 +360,21 @@ ingresses: {}
 #         - path: /
 #           pathType: Prefix
 
-# =============================================================================
-# Gateway API Routes
-# =============================================================================
+  # =============================================================================
+  # Gateway API Routes
+  # =============================================================================
 
-# -- Gateway API configuration.
-# Gateways are NOT created by this chart — they are pre-existing infrastructure.
-# Routes reference Gateways via parentRefs.
-gatewayApi:
-  # -- Routes to create (map of name -> config).
-  # Each route specifies its kind to determine the CRD type.
-  #   kind: HTTPRoute | GRPCRoute | TLSRoute | TCPRoute | UDPRoute
-  #
-  # HTTPRoute/GRPCRoute/TLSRoute use gateway.networking.k8s.io/v1
-  # TCPRoute/UDPRoute use gateway.networking.k8s.io/v1alpha2
-  routes: {}
+  # -- Gateway API configuration.
+  # Gateways are NOT created by this chart — they are pre-existing infrastructure.
+  # Routes reference Gateways via parentRefs.
+  gatewayApi:
+    # -- Routes to create (map of name -> config).
+    # Each route specifies its kind to determine the CRD type.
+    #   kind: HTTPRoute | GRPCRoute | TLSRoute | TCPRoute | UDPRoute
+    #
+    # HTTPRoute/GRPCRoute/TLSRoute use gateway.networking.k8s.io/v1
+    # TCPRoute/UDPRoute use gateway.networking.k8s.io/v1alpha2
+    routes: {}
 # http:
 #   kind: HTTPRoute                    # defaults to HTTPRoute
 #   parentRefs:
@@ -481,72 +482,65 @@ gatewayApi:
 #           port: 53
 
 # =============================================================================
-# ConfigMaps
+# Configuration (ConfigMaps, Secrets, External Secrets)
 # =============================================================================
 
-# -- ConfigMaps to create (map of name -> config).
-# Mounting and envFrom injection is configured per container via
-# configMapMounts and configMapEnvFrom in the container spec.
-configMaps: {}
-# app-config:
-#   data:
-#     config.yaml: |
-#       key: value
-#   annotations: {}
-#   labels: {}
+config:
+  # -- ConfigMaps to create (map of name -> config).
+  # Mounting and envFrom injection is configured per container via
+  # configMapMounts and configMapEnvFrom in the container spec.
+  configMaps: {}
+  # app-config:
+  #   data:
+  #     config.yaml: |
+  #       key: value
+  #   annotations: {}
+  #   labels: {}
 
-# =============================================================================
-# Secrets
-# =============================================================================
+  # -- Secrets to create (map of name -> config).
+  # Mounting and envFrom injection is configured per container via
+  # secretMounts and secretEnvFrom in the container spec.
+  secrets: {}
+  # app-secret:
+  #   type: Opaque
+  #   stringData:
+  #     password: "s3cret"
+  #   # data: {}  # base64-encoded
+  #   # -- Auto-generate random values via ESO Password generators (ArgoCD-safe).
+  #   # Each key creates a Password generator + ExternalSecret with creationPolicy: Merge.
+  #   # generate:
+  #   #   api-key:
+  #   #     length: 32           # default: 32
+  #   #     # digits: 6          # number of digits (default: 25% of length)
+  #   #     # symbols: 0         # number of symbols (default: 25% of length)
+  #   #     # symbolCharacters: "!@#$%"
+  #   #     # noUpper: false
+  #   #     # allowRepeat: false
+  #   #     # encoding: raw      # raw | base64 | base64url | base32 | hex
+  #   #   webhook-secret:
+  #   #     length: 64
+  #   #     symbols: 0
+  #   #     encoding: hex
+  #   # generateRefreshInterval: "0"  # "0" = generate once, never rotate
+  #   annotations: {}
+  #   labels: {}
 
-# -- Secrets to create (map of name -> config).
-# Mounting and envFrom injection is configured per container via
-# secretMounts and secretEnvFrom in the container spec.
-secrets: {}
-# app-secret:
-#   type: Opaque
-#   stringData:
-#     password: "s3cret"
-#   # data: {}  # base64-encoded
-#   # -- Auto-generate random values via ESO Password generators (ArgoCD-safe).
-#   # Each key creates a Password generator + ExternalSecret with creationPolicy: Merge.
-#   # generate:
-#   #   api-key:
-#   #     length: 32           # default: 32
-#   #     # digits: 6          # number of digits (default: 25% of length)
-#   #     # symbols: 0         # number of symbols (default: 25% of length)
-#   #     # symbolCharacters: "!@#$%"
-#   #     # noUpper: false
-#   #     # allowRepeat: false
-#   #     # encoding: raw      # raw | base64 | base64url | base32 | hex
-#   #   webhook-secret:
-#   #     length: 64
-#   #     symbols: 0
-#   #     encoding: hex
-#   # generateRefreshInterval: "0"  # "0" = generate once, never rotate
-#   annotations: {}
-#   labels: {}
-
-# =============================================================================
-# External Secrets
-# =============================================================================
-
-# -- External secrets (map of name -> config)
-externalSecrets: {}
-# cloud-credentials:
-#   refreshInterval: 1h
-#   secretStoreRef:
-#     name: aws-secrets-manager
-#     kind: SecretStore
-#   target:
-#     name: ""  # defaults to <fullname>-<key>
-#     creationPolicy: Owner
-#   data:
-#     - secretKey: password
-#       remoteRef:
-#         key: /prod/app/password
-#   annotations: {}
-#   labels: {}
+  # -- External secrets (map of name -> config)
+  externalSecrets: {}
+  # cloud-credentials:
+  #   refreshInterval: 1h
+  #   secretStoreRef:
+  #     name: aws-secrets-manager
+  #     kind: SecretStore
+  #   target:
+  #     name: ""  # defaults to <fullname>-<key>
+  #     creationPolicy: Owner
+  #   data:
+  #     - secretKey: password
+  #       remoteRef:
+  #         key: /prod/app/password
+  #   annotations: {}
+  #   labels: {}
 
 # =============================================================================
 # Persistence
@@ -571,92 +565,89 @@ persistence: {}
 # =============================================================================
 
 autoscaling:
-  # -- Enable HPA (not applicable to CronJob, Job, DaemonSet)
-  enabled: false
-  # -- Minimum replicas
-  minReplicas: 1
-  # -- Maximum replicas
-  maxReplicas: 10
-  # -- HPA metrics (v2 API)
-  metrics: []
-  # - type: Resource
-  #   resource:
-  #     name: cpu
-  #     target:
-  #       type: Utilization
-  #       averageUtilization: 80
-  # -- HPA scaling behavior
-  behavior: {}
-  # scaleDown:
-  #   stabilizationWindowSeconds: 300
-  # -- HPA annotations
-  annotations: {}
-  # -- HPA labels
-  labels: {}
+  # -- HPA configuration (not applicable to CronJob, Job, DaemonSet)
+  hpa:
+    enabled: false
+    # -- Minimum replicas
+    minReplicas: 1
+    # -- Maximum replicas
+    maxReplicas: 10
+    # -- HPA metrics (v2 API)
+    metrics: []
+    # - type: Resource
+    #   resource:
+    #     name: cpu
+    #     target:
+    #       type: Utilization
+    #       averageUtilization: 80
+    # -- HPA scaling behavior
+    behavior: {}
+    # scaleDown:
+    #   stabilizationWindowSeconds: 300
+    # -- HPA annotations
+    annotations: {}
+    # -- HPA labels
+    labels: {}
 
-# =============================================================================
-# KEDA Autoscaling (ScaledObject)
-# =============================================================================
-
-keda:
-  # -- Enable KEDA ScaledObject/ScaledJob (not applicable to CronJob, DaemonSet)
+  # -- KEDA configuration (not applicable to CronJob, DaemonSet)
   # Creates a ScaledObject for Deployment/StatefulSet/Rollout, or a ScaledJob for Job.
-  # Cannot be used together with autoscaling.enabled (HPA)
-  enabled: false
-  # -- Minimum replicas
-  minReplicaCount: 1
-  # -- Maximum replicas
-  maxReplicaCount: 10
-  # -- Polling interval in seconds
-  pollingInterval: ""
-  # -- Cooldown period in seconds
-  cooldownPeriod: ""
-  # -- Number of replicas when idle (0 = scale to zero)
-  idleReplicaCount: ""
-  # -- Fallback configuration
-  fallback: {}
-  # failureThreshold: 3
-  # replicas: 5
-  # -- Advanced configuration (HPA settings, restore to original replica count, scaling modifiers)
-  advanced: {}
-  # horizontalPodAutoscalerConfig:
-  #   behavior:
-  #     scaleDown:
-  #       stabilizationWindowSeconds: 300
-  # restoreToOriginalReplicaCount: true
-  # scalingModifiers:
-  #   formula: ""
-  #   target: ""
-  #   activationTarget: ""
-  #   metricType: ""
-  # -- KEDA triggers (required when enabled)
-  triggers: []
-  # - type: prometheus
-  #   metadata:
-  #     serverAddress: http://prometheus:9090
-  #     query: sum(rate(http_requests_total{deployment="my-app"}[2m]))
-  #     threshold: "100"
-  # - type: cron
-  #   metadata:
-  #     timezone: Europe/Bucharest
-  #     start: "0 8 * * *"
-  #     end: "0 18 * * *"
-  #     desiredReplicas: "5"
-  # -- ScaledJob: successful jobs history limit
-  successfulJobsHistoryLimit: ""
-  # -- ScaledJob: failed jobs history limit
-  failedJobsHistoryLimit: ""
-  # -- ScaledJob: scaling strategy
-  scalingStrategy: {}
-  # strategy: default           # default, custom, accurate
-  # customScalingQueueLengthDeduction: 1
-  # customScalingRunningJobPercentage: "0.5"
-  # pendingPodConditions: []
-  # multipleScalersCalculation: ""
-  # -- ScaledObject/ScaledJob annotations
-  annotations: {}
-  # -- ScaledObject/ScaledJob labels
-  labels: {}
+  # Cannot be used together with autoscaling.hpa (they would conflict)
+  keda:
+    enabled: false
+    # -- Minimum replicas
+    minReplicaCount: 1
+    # -- Maximum replicas
+    maxReplicaCount: 10
+    # -- Polling interval in seconds
+    pollingInterval: ""
+    # -- Cooldown period in seconds
+    cooldownPeriod: ""
+    # -- Number of replicas when idle (0 = scale to zero)
+    idleReplicaCount: ""
+    # -- Fallback configuration
+    fallback: {}
+    # failureThreshold: 3
+    # replicas: 5
+    # -- Advanced configuration (HPA settings, restore to original replica count, scaling modifiers)
+    advanced: {}
+    # horizontalPodAutoscalerConfig:
+    #   behavior:
+    #     scaleDown:
+    #       stabilizationWindowSeconds: 300
+    # restoreToOriginalReplicaCount: true
+    # scalingModifiers:
+    #   formula: ""
+    #   target: ""
+    #   activationTarget: ""
+    #   metricType: ""
+    # -- KEDA triggers (required when enabled)
+    triggers: []
+    # - type: prometheus
+    #   metadata:
+    #     serverAddress: http://prometheus:9090
+    #     query: sum(rate(http_requests_total{deployment="my-app"}[2m]))
+    #     threshold: "100"
+    # - type: cron
+    #   metadata:
+    #     timezone: Europe/Bucharest
+    #     start: "0 8 * * *"
+    #     end: "0 18 * * *"
+    #     desiredReplicas: "5"
+    # -- ScaledJob: successful jobs history limit
+    successfulJobsHistoryLimit: ""
+    # -- ScaledJob: failed jobs history limit
+    failedJobsHistoryLimit: ""
+    # -- ScaledJob: scaling strategy
+    scalingStrategy: {}
+    # strategy: default           # default, custom, accurate
+    # customScalingQueueLengthDeduction: 1
+    # customScalingRunningJobPercentage: "0.5"
+    # pendingPodConditions: []
+    # multipleScalersCalculation: ""
+    # -- ScaledObject/ScaledJob annotations
+    annotations: {}
+    # -- ScaledObject/ScaledJob labels
+    labels: {}
 
 # =============================================================================
 # Pod Disruption Budget
@@ -677,28 +668,25 @@ pdb:
   labels: {}
 
 # =============================================================================
-# Service Account
-# =============================================================================
-
-serviceAccount:
-  # -- Create a service account
-  create: true
-  # -- Service account name (defaults to fullname)
-  name: ""
-  # -- Service account annotations
-  annotations: {}
-  # -- Service account labels
-  labels: {}
-  # -- Automount service account token
-  # automountServiceAccountToken: true
-  # -- Image pull secrets for the service account
-  imagePullSecrets: []
-
-# =============================================================================
 # RBAC
 # =============================================================================
 
 rbac:
+  # -- Service account configuration
+  serviceAccount:
+    # -- Create a service account
+    create: true
+    # -- Service account name (defaults to fullname)
+    name: ""
+    # -- Service account annotations
+    annotations: {}
+    # -- Service account labels
+    labels: {}
+    # -- Automount service account token
+    # automountServiceAccountToken: true
+    # -- Image pull secrets for the service account
+    imagePullSecrets: []
+
   # -- Roles to create (map of name -> config). Named <fullname>-<key>.
   roles: {}
   # configmap-reader:
@@ -798,132 +786,190 @@ monitors: {}
 #     - app
 
 # =============================================================================
+# Alerting Rules
+# =============================================================================
+
+# -- Alerting rules (map of name -> config).
+# Creates PrometheusRule or VMRule resources depending on operator.
+#   prometheus      → monitoring.coreos.com/v1 PrometheusRule
+#   victoriametrics → operator.victoriametrics.com/v1beta1 VMRule
+alerting: {}
+# app-alerts:
+#   operator: prometheus             # defaults to prometheus
+#   groups:
+#     - name: high-error-rate
+#       interval: 1m
+#       rules:
+#         - alert: HighErrorRate
+#           expr: rate(http_errors_total[5m]) > 0.1
+#           for: 5m
+#           labels:
+#             severity: critical
+#           annotations:
+#             summary: "High error rate on {{ $labels.instance }}"
+#   annotations: {}
+#   labels: {}
+
+# =============================================================================
+# Grafana Dashboards
+# =============================================================================
+
+# -- Grafana dashboards (map of name -> config).
+# Creates GrafanaDashboard resources for the Grafana Operator.
+# Requires grafana-operator (grafana.integreatly.org/v1beta1).
+dashboards:
+  grafana: {}
+  # app-overview:
+  #   instanceSelector:
+  #     matchLabels:
+  #       dashboards: "grafana"
+  #   folder: My App
+  #   json: |
+  #     { "title": "App Overview", "panels": [] }
+  # node-exporter:
+  #   instanceSelector:
+  #     matchLabels:
+  #       dashboards: "grafana"
+  #   grafanaCom:
+  #     id: 1860
+  #     revision: 37
+  # from-url:
+  #   instanceSelector:
+  #     matchLabels:
+  #       dashboards: "grafana"
+  #   url: https://raw.githubusercontent.com/org/repo/main/dashboards/app.json
+  #   contentCacheDuration: 1h
+  #   annotations: {}
+  #   labels: {}
+
+# =============================================================================
 # Workload-Specific Settings
 # =============================================================================
 
-# -- Argo Rollout-specific settings (requires Argo Rollouts controller)
-rollout:
-  # -- Number of replicas
-  replicaCount: 1
-  # -- Rollout strategy (canary or blueGreen)
-  strategy: {}
-  # canary:
-  #   steps:
-  #     - setWeight: 20
-  #     - pause: { duration: 30s }
-  #     - setWeight: 50
-  #     - pause: { duration: 30s }
-  #   canaryService: my-app-canary
-  #   stableService: my-app-stable
-  #   trafficRouting:
-  #     nginx:
-  #       stableIngress: my-app
-  # blueGreen:
-  #   activeService: my-app-active
-  #   previewService: my-app-preview
-  #   autoPromotionEnabled: true
-  #   autoPromotionSeconds: 30
-  # -- Min ready seconds
-  minReadySeconds: ""
-  # -- Revision history limit
-  revisionHistoryLimit: ""
-  # -- Restart at time (RFC 3339 format)
-  restartAt: ""
-  # -- Background analysis to run during an update
-  analysis: {}
-  # successfulRunHistoryLimit: 1
-  # unsuccessfulRunHistoryLimit: 3
-  # templates:
-  #   - templateName: my-analysis
+workloads:
+  # -- Argo Rollout-specific settings (requires Argo Rollouts controller)
+  rollout:
+    # -- Number of replicas
+    replicaCount: 1
+    # -- Rollout strategy (canary or blueGreen)
+    strategy: {}
+    # canary:
+    #   steps:
+    #     - setWeight: 20
+    #     - pause: { duration: 30s }
+    #     - setWeight: 50
+    #     - pause: { duration: 30s }
+    #   canaryService: my-app-canary
+    #   stableService: my-app-stable
+    #   trafficRouting:
+    #     nginx:
+    #       stableIngress: my-app
+    # blueGreen:
+    #   activeService: my-app-active
+    #   previewService: my-app-preview
+    #   autoPromotionEnabled: true
+    #   autoPromotionSeconds: 30
+    # -- Min ready seconds
+    minReadySeconds: ""
+    # -- Revision history limit
+    revisionHistoryLimit: ""
+    # -- Restart at time (RFC 3339 format)
+    restartAt: ""
+    # -- Background analysis to run during an update
+    analysis: {}
+    # successfulRunHistoryLimit: 1
+    # unsuccessfulRunHistoryLimit: 3
+    # templates:
+    #   - templateName: my-analysis
 
-# -- Deployment-specific settings
-deployment:
-  # -- Number of replicas
-  replicaCount: 1
-  # -- Deployment strategy
-  strategy: {}
-  # type: RollingUpdate
-  # rollingUpdate:
-  #   maxSurge: 25%
-  #   maxUnavailable: 25%
-  # -- Min ready seconds
-  minReadySeconds: ""
-  # -- Revision history limit
-  revisionHistoryLimit: ""
+  # -- Deployment-specific settings
+  deployment:
+    # -- Number of replicas
+    replicaCount: 1
+    # -- Deployment strategy
+    strategy: {}
+    # type: RollingUpdate
+    # rollingUpdate:
+    #   maxSurge: 25%
+    #   maxUnavailable: 25%
+    # -- Min ready seconds
+    minReadySeconds: ""
+    # -- Revision history limit
+    revisionHistoryLimit: ""
 
-# -- StatefulSet-specific settings
-statefulSet:
-  # -- Number of replicas
-  replicaCount: 1
-  # -- Headless service name (defaults to <fullname>-headless)
-  serviceName: ""
-  # -- Publish not ready addresses on headless service
-  publishNotReadyAddresses: false
-  # -- Pod management policy: OrderedReady or Parallel
-  podManagementPolicy: ""
-  # -- Update strategy
-  updateStrategy: {}
-  # type: RollingUpdate
-  # rollingUpdate:
-  #   partition: 0
-  # -- Min ready seconds
-  minReadySeconds: ""
-  # -- Revision history limit
-  revisionHistoryLimit: ""
-  # -- Ordinals configuration
-  ordinals: {}
-  # -- PVC retention policy
-  persistentVolumeClaimRetentionPolicy: {}
-  # whenDeleted: Retain
-  # whenScaled: Retain
+  # -- StatefulSet-specific settings
+  statefulSet:
+    # -- Number of replicas
+    replicaCount: 1
+    # -- Headless service name (defaults to <fullname>-headless)
+    serviceName: ""
+    # -- Publish not ready addresses on headless service
+    publishNotReadyAddresses: false
+    # -- Pod management policy: OrderedReady or Parallel
+    podManagementPolicy: ""
+    # -- Update strategy
+    updateStrategy: {}
+    # type: RollingUpdate
+    # rollingUpdate:
+    #   partition: 0
+    # -- Min ready seconds
+    minReadySeconds: ""
+    # -- Revision history limit
+    revisionHistoryLimit: ""
+    # -- Ordinals configuration
+    ordinals: {}
+    # -- PVC retention policy
+    persistentVolumeClaimRetentionPolicy: {}
+    # whenDeleted: Retain
+    # whenScaled: Retain
 
-# -- DaemonSet-specific settings
-daemonSet:
-  # -- Update strategy
-  updateStrategy: {}
-  # type: RollingUpdate
-  # rollingUpdate:
-  #   maxUnavailable: 1
-  # -- Min ready seconds
-  minReadySeconds: ""
-  # -- Revision history limit
-  revisionHistoryLimit: ""
+  # -- DaemonSet-specific settings
+  daemonSet:
+    # -- Update strategy
+    updateStrategy: {}
+    # type: RollingUpdate
+    # rollingUpdate:
+    #   maxUnavailable: 1
+    # -- Min ready seconds
+    minReadySeconds: ""
+    # -- Revision history limit
+    revisionHistoryLimit: ""
 
-# -- CronJob-specific settings
-cronJob:
-  # -- Cron schedule expression (required for CronJob workloadType)
-  schedule: "0 * * * *"
-  # -- Timezone
-  timeZone: ""
-  # -- Concurrency policy: Allow, Forbid, Replace
-  concurrencyPolicy: ""
-  # -- Suspend the cron job
-  suspend: false
-  # -- Successful jobs history limit
-  successfulJobsHistoryLimit: ""
-  # -- Failed jobs history limit
-  failedJobsHistoryLimit: ""
-  # -- Starting deadline seconds
-  startingDeadlineSeconds: ""
+  # -- CronJob-specific settings
+  cronJob:
+    # -- Cron schedule expression (required for CronJob workloadType)
+    schedule: "0 * * * *"
+    # -- Timezone
+    timeZone: ""
+    # -- Concurrency policy: Allow, Forbid, Replace
+    concurrencyPolicy: ""
+    # -- Suspend the cron job
+    suspend: false
+    # -- Successful jobs history limit
+    successfulJobsHistoryLimit: ""
+    # -- Failed jobs history limit
+    failedJobsHistoryLimit: ""
+    # -- Starting deadline seconds
+    startingDeadlineSeconds: ""
 
-# -- Job-specific settings (also used by CronJob's jobTemplate)
-job:
-  # -- Backoff limit
-  backoffLimit: ""
-  # -- Active deadline seconds
-  activeDeadlineSeconds: ""
-  # -- TTL seconds after finished
-  ttlSecondsAfterFinished: ""
-  # -- Number of completions
-  completions: ""
-  # -- Parallelism
-  parallelism: ""
-  # -- Completion mode: NonIndexed or Indexed
-  completionMode: ""
-  # -- Pod replacement policy: Failed or TerminatingOrFailed (K8s 1.34+)
-  podReplacementPolicy: ""
-  # -- Suspend the job
-  suspend: false
+  # -- Job-specific settings (also used by CronJob's jobTemplate)
+  job:
+    # -- Backoff limit
+    backoffLimit: ""
+    # -- Active deadline seconds
+    activeDeadlineSeconds: ""
+    # -- TTL seconds after finished
+    ttlSecondsAfterFinished: ""
+    # -- Number of completions
+    completions: ""
+    # -- Parallelism
+    parallelism: ""
+    # -- Completion mode: NonIndexed or Indexed
+    completionMode: ""
+    # -- Pod replacement policy: Failed or TerminatingOrFailed (K8s 1.34+)
+    podReplacementPolicy: ""
+    # -- Suspend the job
+    suspend: false
 
 # =============================================================================
 # Extra Resources (escape hatch)

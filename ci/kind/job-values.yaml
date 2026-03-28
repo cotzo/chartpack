@@ -9,6 +9,7 @@ containers:
       requests:
         cpu: 10m
         memory: 16Mi
-job:
-  backoffLimit: 2
-  ttlSecondsAfterFinished: 120
+workloads:
+  job:
+    backoffLimit: 2
+    ttlSecondsAfterFinished: 120

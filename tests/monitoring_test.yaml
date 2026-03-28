@@ -13,15 +13,16 @@ tests:
               port: 80
             metrics:
               port: 9090
-      services:
-        http:
-          ports:
-            http:
-              port: 80
-        metrics:
-          ports:
-            metrics:
-              port: 9090
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+          metrics:
+            ports:
+              metrics:
+                port: 9090
       monitors:
         app:
           kind: service
@@ -44,15 +45,16 @@ tests:
               port: 80
             metrics:
               port: 9090
-      services:
-        http:
-          ports:
-            http:
-              port: 80
-        metrics:
-          ports:
-            metrics:
-              port: 9090
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+          metrics:
+            ports:
+              metrics:
+                port: 9090
       monitors:
         app:
           kind: pod
@@ -75,15 +77,16 @@ tests:
               port: 80
             metrics:
               port: 9090
-      services:
-        http:
-          ports:
-            http:
-              port: 80
-        metrics:
-          ports:
-            metrics:
-              port: 9090
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+          metrics:
+            ports:
+              metrics:
+                port: 9090
       monitors:
         app:
           kind: service
@@ -106,15 +109,16 @@ tests:
               port: 80
             metrics:
               port: 9090
-      services:
-        http:
-          ports:
-            http:
-              port: 80
-        metrics:
-          ports:
-            metrics:
-              port: 9090
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+          metrics:
+            ports:
+              metrics:
+                port: 9090
       monitors:
         app:
           kind: pod
@@ -137,15 +141,16 @@ tests:
               port: 80
             metrics:
               port: 9090
-      services:
-        http:
-          ports:
-            http:
-              port: 80
-        metrics:
-          ports:
-            metrics:
-              port: 9090
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+          metrics:
+            ports:
+              metrics:
+                port: 9090
     asserts:
       - hasDocuments:
           count: 0
@@ -161,15 +166,16 @@ tests:
               port: 80
             metrics:
               port: 9090
-      services:
-        http:
-          ports:
-            http:
-              port: 80
-        metrics:
-          ports:
-            metrics:
-              port: 9090
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+          metrics:
+            ports:
+              metrics:
+                port: 9090
       monitors:
         app:
           kind: service

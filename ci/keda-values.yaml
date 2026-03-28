@@ -16,26 +16,29 @@ containers:
         cpu: 500m
         memory: 256Mi
 
-services:
-  http:
-    type: ClusterIP
-    ports:
-      http:
-        port: 80
-        containerPort: http
+networking:
+  services:
+    http:
+      type: ClusterIP
+      ports:
+        http:
+          port: 80
+          containerPort: http
 
-deployment:
-  replicaCount: 3
+workloads:
+  deployment:
+    replicaCount: 3
 
-keda:
-  enabled: true
-  minReplicaCount: 1
-  maxReplicaCount: 20
-  pollingInterval: 30
-  cooldownPeriod: 300
-  triggers:
-    - type: prometheus
-      metadata:
-        serverAddress: http://prometheus:9090
-        query: sum(rate(http_requests_total{deployment="my-app"}[2m]))
-        threshold: "100"
+autoscaling:
+  keda:
+    enabled: true
+    minReplicaCount: 1
+    maxReplicaCount: 20
+    pollingInterval: 30
+    cooldownPeriod: 300
+    triggers:
+      - type: prometheus
+        metadata:
+          serverAddress: http://prometheus:9090
+          query: sum(rate(http_requests_total{deployment="my-app"}[2m]))
+          threshold: "100"

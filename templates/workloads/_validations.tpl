@@ -13,7 +13,7 @@ Validate CronJob requires schedule.
 */}}
 {{- define "chartpack.validation.workloads.cronjob" -}}
 {{- if eq .Values.workloadType "CronJob" }}
-{{- if not .Values.cronJob.schedule }}
+{{- if not .Values.workloads.cronJob.schedule }}
 {{- fail "cronJob.schedule: required when workloadType is CronJob" }}
 {{- end }}
 {{- end }}

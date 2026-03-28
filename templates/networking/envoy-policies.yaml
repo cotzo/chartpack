@@ -1,5 +1,5 @@
 {{- $fullName := include "chartpack.fullname" . -}}
-{{- range $name, $route := .Values.gatewayApi.routes }}
+{{- range $name, $route := .Values.networking.gatewayApi.routes }}
 {{- if $route }}
 {{- with $route.policies }}
 {{- with .envoy }}

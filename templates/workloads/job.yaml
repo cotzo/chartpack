@@ -1,31 +1,31 @@
-{{- if and (eq .Values.workloadType "Job") (not .Values.keda.enabled) }}
+{{- if and (eq .Values.workloadType "Job") (not .Values.autoscaling.keda.enabled) }}
 apiVersion: batch/v1
 kind: Job
 {{ include "chartpack.metadata" (dict "context" $) }}
 spec:
-  {{- with .Values.job.backoffLimit }}
+  {{- with .Values.workloads.job.backoffLimit }}
   backoffLimit: {{ . }}
   {{- end }}
-  {{- with .Values.job.activeDeadlineSeconds }}
+  {{- with .Values.workloads.job.activeDeadlineSeconds }}
   activeDeadlineSeconds: {{ . }}
   {{- end }}
-  {{- with .Values.job.ttlSecondsAfterFinished }}
+  {{- with .Values.workloads.job.ttlSecondsAfterFinished }}
   ttlSecondsAfterFinished: {{ . }}
   {{- end }}
-  {{- with .Values.job.completions }}
+  {{- with .Values.workloads.job.completions }}
   completions: {{ . }}
   {{- end }}
-  {{- with .Values.job.parallelism }}
+  {{- with .Values.workloads.job.parallelism }}
   parallelism: {{ . }}
   {{- end }}
-  {{- with .Values.job.completionMode }}
+  {{- with .Values.workloads.job.completionMode }}
   completionMode: {{ . }}
   {{- end }}
-  {{- with .Values.job.podReplacementPolicy }}
+  {{- with .Values.workloads.job.podReplacementPolicy }}
   podReplacementPolicy: {{ . }}
   {{- end }}
-  {{- if not (kindIs "invalid" .Values.job.suspend) }}
-  suspend: {{ .Values.job.suspend }}
+  {{- if not (kindIs "invalid" .Values.workloads.job.suspend) }}
+  suspend: {{ .Values.workloads.job.suspend }}
   {{- end }}
   template:
     {{- include "chartpack.podTemplate" . | nindent 4 }}

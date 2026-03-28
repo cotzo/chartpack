@@ -29,45 +29,48 @@ containers:
         initialDelaySeconds: 5
         periodSeconds: 5
 
-services:
-  stable:
-    type: ClusterIP
-    ports:
-      http:
-        port: 80
-        containerPort: http
-  canary:
-    type: ClusterIP
-    ports:
-      http:
-        port: 80
-        containerPort: http
-
-rollout:
-  replicaCount: 3
-  strategy:
+networking:
+  services:
+    stable:
+      type: ClusterIP
+      ports:
+        http:
+          port: 80
+          containerPort: http
     canary:
-      canaryService: RELEASE-NAME-canary
-      stableService: RELEASE-NAME-stable
-      steps:
-        - setWeight: 20
-        - pause: { duration: 30s }
-        - setWeight: 50
-        - pause: { duration: 30s }
-        - setWeight: 80
-        - pause: { duration: 30s }
+      type: ClusterIP
+      ports:
+        http:
+          port: 80
+          containerPort: http
+
+workloads:
+  rollout:
+    replicaCount: 3
+    strategy:
+      canary:
+        canaryService: RELEASE-NAME-canary
+        stableService: RELEASE-NAME-stable
+        steps:
+          - setWeight: 20
+          - pause: { duration: 30s }
+          - setWeight: 50
+          - pause: { duration: 30s }
+          - setWeight: 80
+          - pause: { duration: 30s }
 
 autoscaling:
-  enabled: true
-  minReplicas: 3
-  maxReplicas: 10
-  metrics:
-    - type: Resource
-      resource:
-        name: cpu
-        target:
-          type: Utilization
-          averageUtilization: 80
+  hpa:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 10
+    metrics:
+      - type: Resource
+        resource:
+          name: cpu
+          target:
+            type: Utilization
+            averageUtilization: 80
 
 pdb:
   enabled: true

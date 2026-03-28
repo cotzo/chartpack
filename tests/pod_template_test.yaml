@@ -13,11 +13,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
       podSettings:
         imagePullSecrets:
           - name: my-secret
@@ -38,11 +39,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
       podSettings:
         securityContext:
           runAsUser: 1000
@@ -62,11 +64,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
       podSettings:
         annotations:
           test: "true"
@@ -86,11 +89,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
       podSettings:
         labels:
           custom: label
@@ -113,11 +117,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
       podSettings:
         nodeSelector:
           node-type: worker
@@ -137,11 +142,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
       podSettings:
         tolerations:
           - key: dedicated
@@ -168,11 +174,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
       nodeSettings:
         os:
           - linux
@@ -196,11 +203,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
       nodeSettings:
         arch:
           - amd64
@@ -226,11 +234,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
       podSettings:
         priorityClassName: high-priority
     asserts:
@@ -249,11 +258,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
       podSettings:
         terminationGracePeriodSeconds: 60
     asserts:
@@ -272,11 +282,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
       podSettings:
         dnsPolicy: None
         dnsConfig:
@@ -302,11 +313,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
       podSettings:
         hostNetwork: true
     asserts:
@@ -325,11 +337,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
     asserts:
       - equal:
           path: spec.template.spec.restartPolicy
@@ -346,14 +359,16 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
-      serviceAccount:
-        create: true
-        name: custom-sa
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+      rbac:
+        serviceAccount:
+          create: true
+          name: custom-sa
     asserts:
       - equal:
           path: spec.template.spec.serviceAccountName

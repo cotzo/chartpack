@@ -19,8 +19,9 @@ tests:
   - it: should fail when CronJob has no schedule
     set:
       workloadType: CronJob
-      cronJob:
-        schedule: ""
+      workloads:
+        cronJob:
+          schedule: ""
       containers:
         app:
           image:
@@ -243,7 +244,8 @@ tests:
           image:
             repository: nginx
       autoscaling:
-        enabled: true
+        hpa:
+          enabled: true
     asserts:
       - failedTemplate:
           errorMessage: "autoscaling: not applicable to workloadType Job (only Deployment, StatefulSet, Rollout)"
@@ -255,9 +257,10 @@ tests:
           image:
             repository: nginx
       autoscaling:
-        enabled: true
-        minReplicas: 10
-        maxReplicas: 5
+        hpa:
+          enabled: true
+          minReplicas: 10
+          maxReplicas: 5
     asserts:
       - failedTemplate:
           errorMessage: "autoscaling: minReplicas (10) must be <= maxReplicas (5)"
@@ -269,16 +272,17 @@ tests:
           image:
             repository: nginx
       autoscaling:
-        enabled: true
-      keda:
-        enabled: true
-        triggers:
-          - type: cron
-            metadata:
-              timezone: UTC
-              start: "0 8 * * *"
-              end: "0 18 * * *"
-              desiredReplicas: "1"
+        hpa:
+          enabled: true
+        keda:
+          enabled: true
+          triggers:
+            - type: cron
+              metadata:
+                timezone: UTC
+                start: "0 8 * * *"
+                end: "0 18 * * *"
+                desiredReplicas: "1"
     asserts:
       - failedTemplate:
           errorMessage: "keda: cannot enable both keda and autoscaling (HPA) — they would conflict"
@@ -290,15 +294,16 @@ tests:
         app:
           image:
             repository: nginx
-      keda:
-        enabled: true
-        triggers:
-          - type: cron
-            metadata:
-              timezone: UTC
-              start: "0 8 * * *"
-              end: "0 18 * * *"
-              desiredReplicas: "1"
+      autoscaling:
+        keda:
+          enabled: true
+          triggers:
+            - type: cron
+              metadata:
+                timezone: UTC
+                start: "0 8 * * *"
+                end: "0 18 * * *"
+                desiredReplicas: "1"
     asserts:
       - failedTemplate:
           errorMessage: "keda: not applicable to workloadType DaemonSet (only Deployment, StatefulSet, Rollout, Job)"
@@ -309,9 +314,10 @@ tests:
         app:
           image:
             repository: nginx
-      keda:
-        enabled: true
-        triggers: []
+      autoscaling:
+        keda:
+          enabled: true
+          triggers: []
     asserts:
       - failedTemplate:
           errorMessage: "keda: triggers are required when keda is enabled"
@@ -322,17 +328,18 @@ tests:
         app:
           image:
             repository: nginx
-      keda:
-        enabled: true
-        minReplicaCount: 10
-        maxReplicaCount: 5
-        triggers:
-          - type: cron
-            metadata:
-              timezone: UTC
-              start: "0 8 * * *"
-              end: "0 18 * * *"
-              desiredReplicas: "1"
+      autoscaling:
+        keda:
+          enabled: true
+          minReplicaCount: 10
+          maxReplicaCount: 5
+          triggers:
+            - type: cron
+              metadata:
+                timezone: UTC
+                start: "0 8 * * *"
+                end: "0 18 * * *"
+                desiredReplicas: "1"
     asserts:
       - failedTemplate:
           errorMessage: "keda: minReplicaCount (10) must be <= maxReplicaCount (5)"
@@ -350,12 +357,13 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            web:
-              port: 80
-              containerPort: missing
+      networking:
+        services:
+          main:
+            ports:
+              web:
+                port: 80
+                containerPort: missing
     asserts:
       - failedTemplate:
           errorMessage: "services.main.ports.web: containerPort \"missing\" not found in any container's ports map"
@@ -369,18 +377,19 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            http:
-              port: 80
-      gatewayApi:
-        routes:
-          web:
-            rules:
-              - backendRefs:
-                  - name: main
-                    port: 80
+      networking:
+        services:
+          main:
+            ports:
+              http:
+                port: 80
+        gatewayApi:
+          routes:
+            web:
+              rules:
+                - backendRefs:
+                    - name: main
+                      port: 80
     asserts:
       - failedTemplate:
           errorMessage: "gatewayApi.routes.web: parentRefs is required"
@@ -394,16 +403,17 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            http:
-              port: 80
-      gatewayApi:
-        routes:
-          web:
-            parentRefs:
-              - name: my-gateway
+      networking:
+        services:
+          main:
+            ports:
+              http:
+                port: 80
+        gatewayApi:
+          routes:
+            web:
+              parentRefs:
+                - name: my-gateway
     asserts:
       - failedTemplate:
           errorMessage: "gatewayApi.routes.web: rules is required"
@@ -417,20 +427,21 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            http:
-              port: 80
-      gatewayApi:
-        routes:
-          web:
-            parentRefs:
-              - name: my-gateway
-            rules:
-              - backendRefs:
-                  - name: missing
-                    port: 80
+      networking:
+        services:
+          main:
+            ports:
+              http:
+                port: 80
+        gatewayApi:
+          routes:
+            web:
+              parentRefs:
+                - name: my-gateway
+              rules:
+                - backendRefs:
+                    - name: missing
+                      port: 80
     asserts:
       - failedTemplate:
           errorMessage: 'gatewayApi.routes.web.rules[0].backendRefs: service "missing" not found in services map'
@@ -444,19 +455,20 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            http:
-              port: 80
-      ingresses:
-        web:
-          oauth2Proxy: missing
-          hosts:
-            - host: app.example.com
-              paths:
-                - path: /
-                  pathType: Prefix
+      networking:
+        services:
+          main:
+            ports:
+              http:
+                port: 80
+        ingresses:
+          web:
+            oauth2Proxy: missing
+            hosts:
+              - host: app.example.com
+                paths:
+                  - path: /
+                    pathType: Prefix
     asserts:
       - failedTemplate:
           errorMessage: 'ingresses.web.oauth2Proxy: "missing" not found in oauth2Proxies map'
@@ -470,21 +482,22 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            http:
-              port: 80
-      gatewayApi:
-        routes:
-          web:
-            oauth2Proxy: missing
-            parentRefs:
-              - name: my-gateway
-            rules:
-              - backendRefs:
-                  - name: main
-                    port: 80
+      networking:
+        services:
+          main:
+            ports:
+              http:
+                port: 80
+        gatewayApi:
+          routes:
+            web:
+              oauth2Proxy: missing
+              parentRefs:
+                - name: my-gateway
+              rules:
+                - backendRefs:
+                    - name: main
+                      port: 80
     asserts:
       - failedTemplate:
           errorMessage: 'gatewayApi.routes.web.oauth2Proxy: "missing" not found in oauth2Proxies map'
@@ -498,18 +511,19 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            http:
-              port: 80
-      oauth2Proxies:
-        corp:
-          mode: deployment
-          image:
-            repository: quay.io/oauth2-proxy/oauth2-proxy
-            tag: v7.7.0
-          port: 4180
+      networking:
+        services:
+          main:
+            ports:
+              http:
+                port: 80
+        oauth2Proxies:
+          corp:
+            mode: deployment
+            image:
+              repository: quay.io/oauth2-proxy/oauth2-proxy
+              tag: v7.7.0
+            port: 4180
     asserts:
       - failedTemplate:
           errorMessage: "oauth2Proxies.corp: upstream is required when mode is deployment (e.g., upstream: http://<fullname>-<service>:<port>)"
@@ -561,11 +575,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          main:
+            ports:
+              http:
+                port: 80
       monitors:
         metrics:
           kind: service
@@ -583,11 +598,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          main:
+            ports:
+              http:
+                port: 80
       monitors:
         metrics:
           kind: pod

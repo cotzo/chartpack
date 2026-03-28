@@ -3,28 +3,28 @@ apiVersion: apps/v1
 kind: StatefulSet
 {{ include "chartpack.metadata" (dict "context" $) }}
 spec:
-  {{- if not (or .Values.autoscaling.enabled .Values.keda.enabled) }}
-  replicas: {{ .Values.statefulSet.replicaCount }}
+  {{- if not (or .Values.autoscaling.hpa.enabled .Values.autoscaling.keda.enabled) }}
+  replicas: {{ .Values.workloads.statefulSet.replicaCount }}
   {{- end }}
-  serviceName: {{ include "chartpack.headlessServiceName" . }}
-  {{- with .Values.statefulSet.podManagementPolicy }}
+  serviceName: {{ include "chartpack.networking.headlessServiceName" . }}
+  {{- with .Values.workloads.statefulSet.podManagementPolicy }}
   podManagementPolicy: {{ . }}
   {{- end }}
-  {{- with .Values.statefulSet.updateStrategy }}
+  {{- with .Values.workloads.statefulSet.updateStrategy }}
   updateStrategy:
     {{- toYaml . | nindent 4 }}
   {{- end }}
-  {{- with .Values.statefulSet.minReadySeconds }}
+  {{- with .Values.workloads.statefulSet.minReadySeconds }}
   minReadySeconds: {{ . }}
   {{- end }}
-  {{- with .Values.statefulSet.revisionHistoryLimit }}
+  {{- with .Values.workloads.statefulSet.revisionHistoryLimit }}
   revisionHistoryLimit: {{ . }}
   {{- end }}
-  {{- with .Values.statefulSet.ordinals }}
+  {{- with .Values.workloads.statefulSet.ordinals }}
   ordinals:
     {{- toYaml . | nindent 4 }}
   {{- end }}
-  {{- with .Values.statefulSet.persistentVolumeClaimRetentionPolicy }}
+  {{- with .Values.workloads.statefulSet.persistentVolumeClaimRetentionPolicy }}
   persistentVolumeClaimRetentionPolicy:
     {{- toYaml . | nindent 4 }}
   {{- end }}
@@ -33,7 +33,7 @@ spec:
       {{- include "chartpack.selectorLabels" . | nindent 6 }}
   template:
     {{- include "chartpack.podTemplate" . | nindent 4 }}
-  {{- $vcts := include "chartpack.storage.volumeClaimTemplates" . }}
+  {{- $vcts := include "chartpack.persistence.volumeClaimTemplates" . }}
   {{- if $vcts }}
   volumeClaimTemplates:
     {{- $vcts | nindent 4 }}

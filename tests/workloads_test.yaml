@@ -17,11 +17,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          main:
+            ports:
+              http:
+                port: 80
     asserts:
       - isKind:
           of: Deployment
@@ -55,11 +56,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          main:
+            ports:
+              http:
+                port: 80
     asserts:
       - isKind:
           of: StatefulSet
@@ -93,11 +95,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          main:
+            ports:
+              http:
+                port: 80
     asserts:
       - isKind:
           of: DaemonSet
@@ -124,8 +127,9 @@ tests:
   - it: should render only CronJob when workloadType is CronJob
     set:
       workloadType: CronJob
-      cronJob:
-        schedule: "* * * * *"
+      workloads:
+        cronJob:
+          schedule: "* * * * *"
       containers:
         app:
           image:
@@ -133,11 +137,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          main:
+            ports:
+              http:
+                port: 80
     asserts:
       - isKind:
           of: CronJob
@@ -171,11 +176,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          main:
+            ports:
+              http:
+                port: 80
     asserts:
       - isKind:
           of: Job
@@ -209,11 +215,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          main:
+            ports:
+              http:
+                port: 80
     asserts:
       - isKind:
           of: Rollout
@@ -247,20 +254,22 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        main:
-          ports:
-            http:
-              port: 80
-      keda:
-        enabled: true
-        triggers:
-          - type: cron
-            metadata:
-              timezone: UTC
-              start: "0 8 * * *"
-              end: "0 18 * * *"
-              desiredReplicas: "1"
+      networking:
+        services:
+          main:
+            ports:
+              http:
+                port: 80
+      autoscaling:
+        keda:
+          enabled: true
+          triggers:
+            - type: cron
+              metadata:
+                timezone: UTC
+                start: "0 8 * * *"
+                end: "0 18 * * *"
+                desiredReplicas: "1"
     asserts:
       - hasDocuments:
           count: 0

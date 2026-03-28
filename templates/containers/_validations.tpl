@@ -42,7 +42,7 @@ Validate mounts reference existing resources.
 
 {{- if .configMap }}
 {{- if not .external }}
-{{- if not (hasKey $.Values.configMaps .configMap) }}
+{{- if not (hasKey $.Values.config.configMaps .configMap) }}
 {{- fail (printf "containers.%s.mounts: configMap %q not found in configMaps map" $cName .configMap) }}
 {{- end }}
 {{- end }}
@@ -50,7 +50,7 @@ Validate mounts reference existing resources.
 
 {{- if .secret }}
 {{- if not .external }}
-{{- if not (hasKey $.Values.secrets .secret) }}
+{{- if not (hasKey $.Values.config.secrets .secret) }}
 {{- fail (printf "containers.%s.mounts: secret %q not found in secrets map" $cName .secret) }}
 {{- end }}
 {{- end }}
@@ -76,14 +76,14 @@ Validate env references to chart-managed resources.
 {{- if $envCfg.valueFrom }}
 {{- if $envCfg.valueFrom.configMapKeyRef }}
 {{- if not $envCfg.valueFrom.configMapKeyRef.external }}
-{{- if not (hasKey $.Values.configMaps $envCfg.valueFrom.configMapKeyRef.name) }}
+{{- if not (hasKey $.Values.config.configMaps $envCfg.valueFrom.configMapKeyRef.name) }}
 {{- fail (printf "containers.%s.env.%s: configMapKeyRef name %q not found in configMaps map (add external: true for external resources)" $cName $envName $envCfg.valueFrom.configMapKeyRef.name) }}
 {{- end }}
 {{- end }}
 {{- end }}
 {{- if $envCfg.valueFrom.secretKeyRef }}
 {{- if not $envCfg.valueFrom.secretKeyRef.external }}
-{{- if not (hasKey $.Values.secrets $envCfg.valueFrom.secretKeyRef.name) }}
+{{- if not (hasKey $.Values.config.secrets $envCfg.valueFrom.secretKeyRef.name) }}
 {{- fail (printf "containers.%s.env.%s: secretKeyRef name %q not found in secrets map (add external: true for external resources)" $cName $envName $envCfg.valueFrom.secretKeyRef.name) }}
 {{- end }}
 {{- end }}
@@ -92,7 +92,7 @@ Validate env references to chart-managed resources.
 
 {{- if $envCfg.configMapRef }}
 {{- if not $envCfg.configMapRef.external }}
-{{- if not (hasKey $.Values.configMaps $envCfg.configMapRef.name) }}
+{{- if not (hasKey $.Values.config.configMaps $envCfg.configMapRef.name) }}
 {{- fail (printf "containers.%s.env.%s: configMapRef name %q not found in configMaps map (add external: true for external resources)" $cName $envName $envCfg.configMapRef.name) }}
 {{- end }}
 {{- end }}
@@ -100,7 +100,7 @@ Validate env references to chart-managed resources.
 
 {{- if $envCfg.secretRef }}
 {{- if not $envCfg.secretRef.external }}
-{{- if not (hasKey $.Values.secrets $envCfg.secretRef.name) }}
+{{- if not (hasKey $.Values.config.secrets $envCfg.secretRef.name) }}
 {{- fail (printf "containers.%s.env.%s: secretRef name %q not found in secrets map (add external: true for external resources)" $cName $envName $envCfg.secretRef.name) }}
 {{- end }}
 {{- end }}

@@ -16,26 +16,27 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
-      oauth2Proxies:
-        corp:
-          mode: deployment
-          image:
-            repository: quay.io/oauth2-proxy/oauth2-proxy
-            tag: v7.7.0
-          upstream: "http://RELEASE-NAME-chartpack-http:80"
-      ingresses:
-        public:
-          oauth2Proxy: corp
-          hosts:
-            - host: app.example.com
-              paths:
-                - path: /
-                  pathType: Prefix
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+        oauth2Proxies:
+          corp:
+            mode: deployment
+            image:
+              repository: quay.io/oauth2-proxy/oauth2-proxy
+              tag: v7.7.0
+            upstream: "http://RELEASE-NAME-chartpack-http:80"
+        ingresses:
+          public:
+            oauth2Proxy: corp
+            hosts:
+              - host: app.example.com
+                paths:
+                  - path: /
+                    pathType: Prefix
     asserts:
       - isKind:
           of: Deployment
@@ -55,18 +56,19 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
-      oauth2Proxies:
-        corp:
-          mode: deployment
-          image:
-            repository: quay.io/oauth2-proxy/oauth2-proxy
-            tag: v7.7.0
-          upstream: "http://RELEASE-NAME-chartpack-http:80"
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+        oauth2Proxies:
+          corp:
+            mode: deployment
+            image:
+              repository: quay.io/oauth2-proxy/oauth2-proxy
+              tag: v7.7.0
+            upstream: "http://RELEASE-NAME-chartpack-http:80"
     asserts:
       - hasDocuments:
           count: 0
@@ -84,25 +86,26 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
-      oauth2Proxies:
-        corp:
-          mode: sidecar
-          image:
-            repository: quay.io/oauth2-proxy/oauth2-proxy
-            tag: v7.7.0
-      ingresses:
-        public:
-          oauth2Proxy: corp
-          hosts:
-            - host: app.example.com
-              paths:
-                - path: /
-                  pathType: Prefix
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+        oauth2Proxies:
+          corp:
+            mode: sidecar
+            image:
+              repository: quay.io/oauth2-proxy/oauth2-proxy
+              tag: v7.7.0
+        ingresses:
+          public:
+            oauth2Proxy: corp
+            hosts:
+              - host: app.example.com
+                paths:
+                  - path: /
+                    pathType: Prefix
     asserts:
       - equal:
           path: spec.template.spec.initContainers[0].name

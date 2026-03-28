@@ -1,0 +1,76 @@
+{{- $fullName := include "chartpack.fullname" . -}}
+{{- range $name, $dashboard := .Values.dashboards.grafana }}
+{{- if $dashboard }}
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+{{ include "chartpack.metadata" (dict "name" (printf "%s-%s" $fullName $name) "context" $ "extraAnnotations" $dashboard.annotations "extraLabels" $dashboard.labels) }}
+spec:
+  instanceSelector:
+    {{- toYaml $dashboard.instanceSelector | nindent 4 }}
+  {{- with $dashboard.folder }}
+  folder: {{ . }}
+  {{- end }}
+  {{- with $dashboard.folderUID }}
+  folderUID: {{ . }}
+  {{- end }}
+  {{- with $dashboard.folderRef }}
+  folderRef: {{ . }}
+  {{- end }}
+  {{- with $dashboard.resyncPeriod }}
+  resyncPeriod: {{ . }}
+  {{- end }}
+  {{- if not (kindIs "invalid" $dashboard.allowCrossNamespaceImport) }}
+  allowCrossNamespaceImport: {{ $dashboard.allowCrossNamespaceImport }}
+  {{- end }}
+  {{- if not (kindIs "invalid" $dashboard.suspend) }}
+  suspend: {{ $dashboard.suspend }}
+  {{- end }}
+  {{- with $dashboard.uid }}
+  uid: {{ . }}
+  {{- end }}
+  {{- with $dashboard.json }}
+  json: {{ . | quote }}
+  {{- end }}
+  {{- with $dashboard.gzipJson }}
+  gzipJson: {{ . }}
+  {{- end }}
+  {{- with $dashboard.url }}
+  url: {{ . }}
+  {{- end }}
+  {{- with $dashboard.urlAuthorization }}
+  urlAuthorization:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with $dashboard.configMapRef }}
+  configMapRef:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with $dashboard.grafanaCom }}
+  grafanaCom:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with $dashboard.jsonnet }}
+  jsonnet: {{ . | quote }}
+  {{- end }}
+  {{- with $dashboard.contentCacheDuration }}
+  contentCacheDuration: {{ . }}
+  {{- end }}
+  {{- with $dashboard.datasources }}
+  datasources:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with $dashboard.envs }}
+  envs:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with $dashboard.envFrom }}
+  envFrom:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with $dashboard.plugins }}
+  plugins:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}
+{{- end }}

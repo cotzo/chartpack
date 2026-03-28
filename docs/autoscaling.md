@@ -6,50 +6,134 @@ Uses the [autoscaling/v2 API](https://kubernetes.io/docs/reference/kubernetes-ap
 
 ```yaml
 autoscaling:
-  enabled: true
-  minReplicas: 2
-  maxReplicas: 20
-  metrics:
-    - type: Resource
-      resource:
-        name: cpu
-        target:
-          type: Utilization
-          averageUtilization: 75
-    - type: Resource
-      resource:
-        name: memory
-        target:
-          type: Utilization
-          averageUtilization: 80
-    - type: Pods
-      pods:
-        metric:
-          name: http_requests_per_second
-        target:
-          type: AverageValue
-          averageValue: "1000"
-  behavior:
-    scaleDown:
-      stabilizationWindowSeconds: 300
-      policies:
-        - type: Percent
-          value: 10
-          periodSeconds: 60
-    scaleUp:
-      stabilizationWindowSeconds: 30
-      policies:
-        - type: Percent
-          value: 100
-          periodSeconds: 15
-  annotations: {}
-  labels: {}
+  hpa:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 20
+    metrics:
+      - type: Resource
+        resource:
+          name: cpu
+          target:
+            type: Utilization
+            averageUtilization: 75
+      - type: Resource
+        resource:
+          name: memory
+          target:
+            type: Utilization
+            averageUtilization: 80
+      - type: Pods
+        pods:
+          metric:
+            name: http_requests_per_second
+          target:
+            type: AverageValue
+            averageValue: "1000"
+    behavior:
+      scaleDown:
+        stabilizationWindowSeconds: 300
+        policies:
+          - type: Percent
+            value: 10
+            periodSeconds: 60
+      scaleUp:
+        stabilizationWindowSeconds: 30
+        policies:
+          - type: Percent
+            value: 100
+            periodSeconds: 15
+    annotations: {}
+    labels: {}
 ```
 
-When `autoscaling.enabled: true`, the `replicaCount` field in the workload config is omitted (HPA controls replicas).
+When `autoscaling.hpa.enabled: true`, the `replicaCount` field in the workload config is omitted (HPA controls replicas).
 
 [HPA reference](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) |
 [HPA walkthrough](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/)
+
+## KEDA
+
+[KEDA](https://keda.sh/) provides event-driven autoscaling. When `autoscaling.keda.enabled: true`, the chart creates a **ScaledObject** (for Deployment, StatefulSet, or Rollout) or a **ScaledJob** (for Job workloads). KEDA and HPA are mutually exclusive -- enabling both is a validation error.
+
+### ScaledObject (Deployment / StatefulSet / Rollout)
+
+```yaml
+autoscaling:
+  keda:
+    enabled: true
+    pollingInterval: 30
+    cooldownPeriod: 300
+    idleReplicaCount: 0              # 0 = scale to zero when idle
+    minReplicaCount: 1
+    maxReplicaCount: 20
+    triggers:
+      - type: prometheus
+        metadata:
+          serverAddress: http://prometheus:9090
+          query: sum(rate(http_requests_total{service="my-app"}[2m]))
+          threshold: "100"
+    fallback:
+      failureThreshold: 3
+      replicas: 5
+    advanced:
+      horizontalPodAutoscalerConfig:
+        behavior:
+          scaleDown:
+            stabilizationWindowSeconds: 300
+    annotations: {}
+    labels: {}
+```
+
+### ScaledJob (Job)
+
+When `workloadType: Job`, KEDA creates a ScaledJob that spawns Job pods in response to events:
+
+```yaml
+workloadType: Job
+autoscaling:
+  keda:
+    enabled: true
+    pollingInterval: 15
+    maxReplicaCount: 10
+    successfulJobsHistoryLimit: 5
+    failedJobsHistoryLimit: 3
+    scalingStrategy:
+      strategy: default              # default | custom | accurate
+    triggers:
+      - type: aws-sqs-queue
+        metadata:
+          queueURL: https://sqs.us-east-1.amazonaws.com/123456789/my-queue
+          queueLength: "5"
+          awsRegion: us-east-1
+```
+
+### Common Trigger Examples
+
+```yaml
+# Cron schedule
+triggers:
+  - type: cron
+    metadata:
+      timezone: UTC
+      start: "0 8 * * 1-5"
+      end: "0 18 * * 1-5"
+      desiredReplicas: "5"
+
+# Kafka consumer lag
+triggers:
+  - type: kafka
+    metadata:
+      bootstrapServers: kafka:9092
+      consumerGroup: my-group
+      topic: my-topic
+      lagThreshold: "50"
+```
+
+[KEDA documentation](https://keda.sh/docs/) |
+[Scaler catalog](https://keda.sh/docs/scalers/) |
+[ScaledObject spec](https://keda.sh/docs/concepts/scaling-deployments/) |
+[ScaledJob spec](https://keda.sh/docs/concepts/scaling-jobs/)
 
 ## Pod Disruption Budget
 

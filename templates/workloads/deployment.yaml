@@ -4,17 +4,17 @@ apiVersion: apps/v1
 kind: Deployment
 {{ include "chartpack.metadata" (dict "context" $) }}
 spec:
-  {{- if not (or .Values.autoscaling.enabled .Values.keda.enabled) }}
-  replicas: {{ .Values.deployment.replicaCount }}
+  {{- if not (or .Values.autoscaling.hpa.enabled .Values.autoscaling.keda.enabled) }}
+  replicas: {{ .Values.workloads.deployment.replicaCount }}
   {{- end }}
-  {{- with .Values.deployment.strategy }}
+  {{- with .Values.workloads.deployment.strategy }}
   strategy:
     {{- toYaml . | nindent 4 }}
   {{- end }}
-  {{- with .Values.deployment.minReadySeconds }}
+  {{- with .Values.workloads.deployment.minReadySeconds }}
   minReadySeconds: {{ . }}
   {{- end }}
-  {{- with .Values.deployment.revisionHistoryLimit }}
+  {{- with .Values.workloads.deployment.revisionHistoryLimit }}
   revisionHistoryLimit: {{ . }}
   {{- end }}
   selector:

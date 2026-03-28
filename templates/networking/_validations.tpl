@@ -9,7 +9,7 @@ Validate service port containerPort references exist in container ports.
 {{- end }}
 {{- end }}
 
-{{- range $svcName, $svc := .Values.services }}
+{{- range $svcName, $svc := .Values.networking.services }}
 {{- range $portName, $portCfg := $svc.ports }}
 {{- $targetPort := default $portName $portCfg.containerPort }}
 {{- if not (hasKey $allContainerPorts $targetPort) }}
@@ -23,7 +23,7 @@ Validate service port containerPort references exist in container ports.
 Validate Gateway API routes have required fields and backendRefs reference existing services.
 */}}
 {{- define "chartpack.validation.networking.routes" -}}
-{{- range $name, $route := .Values.gatewayApi.routes }}
+{{- range $name, $route := .Values.networking.gatewayApi.routes }}
 {{- if $route }}
 {{- if not $route.parentRefs }}
 {{- fail (printf "gatewayApi.routes.%s: parentRefs is required" $name) }}
@@ -33,7 +33,7 @@ Validate Gateway API routes have required fields and backendRefs reference exist
 {{- end }}
 {{- range $ruleIdx, $rule := $route.rules }}
 {{- range $rule.backendRefs }}
-{{- if not (hasKey $.Values.services .name) }}
+{{- if not (hasKey $.Values.networking.services .name) }}
 {{- fail (printf "gatewayApi.routes.%s.rules[%d].backendRefs: service %q not found in services map" $name $ruleIdx .name) }}
 {{- end }}
 {{- end }}

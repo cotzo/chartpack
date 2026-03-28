@@ -3,7 +3,7 @@ Build the complete pod-level volumes list.
 Collects volumes from podSettings.volumes, container mounts (configMap/secret/persistence),
 and init container mounts. Deduplicates by volume name.
 */}}
-{{- define "chartpack.storage.volumes" -}}
+{{- define "chartpack.persistence.volumes" -}}
 {{- $volumes := list }}
 {{- $seen := dict }}
 {{- $fullName := include "chartpack.fullname" . }}
@@ -88,7 +88,7 @@ and init container mounts. Deduplicates by volume name.
 Generate volumeClaimTemplates for StatefulSets.
 Only includes persistence entries without existingClaim.
 */}}
-{{- define "chartpack.storage.volumeClaimTemplates" -}}
+{{- define "chartpack.persistence.volumeClaimTemplates" -}}
 {{- $templates := list }}
 {{- range $name, $config := .Values.persistence }}
 {{- if not $config.existingClaim }}
@@ -124,13 +124,13 @@ Only includes persistence entries without existingClaim.
 {{/*
 Generate checksum annotations for configMaps and secrets to trigger pod rollouts on changes.
 */}}
-{{- define "chartpack.storage.checksumAnnotations" -}}
-{{- range $name, $config := .Values.configMaps }}
+{{- define "chartpack.persistence.checksumAnnotations" -}}
+{{- range $name, $config := .Values.config.configMaps }}
 {{- if $config }}
 checksum/configmap-{{ $name }}: {{ toJson $config.data | sha256sum }}
 {{- end }}
 {{- end }}
-{{- range $name, $config := .Values.secrets }}
+{{- range $name, $config := .Values.config.secrets }}
 {{- if $config }}
 checksum/secret-{{ $name }}: {{ toJson (merge (dict) (default (dict) $config.data) (default (dict) $config.stringData)) | sha256sum }}
 {{- end }}

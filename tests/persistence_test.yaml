@@ -1,13 +1,13 @@
 suite: Storage rendering (PVC and StatefulSet volumeClaimTemplates)
 templates:
-  - templates/storage/pvc.yaml
+  - templates/persistence/pvc.yaml
   - templates/workloads/statefulset.yaml
 tests:
   # ---------------------------------------------------------------------------
   # PVC for Deployment
   # ---------------------------------------------------------------------------
   - it: should render PVC for Deployment with persistence defined
-    template: templates/storage/pvc.yaml
+    template: templates/persistence/pvc.yaml
     set:
       containers:
         app:
@@ -16,11 +16,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
       persistence:
         data:
           size: 10Gi
@@ -32,7 +33,7 @@ tests:
           value: RELEASE-NAME-chartpack-data
 
   - it: should NOT render PVC for StatefulSet
-    template: templates/storage/pvc.yaml
+    template: templates/persistence/pvc.yaml
     set:
       workloadType: StatefulSet
       containers:
@@ -42,11 +43,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
       persistence:
         data:
           size: 10Gi
@@ -55,7 +57,7 @@ tests:
           count: 0
 
   - it: should NOT render PVC when existingClaim is set
-    template: templates/storage/pvc.yaml
+    template: templates/persistence/pvc.yaml
     set:
       containers:
         app:
@@ -64,11 +66,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
       persistence:
         data:
           existingClaim: my-existing-pvc
@@ -77,7 +80,7 @@ tests:
           count: 0
 
   - it: should set storageClass and accessModes on PVC
-    template: templates/storage/pvc.yaml
+    template: templates/persistence/pvc.yaml
     set:
       containers:
         app:
@@ -86,11 +89,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
       persistence:
         data:
           size: 5Gi
@@ -119,11 +123,12 @@ tests:
           ports:
             http:
               port: 80
-      services:
-        http:
-          ports:
-            http:
-              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
       persistence:
         data:
           size: 20Gi
