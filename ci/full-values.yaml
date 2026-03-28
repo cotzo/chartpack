@@ -612,6 +612,19 @@ secrets:
     data:
       .dockerconfigjson: eyJhdXRocyI6e319
 
+  generated-creds:
+    generate:
+      api-key:
+        length: 32
+        symbols: 0
+      webhook-secret:
+        length: 64
+        encoding: hex
+      session-key:
+        length: 48
+        noUpper: true
+        allowRepeat: true
+
 # =============================================================================
 # External Secrets — AWS Secrets Manager + Vault
 # =============================================================================

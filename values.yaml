@@ -458,6 +458,22 @@ secrets: {}
 #   stringData:
 #     password: "s3cret"
 #   # data: {}  # base64-encoded
+#   # -- Auto-generate random values via ESO Password generators (ArgoCD-safe).
+#   # Each key creates a Password generator + ExternalSecret with creationPolicy: Merge.
+#   # generate:
+#   #   api-key:
+#   #     length: 32           # default: 32
+#   #     # digits: 6          # number of digits (default: 25% of length)
+#   #     # symbols: 0         # number of symbols (default: 25% of length)
+#   #     # symbolCharacters: "!@#$%"
+#   #     # noUpper: false
+#   #     # allowRepeat: false
+#   #     # encoding: raw      # raw | base64 | base64url | base32 | hex
+#   #   webhook-secret:
+#   #     length: 64
+#   #     symbols: 0
+#   #     encoding: hex
+#   # generateRefreshInterval: "0"  # "0" = generate once, never rotate
 #   annotations: {}
 #   labels: {}
 

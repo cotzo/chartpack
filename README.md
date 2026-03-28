@@ -24,7 +24,7 @@ Deploy any Kubernetes workload type from a single chart: [Deployment](https://ku
 Multiple [Services](https://kubernetes.io/docs/concepts/services-networking/service/) per release (ClusterIP, NodePort, LoadBalancer, headless), multiple [Ingresses](https://kubernetes.io/docs/concepts/services-networking/ingress/) with different controllers and TLS configs, and [Gateway API](https://gateway-api.sigs.k8s.io/) routes (HTTPRoute, GRPCRoute, TLSRoute, TCPRoute, UDPRoute) with traffic splitting, header matching, and timeouts. Service ports reference container ports by name for type-safe wiring.
 
 ### Configuration & Secrets
-Manage [ConfigMaps](https://kubernetes.io/docs/concepts/configuration/configmap/), [Secrets](https://kubernetes.io/docs/concepts/configuration/secret/) (Opaque, TLS, Docker registry), and [External Secrets](https://external-secrets.io/) (AWS Secrets Manager, Vault, etc.). Auto-rollout on config changes via checksum annotations.
+Manage [ConfigMaps](https://kubernetes.io/docs/concepts/configuration/configmap/), [Secrets](https://kubernetes.io/docs/concepts/configuration/secret/) (Opaque, TLS, Docker registry), and [External Secrets](https://external-secrets.io/) (AWS Secrets Manager, Vault, etc.). Auto-generate random secrets via [ESO Password generators](https://external-secrets.io/latest/api/generator/password/) — ArgoCD-safe, no `helm lookup` needed. Auto-rollout on config changes via checksum annotations.
 
 ### Storage
 [Persistent volumes](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) with automatic PVC creation for Deployments and volumeClaimTemplate generation for StatefulSets. Supports existing claims, storage classes, and access modes.
