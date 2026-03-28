@@ -1,0 +1,67 @@
+workloadType: DaemonSet
+
+nodeSettings:
+  os:
+    - linux
+
+containers:
+  agent:
+    image:
+      repository: my-agent
+      tag: "1.0.0"
+    ports:
+      http:
+        port: 8080
+      metrics:
+        port: 9090
+    env:
+      NODE_NAME:
+        valueFrom:
+          fieldRef:
+            fieldPath: spec.nodeName
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 128Mi
+    healthChecks:
+      liveness:
+        httpGet:
+          path: /healthz
+          port: http
+    mounts:
+      - path: /host
+        volume: host-root
+
+podSettings:
+  volumes:
+    - name: host-root
+      hostPath:
+        path: /
+        type: Directory
+
+services:
+  http:
+    ports:
+      http:
+        port: 8080
+  metrics:
+    ports:
+      metrics:
+        port: 9090
+
+daemonSet:
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+
+monitors:
+  metrics:
+    kind: pod
+    operator: prometheus
+    port: metrics
+    path: /metrics
+    interval: 30s

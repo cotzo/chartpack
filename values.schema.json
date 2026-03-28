@@ -211,6 +211,7 @@
           "image": { "type": "object" },
           "replicas": { "type": "integer", "description": "Only for deployment mode" },
           "port": { "type": "integer" },
+          "portName": { "type": "string", "description": "Port name suffix (default: proxy)" },
           "provider": { "type": "string" },
           "issuerUrl": { "type": "string" },
           "emailDomains": { "type": "array", "items": { "type": "string" } },
@@ -445,7 +446,7 @@
         "name": { "type": "string" },
         "annotations": { "type": "object" },
         "labels": { "type": "object" },
-        "automountServiceAccountToken": { "type": ["boolean", "string"] },
+        "automountServiceAccountToken": { "type": "boolean" },
         "imagePullSecrets": { "type": "array" }
       },
       "additionalProperties": false

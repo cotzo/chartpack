@@ -1,0 +1,29 @@
+workloadType: Job
+
+containers:
+  migrate:
+    image:
+      repository: my-app
+      tag: "1.0.0"
+    command: ["/app/migrate", "--up"]
+    env:
+      DATABASE_URL:
+        valueFrom:
+          secretKeyRef:
+            name: db-secret
+            key: url
+            external: true
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 256Mi
+
+job:
+  backoffLimit: 3
+  activeDeadlineSeconds: 600
+  ttlSecondsAfterFinished: 3600
+  completionMode: NonIndexed
+  podReplacementPolicy: Failed

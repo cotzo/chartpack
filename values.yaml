@@ -625,7 +625,7 @@ serviceAccount:
   # -- Service account labels
   labels: {}
   # -- Automount service account token
-  automountServiceAccountToken: ""
+  # automountServiceAccountToken: true
   # -- Image pull secrets for the service account
   imagePullSecrets: []
 

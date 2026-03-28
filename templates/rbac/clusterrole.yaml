@@ -9,7 +9,8 @@ metadata:
     {{- with $role.labels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
-  {{- with $role.annotations }}
+  {{- $annotations := merge (default (dict) $role.annotations) (default (dict) $.Values.global.annotations) }}
+  {{- with $annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}

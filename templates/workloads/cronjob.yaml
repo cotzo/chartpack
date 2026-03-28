@@ -39,6 +39,9 @@ spec:
       {{- with .Values.job.parallelism }}
       parallelism: {{ . }}
       {{- end }}
+      {{- with .Values.job.completionMode }}
+      completionMode: {{ . }}
+      {{- end }}
       {{- with .Values.job.podReplacementPolicy }}
       podReplacementPolicy: {{ . }}
       {{- end }}

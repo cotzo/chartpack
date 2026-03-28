@@ -132,7 +132,7 @@ checksum/configmap-{{ $name }}: {{ toJson $config.data | sha256sum }}
 {{- end }}
 {{- range $name, $config := .Values.secrets }}
 {{- if $config }}
-checksum/secret-{{ $name }}: {{ toJson (default (dict) $config.stringData) | sha256sum }}
+checksum/secret-{{ $name }}: {{ toJson (merge (default (dict) $config.data) (default (dict) $config.stringData)) | sha256sum }}
 {{- end }}
 {{- end }}
 {{- end }}

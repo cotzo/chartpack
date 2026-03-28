@@ -20,7 +20,7 @@ Validate service port containerPort references exist in container ports.
 {{- end }}
 
 {{/*
-Validate Gateway API routes have required fields.
+Validate Gateway API routes have required fields and backendRefs reference existing services.
 */}}
 {{- define "chartpack.validation.networking.routes" -}}
 {{- range $name, $route := .Values.gatewayApi.routes }}
@@ -30,6 +30,13 @@ Validate Gateway API routes have required fields.
 {{- end }}
 {{- if not $route.rules }}
 {{- fail (printf "gatewayApi.routes.%s: rules is required" $name) }}
+{{- end }}
+{{- range $ruleIdx, $rule := $route.rules }}
+{{- range $rule.backendRefs }}
+{{- if not (hasKey $.Values.services .name) }}
+{{- fail (printf "gatewayApi.routes.%s.rules[%d].backendRefs: service %q not found in services map" $name $ruleIdx .name) }}
+{{- end }}
+{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}

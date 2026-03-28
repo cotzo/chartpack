@@ -46,46 +46,52 @@ containers:
 
 ## Unified Environment Variables
 
-A single `env` list handles all env var types. Entries with a `name` become K8s `env` entries. Entries with only `configMapRef`/`secretRef` become `envFrom`.
+A single `env` map handles all env var types. The map key is the env var name for individual vars, or a unique identifier for bulk entries. Entries with `value`/`valueFrom` become K8s `env` entries. Entries with `configMapRef`/`secretRef` become `envFrom`.
 
 Chart-managed resource names (from `configMaps`/`secrets` maps) are auto-prefixed with `<fullname>-`. Add `external: true` to skip prefixing for resources not managed by this chart.
+
+Using a map (instead of a list) enables deep-merging across multiple values files.
 
 ```yaml
 containers:
   app:
     env:
-      # Literal value
-      - name: APP_ENV
+      # Literal value — key becomes the env var name
+      APP_ENV:
         value: "production"
 
+      # Empty string values are supported
+      EMPTY_VAR:
+        value: ""
+
       # From pod field
-      - name: POD_NAME
+      POD_NAME:
         valueFrom:
           fieldRef:
             fieldPath: metadata.name
 
       # From resource field
-      - name: CPU_LIMIT
+      CPU_LIMIT:
         valueFrom:
           resourceFieldRef:
             resource: limits.cpu
 
       # From chart-managed configMap key (auto-prefixed)
-      - name: LOG_LEVEL
+      LOG_LEVEL:
         valueFrom:
           configMapKeyRef:
             name: app-config       # references configMaps.app-config
             key: log-level
 
       # From chart-managed secret key (auto-prefixed)
-      - name: DB_PASSWORD
+      DB_PASSWORD:
         valueFrom:
           secretKeyRef:
             name: db-creds         # references secrets.db-creds
             key: password
 
       # From external secret (NOT auto-prefixed)
-      - name: EXTERNAL_KEY
+      EXTERNAL_KEY:
         valueFrom:
           secretKeyRef:
             name: some-external-secret
@@ -93,15 +99,19 @@ containers:
             external: true
 
       # Bulk inject all keys from chart-managed configMap (→ envFrom)
-      - configMapRef:
+      # Key is just an identifier, not an env var name
+      bulk-env-config:
+        configMapRef:
           name: env-config
 
       # Bulk inject from chart-managed secret (→ envFrom)
-      - secretRef:
+      bulk-env-secrets:
+        secretRef:
           name: env-secrets
 
       # Bulk inject from external configMap
-      - configMapRef:
+      bulk-external:
+        configMapRef:
           name: shared-external-config
           external: true
 ```
