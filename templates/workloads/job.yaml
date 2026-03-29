@@ -3,27 +3,7 @@ apiVersion: batch/v1
 kind: Job
 {{ include "chartpack.metadata" (dict "context" $) }}
 spec:
-  {{- with .Values.workloads.job.backoffLimit }}
-  backoffLimit: {{ . }}
-  {{- end }}
-  {{- with .Values.workloads.job.activeDeadlineSeconds }}
-  activeDeadlineSeconds: {{ . }}
-  {{- end }}
-  {{- with .Values.workloads.job.ttlSecondsAfterFinished }}
-  ttlSecondsAfterFinished: {{ . }}
-  {{- end }}
-  {{- with .Values.workloads.job.completions }}
-  completions: {{ . }}
-  {{- end }}
-  {{- with .Values.workloads.job.parallelism }}
-  parallelism: {{ . }}
-  {{- end }}
-  {{- with .Values.workloads.job.completionMode }}
-  completionMode: {{ . }}
-  {{- end }}
-  {{- with .Values.workloads.job.podReplacementPolicy }}
-  podReplacementPolicy: {{ . }}
-  {{- end }}
+  {{- include "chartpack.workloads.jobSpec" . | nindent 2 }}
   {{- if not (kindIs "invalid" .Values.workloads.job.suspend) }}
   suspend: {{ .Values.workloads.job.suspend }}
   {{- end }}

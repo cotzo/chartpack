@@ -86,17 +86,11 @@ ports:
 {{- $vf := dict -}}
 {{- if $envCfg.valueFrom.secretKeyRef }}
 {{- $ref := $envCfg.valueFrom.secretKeyRef -}}
-{{- $resolvedName := $ref.name -}}
-{{- if not $ref.external }}
-{{- $resolvedName = printf "%s-%s" $fullName $ref.name -}}
-{{- end }}
+{{- $resolvedName := include "chartpack.resolveResourceName" (dict "name" $ref.name "fullName" $fullName "external" $ref.external) -}}
 {{- $_ := set $vf "secretKeyRef" (dict "name" $resolvedName "key" $ref.key) -}}
 {{- else if $envCfg.valueFrom.configMapKeyRef }}
 {{- $ref := $envCfg.valueFrom.configMapKeyRef -}}
-{{- $resolvedName := $ref.name -}}
-{{- if not $ref.external }}
-{{- $resolvedName = printf "%s-%s" $fullName $ref.name -}}
-{{- end }}
+{{- $resolvedName := include "chartpack.resolveResourceName" (dict "name" $ref.name "fullName" $fullName "external" $ref.external) -}}
 {{- $_ := set $vf "configMapKeyRef" (dict "name" $resolvedName "key" $ref.key) -}}
 {{- end }}
 {{- $envList = append $envList (dict "name" $envName "valueFrom" $vf) -}}

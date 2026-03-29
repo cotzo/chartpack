@@ -42,17 +42,11 @@ Usage: {{ include "chartpack.containers.renderContainer" (dict "name" "app" "con
   {{- $_ := set $vf "resourceFieldRef" $envCfg.valueFrom.resourceFieldRef -}}
   {{- else if $envCfg.valueFrom.configMapKeyRef }}
   {{- $ref := $envCfg.valueFrom.configMapKeyRef -}}
-  {{- $resolvedName := $ref.name -}}
-  {{- if not $ref.external }}
-  {{- $resolvedName = printf "%s-%s" $fullName $ref.name -}}
-  {{- end }}
+  {{- $resolvedName := include "chartpack.resolveResourceName" (dict "name" $ref.name "fullName" $fullName "external" $ref.external) -}}
   {{- $_ := set $vf "configMapKeyRef" (dict "name" $resolvedName "key" $ref.key) -}}
   {{- else if $envCfg.valueFrom.secretKeyRef }}
   {{- $ref := $envCfg.valueFrom.secretKeyRef -}}
-  {{- $resolvedName := $ref.name -}}
-  {{- if not $ref.external }}
-  {{- $resolvedName = printf "%s-%s" $fullName $ref.name -}}
-  {{- end }}
+  {{- $resolvedName := include "chartpack.resolveResourceName" (dict "name" $ref.name "fullName" $fullName "external" $ref.external) -}}
   {{- $_ := set $vf "secretKeyRef" (dict "name" $resolvedName "key" $ref.key) -}}
   {{- end }}
   {{- $envList = append $envList (dict "name" $envName "valueFrom" $vf) -}}
@@ -60,20 +54,14 @@ Usage: {{ include "chartpack.containers.renderContainer" (dict "name" "app" "con
   {{- else if $envCfg.configMapRef -}}
   {{- /* Bulk envFrom — configMapRef */ -}}
   {{- $ref := $envCfg.configMapRef -}}
-  {{- $resolvedName := $ref.name -}}
-  {{- if not $ref.external }}
-  {{- $resolvedName = printf "%s-%s" $fullName $ref.name -}}
-  {{- end }}
+  {{- $resolvedName := include "chartpack.resolveResourceName" (dict "name" $ref.name "fullName" $fullName "external" $ref.external) -}}
   {{- $entry := dict "configMapRef" (dict "name" $resolvedName) -}}
   {{- if $ref.optional }}{{ $_ := set (index $entry "configMapRef") "optional" $ref.optional }}{{ end -}}
   {{- $envFrom = append $envFrom $entry -}}
   {{- else if $envCfg.secretRef -}}
   {{- /* Bulk envFrom — secretRef */ -}}
   {{- $ref := $envCfg.secretRef -}}
-  {{- $resolvedName := $ref.name -}}
-  {{- if not $ref.external }}
-  {{- $resolvedName = printf "%s-%s" $fullName $ref.name -}}
-  {{- end }}
+  {{- $resolvedName := include "chartpack.resolveResourceName" (dict "name" $ref.name "fullName" $fullName "external" $ref.external) -}}
   {{- $entry := dict "secretRef" (dict "name" $resolvedName) -}}
   {{- if $ref.optional }}{{ $_ := set (index $entry "secretRef") "optional" $ref.optional }}{{ end -}}
   {{- $envFrom = append $envFrom $entry -}}

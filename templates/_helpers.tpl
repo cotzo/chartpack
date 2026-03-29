@@ -53,3 +53,15 @@ app.kubernetes.io/name: {{ include "chartpack.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
+{{/*
+Resolve a resource name: prefix with fullName unless external.
+Usage: {{ include "chartpack.resolveResourceName" (dict "name" $name "fullName" $fullName "external" $external) }}
+*/}}
+{{- define "chartpack.resolveResourceName" -}}
+{{- if .external -}}
+{{- .name -}}
+{{- else -}}
+{{- printf "%s-%s" .fullName .name -}}
+{{- end -}}
+{{- end }}
+

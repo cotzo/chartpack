@@ -2,18 +2,7 @@
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
-metadata:
-  name: {{ printf "%s-%s" (include "chartpack.fullname" $) $name }}
-  labels:
-    {{- include "chartpack.labels" $ | nindent 4 }}
-    {{- with $role.labels }}
-    {{- toYaml . | nindent 4 }}
-    {{- end }}
-  {{- $annotations := merge (dict) (default (dict) $role.annotations) (default (dict) $.Values.global.annotations) }}
-  {{- with $annotations }}
-  annotations:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
+{{ include "chartpack.metadata" (dict "name" (printf "%s-%s" (include "chartpack.fullname" $) $name) "context" $ "extraAnnotations" $role.annotations "extraLabels" $role.labels) }}
 rules:
   {{- toYaml $role.rules | nindent 2 }}
 {{- end }}

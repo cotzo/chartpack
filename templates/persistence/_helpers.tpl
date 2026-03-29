@@ -28,18 +28,11 @@ and init container mounts. Deduplicates by volume name.
 {{- if .external }}{{ $volName = printf "configmap-ext-%s" .configMap }}{{ end }}
 {{- if not (hasKey $seen $volName) }}
 {{- $_ := set $seen $volName true }}
-{{- $cmFullName := .configMap }}
-{{- if .external }}
-{{- $vol := dict "name" $volName "configMap" (dict "name" $cmFullName) }}
+{{- $resolvedName := include "chartpack.resolveResourceName" (dict "name" .configMap "fullName" $fullName "external" .external) }}
+{{- $vol := dict "name" $volName "configMap" (dict "name" $resolvedName) }}
 {{- if .items }}{{ $_ := set (index $vol "configMap") "items" .items }}{{ end }}
 {{- if .defaultMode }}{{ $_ := set (index $vol "configMap") "defaultMode" .defaultMode }}{{ end }}
 {{- $volumes = append $volumes $vol }}
-{{- else }}
-{{- $vol := dict "name" $volName "configMap" (dict "name" (printf "%s-%s" $fullName $cmFullName)) }}
-{{- if .items }}{{ $_ := set (index $vol "configMap") "items" .items }}{{ end }}
-{{- if .defaultMode }}{{ $_ := set (index $vol "configMap") "defaultMode" .defaultMode }}{{ end }}
-{{- $volumes = append $volumes $vol }}
-{{- end }}
 {{- end }}
 {{- end }}
 
@@ -49,18 +42,11 @@ and init container mounts. Deduplicates by volume name.
 {{- if .external }}{{ $volName = printf "secret-ext-%s" .secret }}{{ end }}
 {{- if not (hasKey $seen $volName) }}
 {{- $_ := set $seen $volName true }}
-{{- $sFullName := .secret }}
-{{- if .external }}
-{{- $vol := dict "name" $volName "secret" (dict "secretName" $sFullName) }}
+{{- $resolvedName := include "chartpack.resolveResourceName" (dict "name" .secret "fullName" $fullName "external" .external) }}
+{{- $vol := dict "name" $volName "secret" (dict "secretName" $resolvedName) }}
 {{- if .items }}{{ $_ := set (index $vol "secret") "items" .items }}{{ end }}
 {{- if .defaultMode }}{{ $_ := set (index $vol "secret") "defaultMode" .defaultMode }}{{ end }}
 {{- $volumes = append $volumes $vol }}
-{{- else }}
-{{- $vol := dict "name" $volName "secret" (dict "secretName" (printf "%s-%s" $fullName $sFullName)) }}
-{{- if .items }}{{ $_ := set (index $vol "secret") "items" .items }}{{ end }}
-{{- if .defaultMode }}{{ $_ := set (index $vol "secret") "defaultMode" .defaultMode }}{{ end }}
-{{- $volumes = append $volumes $vol }}
-{{- end }}
 {{- end }}
 {{- end }}
 
