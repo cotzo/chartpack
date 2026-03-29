@@ -611,3 +611,54 @@ tests:
     asserts:
       - failedTemplate:
           errorMessage: "monitors.metrics: port \"missing\" not found in any container's ports map"
+
+  # ===========================================================================
+  # Hook validations
+  # ===========================================================================
+  - it: should fail when hook has invalid event name (schema)
+    set:
+      containers:
+        app:
+          image:
+            repository: nginx
+      hooks:
+        migrate:
+          events:
+            - pre-instll
+          containers:
+            run:
+              image:
+                repository: busybox
+    asserts:
+      - failedTemplate: {}
+
+  - it: should fail when hook has no containers (schema)
+    set:
+      containers:
+        app:
+          image:
+            repository: nginx
+      hooks:
+        migrate:
+          events:
+            - pre-install
+    asserts:
+      - failedTemplate: {}
+
+  - it: should fail when hook has invalid deletePolicy (schema)
+    set:
+      containers:
+        app:
+          image:
+            repository: nginx
+      hooks:
+        migrate:
+          events:
+            - pre-install
+          deletePolicy: invalid-policy
+          containers:
+            run:
+              image:
+                repository: busybox
+    asserts:
+      - failedTemplate: {}

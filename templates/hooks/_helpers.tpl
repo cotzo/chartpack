@@ -1,4 +1,32 @@
 {{/*
+Validate hook definitions.
+*/}}
+{{- define "chartpack.validation.hooks" -}}
+{{- $validEvents := list "pre-install" "post-install" "pre-upgrade" "post-upgrade" "pre-delete" "post-delete" "pre-rollback" "post-rollback" -}}
+{{- $validDeletePolicies := list "before-hook-creation" "hook-succeeded" "hook-failed" -}}
+{{- range $name, $hook := .Values.hooks }}
+{{- if $hook }}
+{{- if not $hook.events }}
+{{- fail (printf "hooks.%s: events is required" $name) }}
+{{- end }}
+{{- range $hook.events }}
+{{- if not (has . $validEvents) }}
+{{- fail (printf "hooks.%s: invalid event %q. Must be one of: %s" $name . ($validEvents | join ", ")) }}
+{{- end }}
+{{- end }}
+{{- if not $hook.containers }}
+{{- fail (printf "hooks.%s: containers is required" $name) }}
+{{- end }}
+{{- with $hook.deletePolicy }}
+{{- if not (has . $validDeletePolicies) }}
+{{- fail (printf "hooks.%s: invalid deletePolicy %q. Must be one of: %s" $name . ($validDeletePolicies | join ", ")) }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{/*
 Map Helm hook events to Argo CD hook annotation value.
 Takes a list of Helm events and returns the Argo CD hook value (or empty if no mapping).
 Usage: {{ include "chartpack.hooks.argoEvent" (list "pre-install" "pre-upgrade") }}
