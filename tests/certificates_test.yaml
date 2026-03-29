@@ -1,0 +1,151 @@
+suite: cert-manager Certificates
+templates:
+  - templates/networking/certificate.yaml
+set:
+  containers:
+    app:
+      image:
+        repository: nginx
+      ports:
+        http:
+          port: 80
+  networking:
+    services:
+      http:
+        ports:
+          http:
+            port: 80
+tests:
+  - it: should not render when no certificates defined
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should render Certificate with ClusterIssuer
+    set:
+      networking:
+        certificates:
+          app-tls:
+            issuerRef:
+              name: letsencrypt-prod
+            dnsNames:
+              - app.example.com
+    asserts:
+      - isKind:
+          of: Certificate
+      - isAPIVersion:
+          of: cert-manager.io/v1
+      - equal:
+          path: spec.issuerRef.name
+          value: letsencrypt-prod
+      - equal:
+          path: spec.issuerRef.kind
+          value: ClusterIssuer
+      - contains:
+          path: spec.dnsNames
+          content: app.example.com
+
+  - it: should default secretName to fullname-key-tls
+    set:
+      networking:
+        certificates:
+          app-tls:
+            issuerRef:
+              name: letsencrypt-prod
+            dnsNames:
+              - app.example.com
+    asserts:
+      - equal:
+          path: spec.secretName
+          value: RELEASE-NAME-chartpack-app-tls-tls
+
+  - it: should use custom secretName
+    set:
+      networking:
+        certificates:
+          app-tls:
+            issuerRef:
+              name: letsencrypt-prod
+            secretName: my-custom-secret
+            dnsNames:
+              - app.example.com
+    asserts:
+      - equal:
+          path: spec.secretName
+          value: my-custom-secret
+
+  - it: should render with Issuer kind
+    set:
+      networking:
+        certificates:
+          internal:
+            issuerRef:
+              name: internal-ca
+              kind: Issuer
+            dnsNames:
+              - app.internal
+    asserts:
+      - equal:
+          path: spec.issuerRef.kind
+          value: Issuer
+
+  - it: should render duration and renewBefore
+    set:
+      networking:
+        certificates:
+          app-tls:
+            issuerRef:
+              name: letsencrypt-prod
+            dnsNames:
+              - app.example.com
+            duration: 2160h
+            renewBefore: 360h
+    asserts:
+      - equal:
+          path: spec.duration
+          value: 2160h
+      - equal:
+          path: spec.renewBefore
+          value: 360h
+
+  - it: should render privateKey settings
+    set:
+      networking:
+        certificates:
+          app-tls:
+            issuerRef:
+              name: letsencrypt-prod
+            dnsNames:
+              - app.example.com
+            privateKey:
+              algorithm: ECDSA
+              size: 256
+              rotationPolicy: Always
+    asserts:
+      - equal:
+          path: spec.privateKey.algorithm
+          value: ECDSA
+      - equal:
+          path: spec.privateKey.size
+          value: 256
+
+  - it: should render multiple certificates
+    set:
+      networking:
+        certificates:
+          public:
+            issuerRef:
+              name: letsencrypt-prod
+            dnsNames:
+              - app.example.com
+          internal:
+            issuerRef:
+              name: internal-ca
+              kind: Issuer
+            dnsNames:
+              - app.internal
+    asserts:
+      - containsDocument:
+          kind: Certificate
+          apiVersion: cert-manager.io/v1
+          any: true

@@ -363,6 +363,50 @@
           },
           "additionalProperties": false
         },
+        "certificates": {
+          "type": "object",
+          "description": "Map of cert-manager Certificate name to config",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["issuerRef"],
+            "properties": {
+              "issuerRef": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "kind": { "type": "string", "enum": ["Issuer", "ClusterIssuer"] },
+                  "group": { "type": "string" }
+                }
+              },
+              "secretName": { "type": "string", "description": "Target secret name (defaults to <fullname>-<key>-tls)" },
+              "mount": {
+                "type": "object",
+                "description": "Auto-mount the certificate secret to all containers",
+                "required": ["path"],
+                "properties": {
+                  "path": { "type": "string", "description": "Mount path in containers" }
+                },
+                "additionalProperties": false
+              },
+              "commonName": { "type": "string" },
+              "dnsNames": { "type": "array", "items": { "type": "string" } },
+              "ipAddresses": { "type": "array", "items": { "type": "string" } },
+              "uris": { "type": "array", "items": { "type": "string" } },
+              "emailAddresses": { "type": "array", "items": { "type": "string" } },
+              "duration": { "type": "string" },
+              "renewBefore": { "type": "string" },
+              "privateKey": { "type": "object" },
+              "usages": { "type": "array", "items": { "type": "string" } },
+              "isCA": { "type": "boolean" },
+              "subject": { "type": "object" },
+              "keystores": { "type": "object" },
+              "secretTemplate": { "type": "object" },
+              "annotations": { "type": "object" },
+              "labels": { "type": "object" }
+            }
+          }
+        },
         "networkPolicies": {
           "type": "object",
           "description": "Map of NetworkPolicy name to config",

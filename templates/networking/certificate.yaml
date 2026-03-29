@@ -1,0 +1,65 @@
+{{- $fullName := include "chartpack.fullname" . -}}
+{{- range $name, $cert := .Values.networking.certificates }}
+{{- if $cert }}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+{{ include "chartpack.metadata" (dict "name" (printf "%s-%s" $fullName $name) "context" $ "extraAnnotations" $cert.annotations "extraLabels" $cert.labels) }}
+spec:
+  secretName: {{ default (printf "%s-%s-tls" $fullName $name) $cert.secretName }}
+  issuerRef:
+    name: {{ $cert.issuerRef.name }}
+    kind: {{ default "ClusterIssuer" $cert.issuerRef.kind }}
+    {{- with $cert.issuerRef.group }}
+    group: {{ . }}
+    {{- end }}
+  {{- with $cert.commonName }}
+  commonName: {{ . }}
+  {{- end }}
+  {{- with $cert.dnsNames }}
+  dnsNames:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with $cert.ipAddresses }}
+  ipAddresses:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with $cert.uris }}
+  uris:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with $cert.emailAddresses }}
+  emailAddresses:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with $cert.duration }}
+  duration: {{ . }}
+  {{- end }}
+  {{- with $cert.renewBefore }}
+  renewBefore: {{ . }}
+  {{- end }}
+  {{- with $cert.privateKey }}
+  privateKey:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with $cert.usages }}
+  usages:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- if not (kindIs "invalid" $cert.isCA) }}
+  isCA: {{ $cert.isCA }}
+  {{- end }}
+  {{- with $cert.subject }}
+  subject:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with $cert.keystores }}
+  keystores:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with $cert.secretTemplate }}
+  secretTemplate:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}
+{{- end }}

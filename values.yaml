@@ -485,6 +485,34 @@ networking:
 #           port: 53
 
   # =============================================================================
+  # =============================================================================
+  # Certificates (cert-manager)
+  # =============================================================================
+
+  # -- TLS Certificates (map of name -> config).
+  # Creates cert-manager Certificate resources. Requires cert-manager installed.
+  # secretName defaults to <fullname>-<key>-tls if not specified.
+  certificates: {}
+  # app-tls:
+  #   issuerRef:
+  #     name: letsencrypt-prod
+  #     kind: ClusterIssuer          # ClusterIssuer | Issuer
+  #   dnsNames:
+  #     - app.example.com
+  #     - www.example.com
+  #   # secretName: ""               # defaults to <fullname>-<key>-tls
+  #   # mount:
+  #   #   path: /etc/tls             # auto-mount cert to all containers at this path
+  #   # duration: 2160h              # 90 days
+  #   # renewBefore: 360h            # 15 days
+  #   # privateKey:
+  #   #   algorithm: RSA
+  #   #   size: 2048
+  #   #   rotationPolicy: Always
+  #   annotations: {}
+  #   labels: {}
+
+  # =============================================================================
   # Network Policies
   # =============================================================================
 

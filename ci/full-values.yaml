@@ -566,6 +566,33 @@ networking:
 
   # =============================================================================
   # =============================================================================
+  # =============================================================================
+  # Certificates (cert-manager)
+  # =============================================================================
+
+  certificates:
+    app-tls:
+      issuerRef:
+        name: letsencrypt-prod
+        kind: ClusterIssuer
+      dnsNames:
+        - app.example.com
+        - www.example.com
+      duration: 2160h
+      renewBefore: 360h
+    internal-tls:
+      issuerRef:
+        name: internal-ca
+        kind: Issuer
+      dnsNames:
+        - app.internal.example.com
+      privateKey:
+        algorithm: ECDSA
+        size: 256
+      mount:
+        path: /etc/internal-tls
+
+  # =============================================================================
   # Network Policies
   # =============================================================================
 

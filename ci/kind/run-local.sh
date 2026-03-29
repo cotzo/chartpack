@@ -79,6 +79,8 @@ kubectl apply --server-side -f https://raw.githubusercontent.com/istio/istio/1.2
 
 kubectl apply --server-side -f https://raw.githubusercontent.com/kubernetes/autoscaler/vpa-release-1.3/vertical-pod-autoscaler/deploy/vpa-v1-crd-gen.yaml 2>/dev/null
 
+kubectl apply --server-side -f https://github.com/cert-manager/cert-manager/releases/download/v1.20.0/cert-manager.crds.yaml 2>/dev/null
+
 END=$(date +%s)
 log_info "CRDs installed in $((END - START))s"
 

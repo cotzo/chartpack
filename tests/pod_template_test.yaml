@@ -470,3 +470,73 @@ tests:
       - isNotNull:
           path: spec.template.spec.topologySpreadConstraints
         template: templates/workloads/deployment.yaml
+
+  - it: should auto-mount certificate when mount.path is set
+    set:
+      workloadType: Deployment
+      containers:
+        app:
+          image:
+            repository: nginx
+          ports:
+            http:
+              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+        certificates:
+          app-tls:
+            issuerRef:
+              name: letsencrypt-prod
+            dnsNames:
+              - app.example.com
+            mount:
+              path: /etc/tls
+    asserts:
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: cert-app-tls
+            secret:
+              secretName: RELEASE-NAME-chartpack-app-tls-tls
+        template: templates/workloads/deployment.yaml
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            name: cert-app-tls
+            mountPath: /etc/tls
+            readOnly: true
+        template: templates/workloads/deployment.yaml
+
+  - it: should not auto-mount certificate when mount is not set
+    set:
+      workloadType: Deployment
+      containers:
+        app:
+          image:
+            repository: nginx
+          ports:
+            http:
+              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+        certificates:
+          app-tls:
+            issuerRef:
+              name: letsencrypt-prod
+            dnsNames:
+              - app.example.com
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            name: cert-app-tls
+          any: true
+        template: templates/workloads/deployment.yaml

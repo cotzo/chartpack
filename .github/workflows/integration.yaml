@@ -60,6 +60,9 @@ jobs:
 
           # VPA
           kubectl apply --server-side -f https://raw.githubusercontent.com/kubernetes/autoscaler/vpa-release-1.3/vertical-pod-autoscaler/deploy/vpa-v1-crd-gen.yaml
+
+          # cert-manager
+          kubectl apply --server-side -f https://github.com/cert-manager/cert-manager/releases/download/v1.20.0/cert-manager.crds.yaml
       - name: Run integration tests
         run: |
           chmod +x ci/kind/test.sh

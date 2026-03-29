@@ -65,6 +65,19 @@ and init container mounts. Deduplicates by volume name.
 {{- end }}
 {{- end }}
 
+{{- /* Certificate volumes (cert-manager automount) */ -}}
+{{- range $name, $cert := .Values.networking.certificates }}
+{{- if and $cert $cert.mount }}
+{{- $volName := printf "cert-%s" $name }}
+{{- if not (hasKey $seen $volName) }}
+{{- $_ := set $seen $volName true }}
+{{- $secretName := default (printf "%s-%s-tls" $fullName $name) $cert.secretName }}
+{{- $vol := dict "name" $volName "secret" (dict "secretName" $secretName) }}
+{{- $volumes = append $volumes $vol }}
+{{- end }}
+{{- end }}
+{{- end }}
+
 {{- if $volumes }}
 {{- toYaml $volumes }}
 {{- end }}
