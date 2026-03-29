@@ -47,7 +47,7 @@ This produces a Deployment with 1 replica, a ClusterIP Service, and a ServiceAcc
 
 **Any workload type** -- Deployment, StatefulSet, DaemonSet, CronJob, Job, or Argo Rollout -- all from a single chart with `workloadType`.
 
-**Full networking stack** -- Services, Ingresses, Gateway API routes, Istio VirtualServices, and Envoy Gateway policies. OAuth2 proxy autowiring for ingresses and routes.
+**Full networking stack** -- Services, Ingresses, Gateway API routes, Istio VirtualServices, Envoy Gateway policies, and NetworkPolicies. OAuth2 proxy autowiring for ingresses and routes.
 
 **Observability built in** -- Prometheus/VictoriaMetrics monitors, alerting rules (PrometheusRule/VMRule), and Grafana dashboards.
 
@@ -77,6 +77,7 @@ This produces a Deployment with 1 replica, a ClusterIP Service, and a ServiceAcc
 | [Services & Ingresses](docs/networking.md) | ClusterIP, NodePort, LoadBalancer, headless services, Ingress |
 | [Gateway API](docs/routes.md) | HTTPRoute, GRPCRoute, TLSRoute, TCPRoute, UDPRoute, Envoy policies |
 | [Istio](docs/istio.md) | VirtualService, DestinationRule, PeerAuthentication, AuthorizationPolicy |
+| [Network Policies](docs/network-policies.md) | Ingress/egress rules, deny-all, namespace/pod/IP selectors |
 | [OAuth2 Proxy](docs/oauth2-proxy.md) | Sidecar and deployment mode, ingress/route autowiring |
 
 ### Autoscaling & Availability

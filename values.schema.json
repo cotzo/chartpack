@@ -346,6 +346,21 @@
           },
           "additionalProperties": false
         },
+        "networkPolicies": {
+          "type": "object",
+          "description": "Map of NetworkPolicy name to config",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "podSelector": { "type": "object", "description": "Pod selector (defaults to chart's selectorLabels)" },
+              "policyTypes": { "type": "array", "items": { "type": "string", "enum": ["Ingress", "Egress"] } },
+              "ingress": { "type": "array", "items": { "type": "object" } },
+              "egress": { "type": "array", "items": { "type": "object" } },
+              "annotations": { "type": "object" },
+              "labels": { "type": "object" }
+            }
+          }
+        },
         "istio": {
           "type": "object",
           "properties": {

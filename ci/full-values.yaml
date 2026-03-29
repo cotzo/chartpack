@@ -569,6 +569,36 @@ networking:
                 port: 443
 
   # =============================================================================
+  # =============================================================================
+  # Network Policies
+  # =============================================================================
+
+  networkPolicies:
+    deny-all:
+      policyTypes:
+        - Ingress
+        - Egress
+    allow-ingress:
+      policyTypes:
+        - Ingress
+      ingress:
+        - from:
+            - namespaceSelector:
+                matchLabels:
+                  name: ingress-nginx
+          ports:
+            - protocol: TCP
+              port: 80
+    allow-dns-egress:
+      policyTypes:
+        - Egress
+      egress:
+        - to:
+            - namespaceSelector: {}
+          ports:
+            - protocol: UDP
+              port: 53
+
   # Istio — VirtualService, DestinationRule, PeerAuthentication, AuthorizationPolicy
   # =============================================================================
 

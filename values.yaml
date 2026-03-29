@@ -482,6 +482,41 @@ networking:
 #           port: 53
 
   # =============================================================================
+  # Network Policies
+  # =============================================================================
+
+  # -- NetworkPolicies (map of name -> config).
+  # podSelector defaults to chart's selectorLabels if not specified.
+  # No external dependencies — uses built-in networking.k8s.io/v1.
+  networkPolicies: {}
+  # deny-all:
+  #   policyTypes:
+  #     - Ingress
+  #     - Egress
+  # allow-ingress:
+  #   policyTypes:
+  #     - Ingress
+  #   ingress:
+  #     - from:
+  #         - namespaceSelector:
+  #             matchLabels:
+  #               name: ingress-nginx
+  #       ports:
+  #         - protocol: TCP
+  #           port: 80
+  # allow-dns:
+  #   policyTypes:
+  #     - Egress
+  #   egress:
+  #     - to:
+  #         - namespaceSelector: {}
+  #       ports:
+  #         - protocol: UDP
+  #           port: 53
+  #   annotations: {}
+  #   labels: {}
+
+  # =============================================================================
   # Istio
   # =============================================================================
 

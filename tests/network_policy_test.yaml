@@ -1,0 +1,145 @@
+suite: NetworkPolicy rendering
+templates:
+  - templates/networking/network-policy.yaml
+set:
+  containers:
+    app:
+      image:
+        repository: nginx
+      ports:
+        http:
+          port: 80
+  networking:
+    services:
+      http:
+        ports:
+          http:
+            port: 80
+tests:
+  - it: should not render when no network policies defined
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should render deny-all ingress policy with default selector
+    set:
+      networking:
+        networkPolicies:
+          deny-all:
+            policyTypes:
+              - Ingress
+    asserts:
+      - isKind:
+          of: NetworkPolicy
+      - isAPIVersion:
+          of: networking.k8s.io/v1
+      - equal:
+          path: spec.policyTypes[0]
+          value: Ingress
+      - exists:
+          path: spec.podSelector.matchLabels
+
+  - it: should render ingress rules with namespace selector
+    set:
+      networking:
+        networkPolicies:
+          allow-ingress:
+            policyTypes:
+              - Ingress
+            ingress:
+              - from:
+                  - namespaceSelector:
+                      matchLabels:
+                        name: ingress-nginx
+                ports:
+                  - protocol: TCP
+                    port: 80
+    asserts:
+      - equal:
+          path: spec.ingress[0].from[0].namespaceSelector.matchLabels.name
+          value: ingress-nginx
+      - equal:
+          path: spec.ingress[0].ports[0].port
+          value: 80
+
+  - it: should render egress rules for DNS
+    set:
+      networking:
+        networkPolicies:
+          allow-dns:
+            policyTypes:
+              - Egress
+            egress:
+              - to:
+                  - namespaceSelector: {}
+                ports:
+                  - protocol: UDP
+                    port: 53
+    asserts:
+      - equal:
+          path: spec.policyTypes[0]
+          value: Egress
+      - equal:
+          path: spec.egress[0].ports[0].protocol
+          value: UDP
+      - equal:
+          path: spec.egress[0].ports[0].port
+          value: 53
+
+  - it: should use custom podSelector when provided
+    set:
+      networking:
+        networkPolicies:
+          custom-selector:
+            podSelector:
+              matchLabels:
+                custom: label
+            policyTypes:
+              - Ingress
+    asserts:
+      - equal:
+          path: spec.podSelector.matchLabels.custom
+          value: label
+
+  - it: should render multiple network policies
+    set:
+      networking:
+        networkPolicies:
+          deny-all:
+            policyTypes:
+              - Ingress
+              - Egress
+          allow-dns:
+            policyTypes:
+              - Egress
+            egress:
+              - ports:
+                  - protocol: UDP
+                    port: 53
+    asserts:
+      - hasDocuments:
+          count: 2
+
+  - it: should render ipBlock rules
+    set:
+      networking:
+        networkPolicies:
+          allow-office:
+            policyTypes:
+              - Ingress
+            ingress:
+              - from:
+                  - ipBlock:
+                      cidr: 203.0.113.0/24
+                      except:
+                        - 203.0.113.50/32
+                ports:
+                  - protocol: TCP
+                    port: 443
+    asserts:
+      - equal:
+          path: spec.ingress[0].from[0].ipBlock.cidr
+          value: 203.0.113.0/24
+      - contains:
+          path: spec.ingress[0].from[0].ipBlock.except
+          content: 203.0.113.50/32
