@@ -5,8 +5,8 @@
 
 <p align="center">
   <a href="https://artifacthub.io/packages/search?repo=chartpack"><img src="https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/chartpack" alt="Artifact Hub"></a>
-  <a href="https://github.com/cotzo/universal-helm/actions/workflows/lint.yaml"><img src="https://github.com/cotzo/universal-helm/actions/workflows/lint.yaml/badge.svg" alt="Lint & Test"></a>
-  <a href="https://github.com/cotzo/universal-helm/actions/workflows/integration.yaml"><img src="https://github.com/cotzo/universal-helm/actions/workflows/integration.yaml/badge.svg" alt="Integration Tests"></a>
+  <a href="https://github.com/cotzo/chartpack/actions/workflows/lint.yaml"><img src="https://github.com/cotzo/chartpack/actions/workflows/lint.yaml/badge.svg" alt="Lint & Test"></a>
+  <a href="https://github.com/cotzo/chartpack/actions/workflows/integration.yaml"><img src="https://github.com/cotzo/chartpack/actions/workflows/integration.yaml/badge.svg" alt="Integration Tests"></a>
   <img src="https://img.shields.io/badge/kubernetes-%3E%3D1.28-blue?logo=kubernetes&logoColor=white" alt="Kubernetes >= 1.28">
   <img src="https://img.shields.io/badge/helm-v3-blue?logo=helm&logoColor=white" alt="Helm v3">
   <img src="https://img.shields.io/badge/license-Apache%202.0-green" alt="License">

@@ -1,0 +1,30 @@
+workloadType: Job
+containers:
+  worker:
+    image:
+      repository: busybox
+      tag: "1.36"
+    command: ["sh", "-c", "echo 'processing' && sleep 2"]
+    resources:
+      requests:
+        cpu: 10m
+        memory: 16Mi
+workloads:
+  job:
+    backoffLimit: 2
+    ttlSecondsAfterFinished: 120
+autoscaling:
+  keda:
+    enabled: true
+    maxReplicaCount: 5
+    successfulJobsHistoryLimit: 3
+    failedJobsHistoryLimit: 2
+    scalingStrategy:
+      strategy: default
+    triggers:
+      - type: cron
+        metadata:
+          timezone: UTC
+          start: "0 0 * * *"
+          end: "0 23 * * *"
+          desiredReplicas: "1"

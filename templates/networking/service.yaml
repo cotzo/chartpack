@@ -21,13 +21,17 @@ spec:
   publishNotReadyAddresses: true
   {{- end }}
   ports:
+    {{- $seenPorts := dict }}
     {{- range $svcName, $svc := .Values.networking.services }}
     {{- if $svc }}
     {{- range $portName, $portCfg := $svc.ports }}
+    {{- if not (hasKey $seenPorts $portName) }}
+    {{- $_ := set $seenPorts $portName true }}
     - name: {{ $portName }}
       port: {{ $portCfg.port }}
       targetPort: {{ default $portName $portCfg.containerPort }}
       protocol: {{ default "TCP" $portCfg.protocol }}
+    {{- end }}
     {{- end }}
     {{- end }}
     {{- end }}
