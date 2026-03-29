@@ -20,11 +20,13 @@
 {{- /* Merge hook annotations with user annotations */ -}}
 {{- $allAnnotations := merge (default (dict) $hook.annotations) $hookAnnotations -}}
 
-{{- /* Temporarily swap containers to render hook's containers via podTemplate */ -}}
+{{- /* Temporarily swap containers and workloadType to render hook's pod template */ -}}
 {{- $origContainers := $.Values.containers -}}
 {{- $origInitContainers := $.Values.initContainers -}}
+{{- $origWorkloadType := $.Values.workloadType -}}
 {{- $_ := set $.Values "containers" $hook.containers -}}
 {{- $_ := set $.Values "initContainers" (default (dict) $hook.initContainers) -}}
+{{- $_ := set $.Values "workloadType" "Job" -}}
 ---
 apiVersion: batch/v1
 kind: Job
@@ -49,5 +51,6 @@ spec:
     {{- include "chartpack.podTemplate" $ | nindent 4 }}
 {{- $_ := set $.Values "containers" $origContainers }}
 {{- $_ := set $.Values "initContainers" $origInitContainers }}
+{{- $_ := set $.Values "workloadType" $origWorkloadType }}
 {{ end }}
 {{- end }}
