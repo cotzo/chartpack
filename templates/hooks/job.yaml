@@ -20,19 +20,20 @@
 {{- /* Merge hook annotations with user annotations */ -}}
 {{- $allAnnotations := merge (default (dict) $hook.annotations) $hookAnnotations -}}
 
-{{- /* Temporarily swap containers, workloadType, and disable oauth2Proxy sidecars */ -}}
-{{- $origContainers := $.Values.containers -}}
-{{- $origInitContainers := $.Values.initContainers -}}
-{{- $origWorkloadType := $.Values.workloadType -}}
-{{- $origOauth2Proxies := $.Values.networking.oauth2Proxies -}}
-{{- $_ := set $.Values "containers" $hook.containers -}}
-{{- $_ := set $.Values "initContainers" (default (dict) $hook.initContainers) -}}
-{{- $_ := set $.Values "workloadType" "Job" -}}
-{{- $_ := set $.Values.networking "oauth2Proxies" (dict) -}}
+{{- /* Build a hook-specific context with overridden values (no mutation of $.Values) */ -}}
+{{- $hookNetworking := deepCopy $.Values.networking -}}
+{{- $_ := set $hookNetworking "oauth2Proxies" (dict) -}}
+{{- $hookValues := deepCopy $.Values -}}
+{{- $_ := set $hookValues "containers" $hook.containers -}}
+{{- $_ := set $hookValues "initContainers" (default (dict) $hook.initContainers) -}}
+{{- $_ := set $hookValues "workloadType" "Job" -}}
+{{- $_ := set $hookValues "networking" $hookNetworking -}}
+{{- $hookCtx := deepCopy $ -}}
+{{- $_ := set $hookCtx "Values" $hookValues -}}
 ---
 apiVersion: batch/v1
 kind: Job
-{{ include "chartpack.metadata" (dict "name" (printf "%s-hook-%s" $fullName $name) "context" $ "extraAnnotations" $allAnnotations "extraLabels" $hook.labels) }}
+{{ include "chartpack.metadata" (dict "name" (printf "%s-hook-%s" $fullName $name) "context" $hookCtx "extraAnnotations" $allAnnotations "extraLabels" $hook.labels) }}
 spec:
   {{- with $hook.backoffLimit }}
   backoffLimit: {{ . }}
@@ -50,10 +51,6 @@ spec:
   parallelism: {{ . }}
   {{- end }}
   template:
-    {{- include "chartpack.podTemplate" $ | nindent 4 }}
-{{- $_ := set $.Values "containers" $origContainers }}
-{{- $_ := set $.Values "initContainers" $origInitContainers }}
-{{- $_ := set $.Values "workloadType" $origWorkloadType }}
-{{- $_ := set $.Values.networking "oauth2Proxies" $origOauth2Proxies }}
+    {{- include "chartpack.podTemplate" $hookCtx | nindent 4 }}
 {{ end }}
 {{- end }}
