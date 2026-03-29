@@ -10,7 +10,38 @@ entries:
           url: https://github.com/cotzo/chartpack
     apiVersion: v2
     appVersion: 1.0.0
-    created: "2026-03-29T15:19:47.672839826Z"
+    created: "2026-03-29T15:48:36.032528822Z"
+    description: A universal Helm chart for deploying any Kubernetes application workload
+    digest: ab5cf66d277c010a60b53d5210cf76eaead5971ca79593a8da9c357dde1c59c3
+    home: https://github.com/cotzo/chartpack
+    icon: https://raw.githubusercontent.com/cotzo/chartpack/main/docs/images/logo.png
+    keywords:
+    - universal
+    - deployment
+    - statefulset
+    - cronjob
+    - daemonset
+    - argo-rollouts
+    kubeVersion: '>=1.28.0-0'
+    maintainers:
+    - name: cotzo
+    name: chartpack
+    sources:
+    - https://github.com/cotzo/chartpack
+    type: application
+    urls:
+    - https://cotzo.github.io/chartpack/chartpack-1.5.1.tgz
+    version: 1.5.1
+  - annotations:
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: |
+        - name: Documentation
+          url: https://github.com/cotzo/chartpack/tree/main/docs
+        - name: Source
+          url: https://github.com/cotzo/chartpack
+    apiVersion: v2
+    appVersion: 1.0.0
+    created: "2026-03-29T15:48:36.03014496Z"
     description: A universal Helm chart for deploying any Kubernetes application workload
     digest: ce429963c05ed6ebb3b874ad5157cfcb66be98439b4ca0bb0845259183af985d
     home: https://github.com/cotzo/chartpack
@@ -41,7 +72,7 @@ entries:
           url: https://github.com/cotzo/chartpack
     apiVersion: v2
     appVersion: 1.0.0
-    created: "2026-03-29T15:19:47.66916092Z"
+    created: "2026-03-29T15:48:36.027691845Z"
     description: A universal Helm chart for deploying any Kubernetes application workload
     digest: 25cbd6016f2ddc6455775dfe96b3d24c5255a7aa14a4db1ae66aecc0f923f887
     home: https://github.com/cotzo/chartpack
@@ -72,7 +103,7 @@ entries:
           url: https://github.com/cotzo/chartpack
     apiVersion: v2
     appVersion: 1.0.0
-    created: "2026-03-29T15:19:47.665679258Z"
+    created: "2026-03-29T15:48:36.024452117Z"
     description: A universal Helm chart for deploying any Kubernetes application workload
     digest: 8774c2179c802dc6a8569250f62d97224e21dbdb2b553186b9f3f184d1ac0464
     home: https://github.com/cotzo/chartpack
@@ -103,7 +134,7 @@ entries:
           url: https://github.com/cotzo/chartpack
     apiVersion: v2
     appVersion: 1.0.0
-    created: "2026-03-29T15:19:47.663686034Z"
+    created: "2026-03-29T15:48:36.022359626Z"
     description: A universal Helm chart for deploying any Kubernetes application workload
     digest: b03baeeb48ba360aecd7a9faceb01dd926e30567dc7eadd76c74cf7a96ccf8d6
     home: https://github.com/cotzo/chartpack
@@ -133,7 +164,7 @@ entries:
           url: https://github.com/cotzo/chartpack
     apiVersion: v2
     appVersion: 1.0.0
-    created: "2026-03-29T15:19:47.662269952Z"
+    created: "2026-03-29T15:48:36.020865644Z"
     description: A universal Helm chart for deploying any Kubernetes application workload
     digest: 56c752591132cfb05f917f413834a99860f0c01808e831292f6dd278a50206a4
     home: https://github.com/cotzo/chartpack
@@ -154,4 +185,4 @@ entries:
     urls:
     - https://cotzo.github.io/chartpack/chartpack-1.0.3.tgz
     version: 1.0.3
-generated: "2026-03-29T15:19:47.659464698Z"
+generated: "2026-03-29T15:48:36.018543568Z"
