@@ -77,6 +77,8 @@ kubectl apply --server-side -f https://raw.githubusercontent.com/grafana-operato
 
 kubectl apply --server-side -f https://raw.githubusercontent.com/istio/istio/1.29.0/manifests/charts/base/files/crd-all.gen.yaml 2>/dev/null
 
+kubectl apply --server-side -f https://raw.githubusercontent.com/kubernetes/autoscaler/vpa-release-1.3/vertical-pod-autoscaler/deploy/vpa-v1-crd-gen.yaml 2>/dev/null
+
 END=$(date +%s)
 log_info "CRDs installed in $((END - START))s"
 

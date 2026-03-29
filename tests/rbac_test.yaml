@@ -148,6 +148,8 @@ tests:
       - equal:
           path: metadata.name
           value: RELEASE-NAME-chartpack-nodes-reader
+      - isNull:
+          path: metadata.namespace
 
   # ---------------------------------------------------------------------------
   # RoleBinding
@@ -216,6 +218,8 @@ tests:
       - equal:
           path: roleRef.kind
           value: ClusterRole
+      - isNull:
+          path: metadata.namespace
 
   # ---------------------------------------------------------------------------
   # Not rendered when no rbac defined

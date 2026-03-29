@@ -1,6 +1,7 @@
-suite: Autoscaling (HPA, KEDA)
+suite: Autoscaling (HPA, KEDA, VPA)
 templates:
   - templates/autoscaling/hpa.yaml
+  - templates/autoscaling/vpa.yaml
   - templates/autoscaling/scaledobject.yaml
   - templates/autoscaling/scaledjob.yaml
 tests:
@@ -473,3 +474,161 @@ tests:
           path: spec.scalingStrategy.strategy
           value: default
         template: templates/autoscaling/scaledjob.yaml
+
+  # ---------------------------------------------------------------------------
+  # VPA
+  # ---------------------------------------------------------------------------
+  - it: should not render VPA when disabled
+    set:
+      containers:
+        app:
+          image:
+            repository: nginx
+          ports:
+            http:
+              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+      autoscaling:
+        vpa:
+          enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+        template: templates/autoscaling/vpa.yaml
+
+  - it: should render VPA with updatePolicy
+    set:
+      containers:
+        app:
+          image:
+            repository: nginx
+          ports:
+            http:
+              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+      autoscaling:
+        vpa:
+          enabled: true
+          updatePolicy:
+            updateMode: Auto
+    asserts:
+      - isKind:
+          of: VerticalPodAutoscaler
+        template: templates/autoscaling/vpa.yaml
+      - isAPIVersion:
+          of: autoscaling.k8s.io/v1
+        template: templates/autoscaling/vpa.yaml
+      - equal:
+          path: spec.targetRef.kind
+          value: Deployment
+        template: templates/autoscaling/vpa.yaml
+      - equal:
+          path: spec.updatePolicy.updateMode
+          value: Auto
+        template: templates/autoscaling/vpa.yaml
+
+  - it: should render VPA with resourcePolicy
+    set:
+      containers:
+        app:
+          image:
+            repository: nginx
+          ports:
+            http:
+              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+      autoscaling:
+        vpa:
+          enabled: true
+          updatePolicy:
+            updateMode: Auto
+          resourcePolicy:
+            containerPolicies:
+              - containerName: "*"
+                minAllowed:
+                  cpu: 100m
+                  memory: 50Mi
+                maxAllowed:
+                  cpu: "1"
+                  memory: 500Mi
+                controlledResources: ["cpu", "memory"]
+                controlledValues: RequestsOnly
+    asserts:
+      - equal:
+          path: spec.resourcePolicy.containerPolicies[0].containerName
+          value: "*"
+        template: templates/autoscaling/vpa.yaml
+      - equal:
+          path: spec.resourcePolicy.containerPolicies[0].controlledValues
+          value: RequestsOnly
+        template: templates/autoscaling/vpa.yaml
+
+  - it: should set targetRef to Rollout for Rollout workloadType
+    set:
+      workloadType: Rollout
+      containers:
+        app:
+          image:
+            repository: nginx
+          ports:
+            http:
+              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+      autoscaling:
+        vpa:
+          enabled: true
+          updatePolicy:
+            updateMode: "Off"
+    asserts:
+      - equal:
+          path: spec.targetRef.apiVersion
+          value: argoproj.io/v1alpha1
+        template: templates/autoscaling/vpa.yaml
+      - equal:
+          path: spec.targetRef.kind
+          value: Rollout
+        template: templates/autoscaling/vpa.yaml
+
+  - it: should not render VPA for Job
+    set:
+      workloadType: Job
+      containers:
+        app:
+          image:
+            repository: nginx
+          ports:
+            http:
+              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+      autoscaling:
+        vpa:
+          enabled: true
+    asserts:
+      - hasDocuments:
+          count: 0
+        template: templates/autoscaling/vpa.yaml

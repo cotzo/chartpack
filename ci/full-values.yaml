@@ -804,6 +804,21 @@ autoscaling:
             value: 4
             periodSeconds: 15
         selectPolicy: Max
+  vpa:
+    enabled: true
+    updatePolicy:
+      updateMode: Auto
+    resourcePolicy:
+      containerPolicies:
+        - containerName: "*"
+          minAllowed:
+            cpu: 100m
+            memory: 128Mi
+          maxAllowed:
+            cpu: "2"
+            memory: 2Gi
+          controlledResources: ["cpu", "memory"]
+          controlledValues: RequestsOnly
 
 # =============================================================================
 # PDB

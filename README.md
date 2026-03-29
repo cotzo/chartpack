@@ -51,7 +51,7 @@ This produces a Deployment with 1 replica, a ClusterIP Service, and a ServiceAcc
 
 **Observability built in** -- Prometheus/VictoriaMetrics monitors, alerting rules (PrometheusRule/VMRule), and Grafana dashboards.
 
-**Event-driven autoscaling** -- HPA v2 and KEDA (ScaledObject + ScaledJob) with any trigger.
+**Event-driven autoscaling** -- HPA v2, VPA, and KEDA (ScaledObject + ScaledJob) with any trigger.
 
 **Secrets management** -- ConfigMaps, Secrets, External Secrets, and auto-generated passwords via ESO (ArgoCD-safe).
 
@@ -83,7 +83,7 @@ This produces a Deployment with 1 replica, a ClusterIP Service, and a ServiceAcc
 
 | Guide | Description |
 |-------|-------------|
-| [Autoscaling](docs/autoscaling.md) | HPA v2, KEDA (ScaledObject, ScaledJob), Pod Disruption Budgets |
+| [Autoscaling](docs/autoscaling.md) | HPA v2, VPA, KEDA (ScaledObject, ScaledJob), Pod Disruption Budgets |
 
 ### Observability
 
@@ -109,6 +109,7 @@ The core chart (Deployment, Service, Ingress, ConfigMap, Secret, HPA, PDB, RBAC)
 | Feature | Operator | Values key | Version |
 |---------|----------|------------|---------|
 | Argo Rollouts | [Argo Rollouts](https://argoproj.github.io/rollouts/) | `workloadType: Rollout` | v1.6+ |
+| VPA | [Vertical Pod Autoscaler](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler) | `autoscaling.vpa.enabled` | v1.0+ |
 | KEDA autoscaling | [KEDA](https://keda.sh/) | `autoscaling.keda.enabled` | v2.12+ |
 | Gateway API | [Gateway API CRDs](https://gateway-api.sigs.k8s.io/) | `networking.gatewayApi.routes` | v1.2+ |
 | Envoy policies | [Envoy Gateway](https://gateway.envoyproxy.io/) | `networking.gatewayApi.routes.*.policies.envoy` | v1.0+ |

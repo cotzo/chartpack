@@ -1,0 +1,24 @@
+{{- if .Values.autoscaling.vpa.enabled }}
+{{- if not (or (eq .Values.workloadType "CronJob") (eq .Values.workloadType "Job")) }}
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+{{ include "chartpack.metadata" (dict "context" $ "extraAnnotations" .Values.autoscaling.vpa.annotations "extraLabels" .Values.autoscaling.vpa.labels) }}
+spec:
+  targetRef:
+    apiVersion: {{ if eq .Values.workloadType "Rollout" }}argoproj.io/v1alpha1{{ else }}apps/v1{{ end }}
+    kind: {{ .Values.workloadType }}
+    name: {{ include "chartpack.fullname" . }}
+  {{- with .Values.autoscaling.vpa.updatePolicy }}
+  updatePolicy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.autoscaling.vpa.resourcePolicy }}
+  resourcePolicy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.autoscaling.vpa.recommenders }}
+  recommenders:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}
+{{- end }}

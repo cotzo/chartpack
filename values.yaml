@@ -679,6 +679,35 @@ autoscaling:
     # -- HPA labels
     labels: {}
 
+  # -- VPA configuration (not applicable to CronJob, Job)
+  # Can be used alongside HPA — VPA manages requests, HPA manages replicas.
+  # Set controlledValues: RequestsOnly when combining with HPA.
+  vpa:
+    enabled: false
+    # -- Update policy: Off (dry-run), Initial (create only), Auto (recreate pods)
+    updatePolicy: {}
+    # updateMode: Auto
+    # minReplicas: 2
+    # -- Per-container resource constraints
+    resourcePolicy: {}
+    # containerPolicies:
+    #   - containerName: "*"
+    #     mode: Auto
+    #     minAllowed:
+    #       cpu: 100m
+    #       memory: 50Mi
+    #     maxAllowed:
+    #       cpu: 1000m
+    #       memory: 500Mi
+    #     controlledResources: ["cpu", "memory"]
+    #     controlledValues: RequestsOnly     # use RequestsOnly with HPA
+    # -- Custom recommender
+    recommenders: []
+    # -- VPA annotations
+    annotations: {}
+    # -- VPA labels
+    labels: {}
+
   # -- KEDA configuration (not applicable to CronJob, DaemonSet)
   # Creates a ScaledObject for Deployment/StatefulSet/Rollout, or a ScaledJob for Job.
   # Cannot be used together with autoscaling.hpa (they would conflict)

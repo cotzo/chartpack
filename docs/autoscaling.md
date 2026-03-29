@@ -52,6 +52,54 @@ When `autoscaling.hpa.enabled: true`, the `replicaCount` field in the workload c
 [HPA reference](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) |
 [HPA walkthrough](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/)
 
+## Vertical Pod Autoscaler
+
+[VPA](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler) automatically adjusts CPU and memory requests based on observed usage. Applies to Deployment, StatefulSet, DaemonSet, and Rollout.
+
+VPA can be used **alongside HPA** — set `controlledValues: RequestsOnly` so VPA manages requests while HPA manages replica count.
+
+```yaml
+autoscaling:
+  vpa:
+    enabled: true
+    updatePolicy:
+      updateMode: Auto              # Off (dry-run) | Initial | Auto
+    resourcePolicy:
+      containerPolicies:
+        - containerName: "*"
+          minAllowed:
+            cpu: 100m
+            memory: 50Mi
+          maxAllowed:
+            cpu: "1"
+            memory: 500Mi
+          controlledResources: ["cpu", "memory"]
+          controlledValues: RequestsOnly   # use with HPA
+    annotations: {}
+    labels: {}
+```
+
+### Update Modes
+
+| Mode | Behavior |
+|------|----------|
+| `Off` | Recommendations computed but not applied (dry-run) |
+| `Initial` | Resources set only at pod creation |
+| `Auto` | Pods recreated when recommendations change significantly |
+
+### Container Policies
+
+| Field | Description |
+|-------|-------------|
+| `containerName` | Container name or `"*"` for all |
+| `mode` | `Auto` (default) or `Off` to exclude a container |
+| `minAllowed` | Minimum CPU/memory VPA can set |
+| `maxAllowed` | Maximum CPU/memory VPA can set |
+| `controlledResources` | `["cpu"]`, `["memory"]`, or `["cpu", "memory"]` |
+| `controlledValues` | `RequestsAndLimits` or `RequestsOnly` |
+
+[VPA reference](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler)
+
 ## KEDA
 
 [KEDA](https://keda.sh/) provides event-driven autoscaling. When `autoscaling.keda.enabled: true`, the chart creates a **ScaledObject** (for Deployment, StatefulSet, or Rollout) or a **ScaledJob** (for Job workloads). KEDA and HPA are mutually exclusive -- enabling both is a validation error.

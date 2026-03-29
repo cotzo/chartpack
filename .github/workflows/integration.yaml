@@ -57,6 +57,9 @@ jobs:
 
           # Istio
           kubectl apply --server-side -f https://raw.githubusercontent.com/istio/istio/1.29.0/manifests/charts/base/files/crd-all.gen.yaml
+
+          # VPA
+          kubectl apply --server-side -f https://raw.githubusercontent.com/kubernetes/autoscaler/vpa-release-1.3/vertical-pod-autoscaler/deploy/vpa-v1-crd-gen.yaml
       - name: Run integration tests
         run: |
           chmod +x ci/kind/test.sh

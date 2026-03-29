@@ -516,6 +516,18 @@
           },
           "additionalProperties": false
         },
+        "vpa": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "updatePolicy": { "type": "object" },
+            "resourcePolicy": { "type": "object" },
+            "recommenders": { "type": "array", "items": { "type": "object" } },
+            "annotations": { "type": "object" },
+            "labels": { "type": "object" }
+          },
+          "additionalProperties": false
+        },
         "keda": {
           "type": "object",
           "properties": {
