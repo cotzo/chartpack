@@ -56,7 +56,7 @@ jobs:
           kubectl apply --server-side -f https://raw.githubusercontent.com/grafana-operator/grafana-operator/v5.22.2/config/crd/bases/grafana.integreatly.org_grafanadashboards.yaml
 
           # Istio
-          kubectl apply --server-side -f https://raw.githubusercontent.com/istio/istio/1.29.0/manifests/charts/base/crds/crd-all.gen.yaml
+          kubectl apply --server-side -f https://raw.githubusercontent.com/istio/istio/1.29.0/manifests/charts/base/files/crd-all.gen.yaml
       - name: Run integration tests
         run: |
           chmod +x ci/kind/test.sh
