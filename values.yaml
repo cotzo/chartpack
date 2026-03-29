@@ -1129,6 +1129,44 @@ workloads:
     suspend: false
 
 # =============================================================================
+# Hooks (pre-install/pre-upgrade Jobs)
+# =============================================================================
+
+# -- Hook Jobs (map of name -> config).
+# Runs Jobs at Helm lifecycle events (pre-install, pre-upgrade, etc.).
+# Hooks share the main workload's pod settings (ServiceAccount, tolerations,
+# volumes, security context) but define their own containers.
+# Both Helm and Argo CD hook annotations are rendered automatically.
+hooks: {}
+# db-migrate:
+#   events:
+#     - pre-install
+#     - pre-upgrade
+#   weight: "-5"                        # execution order (lower = first)
+#   deletePolicy: before-hook-creation  # before-hook-creation | hook-succeeded | hook-failed
+#   containers:
+#     migrate:
+#       image:
+#         repository: my-app
+#         tag: "1.0.0"
+#       command: ["./migrate", "--up"]
+#       env:
+#         EXTRA_FLAG:
+#           value: "true"
+#       mounts:
+#         - path: /config
+#           configMap: app-config
+#       resources:
+#         requests:
+#           cpu: 100m
+#           memory: 128Mi
+#   backoffLimit: 3
+#   activeDeadlineSeconds: 300
+#   ttlSecondsAfterFinished: 600
+#   annotations: {}
+#   labels: {}
+
+# =============================================================================
 # Extra Resources (escape hatch)
 # =============================================================================
 

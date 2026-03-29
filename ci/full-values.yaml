@@ -1026,6 +1026,30 @@ dashboards:
         revision: 37
 
 # =============================================================================
+# =============================================================================
+# Hooks — pre-install/pre-upgrade Jobs
+# =============================================================================
+
+hooks:
+  db-migrate:
+    events:
+      - pre-install
+      - pre-upgrade
+    weight: "-5"
+    deletePolicy: before-hook-creation
+    containers:
+      migrate:
+        image:
+          repository: nginx
+          tag: "1.27"
+        command: ["sh", "-c", "echo 'Running migration' && sleep 1"]
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+    backoffLimit: 3
+    activeDeadlineSeconds: 120
+
 # Extra Resources — escape hatch
 # =============================================================================
 

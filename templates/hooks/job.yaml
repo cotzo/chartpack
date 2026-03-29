@@ -1,0 +1,53 @@
+{{- $fullName := include "chartpack.fullname" . -}}
+{{- range $name, $hook := .Values.hooks }}
+{{- if $hook }}
+{{- /* Build Helm hook annotations */ -}}
+{{- $hookAnnotations := dict -}}
+{{- $_ := set $hookAnnotations "helm.sh/hook" ($hook.events | join ",") -}}
+{{- $_ := set $hookAnnotations "helm.sh/hook-weight" (default "0" $hook.weight | toString) -}}
+{{- $_ := set $hookAnnotations "helm.sh/hook-delete-policy" (default "before-hook-creation" $hook.deletePolicy) -}}
+
+{{- /* Build Argo CD hook annotations */ -}}
+{{- $argoEvent := include "chartpack.hooks.argoEvent" $hook.events -}}
+{{- if $argoEvent -}}
+  {{- $_ := set $hookAnnotations "argocd.argoproj.io/hook" $argoEvent -}}
+  {{- $argoDeletePolicy := include "chartpack.hooks.argoDeletePolicy" (default "before-hook-creation" $hook.deletePolicy) -}}
+  {{- if $argoDeletePolicy -}}
+    {{- $_ := set $hookAnnotations "argocd.argoproj.io/hook-delete-policy" $argoDeletePolicy -}}
+  {{- end -}}
+{{- end -}}
+
+{{- /* Merge hook annotations with user annotations */ -}}
+{{- $allAnnotations := merge (default (dict) $hook.annotations) $hookAnnotations -}}
+
+{{- /* Temporarily swap containers to render hook's containers via podTemplate */ -}}
+{{- $origContainers := $.Values.containers -}}
+{{- $origInitContainers := $.Values.initContainers -}}
+{{- $_ := set $.Values "containers" $hook.containers -}}
+{{- $_ := set $.Values "initContainers" (default (dict) $hook.initContainers) -}}
+---
+apiVersion: batch/v1
+kind: Job
+{{ include "chartpack.metadata" (dict "name" (printf "%s-hook-%s" $fullName $name) "context" $ "extraAnnotations" $allAnnotations "extraLabels" $hook.labels) }}
+spec:
+  {{- with $hook.backoffLimit }}
+  backoffLimit: {{ . }}
+  {{- end }}
+  {{- with $hook.activeDeadlineSeconds }}
+  activeDeadlineSeconds: {{ . }}
+  {{- end }}
+  {{- with $hook.ttlSecondsAfterFinished }}
+  ttlSecondsAfterFinished: {{ . }}
+  {{- end }}
+  {{- with $hook.completions }}
+  completions: {{ . }}
+  {{- end }}
+  {{- with $hook.parallelism }}
+  parallelism: {{ . }}
+  {{- end }}
+  template:
+    {{- include "chartpack.podTemplate" $ | nindent 4 }}
+{{- $_ := set $.Values "containers" $origContainers }}
+{{- $_ := set $.Values "initContainers" $origInitContainers }}
+{{ end }}
+{{- end }}

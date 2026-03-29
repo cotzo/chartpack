@@ -814,6 +814,28 @@
       },
       "additionalProperties": false
     },
+    "hooks": {
+      "type": "object",
+      "description": "Map of hook name to hook Job config. Runs at Helm lifecycle events.",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["events", "containers"],
+        "properties": {
+          "events": { "type": "array", "items": { "type": "string", "enum": ["pre-install", "post-install", "pre-upgrade", "post-upgrade", "pre-delete", "post-delete", "pre-rollback", "post-rollback"] } },
+          "weight": { "type": "string", "description": "Hook execution order (lower = first)" },
+          "deletePolicy": { "type": "string", "enum": ["before-hook-creation", "hook-succeeded", "hook-failed"] },
+          "containers": { "type": "object", "description": "Hook containers (same format as main containers)" },
+          "initContainers": { "type": "object" },
+          "backoffLimit": { "type": ["integer", "string"] },
+          "activeDeadlineSeconds": { "type": ["integer", "string"] },
+          "ttlSecondsAfterFinished": { "type": ["integer", "string"] },
+          "completions": { "type": ["integer", "string"] },
+          "parallelism": { "type": ["integer", "string"] },
+          "annotations": { "type": "object" },
+          "labels": { "type": "object" }
+        }
+      }
+    },
     "extraResources": {
       "type": "array",
       "items": { "type": "object" }

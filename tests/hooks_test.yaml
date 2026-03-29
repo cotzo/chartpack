@@ -1,0 +1,212 @@
+suite: Hook Jobs (pre-install/pre-upgrade)
+templates:
+  - templates/hooks/job.yaml
+set:
+  containers:
+    app:
+      image:
+        repository: nginx
+      ports:
+        http:
+          port: 80
+  networking:
+    services:
+      http:
+        ports:
+          http:
+            port: 80
+tests:
+  - it: should not render when no hooks defined
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should render pre-install hook with Helm annotations
+    set:
+      hooks:
+        db-migrate:
+          events:
+            - pre-install
+          containers:
+            migrate:
+              image:
+                repository: my-app
+              command: ["./migrate"]
+    asserts:
+      - isKind:
+          of: Job
+      - equal:
+          path: metadata.annotations["helm.sh/hook"]
+          value: pre-install
+      - equal:
+          path: metadata.annotations["helm.sh/hook-weight"]
+          value: "0"
+      - equal:
+          path: metadata.annotations["helm.sh/hook-delete-policy"]
+          value: before-hook-creation
+
+  - it: should render Argo CD PreSync annotation for pre-install
+    set:
+      hooks:
+        db-migrate:
+          events:
+            - pre-install
+          containers:
+            migrate:
+              image:
+                repository: my-app
+    asserts:
+      - equal:
+          path: metadata.annotations["argocd.argoproj.io/hook"]
+          value: PreSync
+
+  - it: should render Argo CD PreSync for pre-upgrade
+    set:
+      hooks:
+        migrate:
+          events:
+            - pre-upgrade
+          containers:
+            run:
+              image:
+                repository: my-app
+    asserts:
+      - equal:
+          path: metadata.annotations["argocd.argoproj.io/hook"]
+          value: PreSync
+
+  - it: should render Argo CD PostSync for post-install
+    set:
+      hooks:
+        notify:
+          events:
+            - post-install
+          containers:
+            run:
+              image:
+                repository: my-app
+    asserts:
+      - equal:
+          path: metadata.annotations["argocd.argoproj.io/hook"]
+          value: PostSync
+
+  - it: should render combined events
+    set:
+      hooks:
+        db-migrate:
+          events:
+            - pre-install
+            - pre-upgrade
+          containers:
+            migrate:
+              image:
+                repository: my-app
+    asserts:
+      - equal:
+          path: metadata.annotations["helm.sh/hook"]
+          value: pre-install,pre-upgrade
+      - equal:
+          path: metadata.annotations["argocd.argoproj.io/hook"]
+          value: PreSync
+
+  - it: should render hook weight
+    set:
+      hooks:
+        first:
+          events:
+            - pre-install
+          weight: "-10"
+          containers:
+            run:
+              image:
+                repository: my-app
+    asserts:
+      - equal:
+          path: metadata.annotations["helm.sh/hook-weight"]
+          value: "-10"
+
+  - it: should render Argo CD delete policy
+    set:
+      hooks:
+        cleanup:
+          events:
+            - pre-install
+          deletePolicy: hook-succeeded
+          containers:
+            run:
+              image:
+                repository: my-app
+    asserts:
+      - equal:
+          path: metadata.annotations["helm.sh/hook-delete-policy"]
+          value: hook-succeeded
+      - equal:
+          path: metadata.annotations["argocd.argoproj.io/hook-delete-policy"]
+          value: HookSucceeded
+
+  - it: should render hook containers not main containers
+    set:
+      hooks:
+        db-migrate:
+          events:
+            - pre-install
+          containers:
+            migrate:
+              image:
+                repository: migration-tool
+                tag: "2.0"
+              command: ["./migrate", "--up"]
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].name
+          value: migrate
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: "migration-tool:2.0"
+
+  - it: should render multiple hooks
+    set:
+      hooks:
+        first:
+          events:
+            - pre-install
+          containers:
+            run:
+              image:
+                repository: first
+        second:
+          events:
+            - post-install
+          containers:
+            run:
+              image:
+                repository: second
+    asserts:
+      - containsDocument:
+          kind: Job
+          apiVersion: batch/v1
+          any: true
+
+  - it: should render Job spec fields
+    set:
+      hooks:
+        db-migrate:
+          events:
+            - pre-install
+          backoffLimit: 5
+          activeDeadlineSeconds: 600
+          ttlSecondsAfterFinished: 300
+          containers:
+            migrate:
+              image:
+                repository: my-app
+    asserts:
+      - equal:
+          path: spec.backoffLimit
+          value: 5
+      - equal:
+          path: spec.activeDeadlineSeconds
+          value: 600
+      - equal:
+          path: spec.ttlSecondsAfterFinished
+          value: 300

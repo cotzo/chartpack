@@ -55,6 +55,8 @@ This produces a Deployment with 1 replica, a ClusterIP Service, and a ServiceAcc
 
 **Secrets management** -- ConfigMaps, Secrets, External Secrets, and auto-generated passwords via ESO (ArgoCD-safe).
 
+**Lifecycle hooks** -- Pre-install/pre-upgrade Jobs for DB migrations, schema setup, etc. Auto-generates both Helm and Argo CD hook annotations. Hooks share the main workload's pod settings (SA, volumes, secrets).
+
 **Schema validation** -- Catches misconfigurations at install time: missing mounts, port mismatches, conflicting settings.
 
 ## Documentation
@@ -98,6 +100,7 @@ This produces a Deployment with 1 replica, a ClusterIP Service, and a ServiceAcc
 
 | Guide | Description |
 |-------|-------------|
+| [Hooks](docs/hooks.md) | Pre-install/pre-upgrade Jobs, Argo CD + Flux compatible |
 | [Extra Resources](docs/advanced.md) | Escape hatch for arbitrary resources, global settings, pod settings |
 
 ## Requirements
