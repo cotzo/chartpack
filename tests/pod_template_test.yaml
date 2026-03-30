@@ -758,6 +758,161 @@ tests:
               - us-east-1a
         template: templates/workloads/deployment.yaml
 
+  - it: should not render nodeAffinity when all targeting values are empty
+    set:
+      workloadType: Deployment
+      containers:
+        app:
+          image:
+            repository: nginx
+          ports:
+            http:
+              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+      nodeTargeting:
+        restrictions:
+          type: none
+        os: []
+        arch: []
+        regions: []
+    asserts:
+      - notExists:
+          path: spec.template.spec.affinity
+        template: templates/workloads/deployment.yaml
+
+  - it: should render restrictions combined with nodeTargeting
+    set:
+      workloadType: Deployment
+      containers:
+        app:
+          image:
+            repository: nginx
+          ports:
+            http:
+              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+      nodeTargeting:
+        restrictions:
+          type: differentNodes
+          enforcement: hard
+        os:
+          - linux
+        arch:
+          values:
+            - amd64
+          enforcement: hard
+    asserts:
+      - exists:
+          path: spec.template.spec.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution
+        template: templates/workloads/deployment.yaml
+      - contains:
+          path: spec.template.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions
+          content:
+            key: kubernetes.io/arch
+            operator: In
+            values:
+              - amd64
+        template: templates/workloads/deployment.yaml
+      - contains:
+          path: spec.template.spec.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution
+          content:
+            weight: 100
+            preference:
+              matchExpressions:
+                - key: kubernetes.io/os
+                  operator: In
+                  values:
+                    - linux
+        template: templates/workloads/deployment.yaml
+
+  - it: should render podAffinity passthrough from podSettings.affinity
+    set:
+      workloadType: Deployment
+      containers:
+        app:
+          image:
+            repository: nginx
+          ports:
+            http:
+              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+      nodeTargeting:
+        restrictions:
+          type: none
+      podSettings:
+        affinity:
+          podAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              - labelSelector:
+                  matchLabels:
+                    app: cache
+                topologyKey: kubernetes.io/hostname
+    asserts:
+      - contains:
+          path: spec.template.spec.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution
+          content:
+            labelSelector:
+              matchLabels:
+                app: cache
+            topologyKey: kubernetes.io/hostname
+        template: templates/workloads/deployment.yaml
+
+  - it: should render podAntiAffinity passthrough from podSettings.affinity
+    set:
+      workloadType: Deployment
+      containers:
+        app:
+          image:
+            repository: nginx
+          ports:
+            http:
+              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+      nodeTargeting:
+        restrictions:
+          type: none
+      podSettings:
+        affinity:
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 50
+                podAffinityTerm:
+                  labelSelector:
+                    matchLabels:
+                      app: web
+                  topologyKey: topology.kubernetes.io/zone
+    asserts:
+      - contains:
+          path: spec.template.spec.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution
+          content:
+            weight: 50
+            podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: web
+              topologyKey: topology.kubernetes.io/zone
+        template: templates/workloads/deployment.yaml
+
   - it: should render priorityClassName
     set:
       workloadType: Deployment
