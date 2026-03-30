@@ -172,8 +172,10 @@
     "nodeTargeting": {
       "type": "object",
       "properties": {
-        "os": { "type": "array", "items": { "type": "string" }, "description": "Target OS(es) (kubernetes.io/os)" },
-        "arch": { "type": "array", "items": { "type": "string" }, "description": "Target architecture(s) (kubernetes.io/arch)" }
+        "os": { "type": "array", "items": { "type": "string" }, "description": "Target OS(es)" },
+        "arch": { "type": "array", "items": { "type": "string" }, "description": "Target architecture(s)" },
+        "regions": { "type": "array", "items": { "type": "string" }, "description": "Target region(s)" },
+        "zones": { "type": "array", "items": { "type": "string" }, "description": "Target zone(s)" }
       },
       "additionalProperties": false
     },

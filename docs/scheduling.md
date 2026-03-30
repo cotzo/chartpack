@@ -1,8 +1,8 @@
 # Scheduling
 
-## Node Settings
+## Node Targeting
 
-High-level node targeting. Values are always lists, rendered as [nodeAffinity](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity) `In` expressions.
+High-level node targeting. Values are always lists, rendered as [nodeAffinity](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity) `In` expressions. Label keys come from `infraSettings.nodeLabels`.
 
 ```yaml
 nodeTargeting:
@@ -11,6 +11,12 @@ nodeTargeting:
   arch:
     - amd64
     - arm64
+  regions:
+    - us-east-1
+    - eu-west-1
+  zones:
+    - us-east-1a
+    - us-east-1b
 ```
 
 This generates:
@@ -26,6 +32,23 @@ nodeAffinity:
           - key: kubernetes.io/arch
             operator: In
             values: [amd64, arm64]
+          - key: topology.kubernetes.io/region
+            operator: In
+            values: [us-east-1, eu-west-1]
+          - key: topology.kubernetes.io/zone
+            operator: In
+            values: [us-east-1a, us-east-1b]
+```
+
+Label keys are resolved from `infraSettings.nodeLabels`. Override them for non-standard clusters:
+
+```yaml
+infraSettings:
+  nodeLabels:
+    topologyRegion: custom.io/region    # used by nodeTargeting.regions
+    topologyZone: custom.io/zone        # used by nodeTargeting.zones
+    os: kubernetes.io/os                # used by nodeTargeting.os
+    arch: kubernetes.io/arch            # used by nodeTargeting.arch
 ```
 
 These expressions are **merged** with any existing `podSettings.affinity.nodeAffinity`.

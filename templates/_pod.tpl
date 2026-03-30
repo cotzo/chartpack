@@ -58,6 +58,12 @@ spec:
   {{- if .Values.nodeTargeting.arch }}
   {{- $nodeAffinityExpressions = append $nodeAffinityExpressions (dict "key" .Values.infraSettings.nodeLabels.arch "operator" "In" "values" .Values.nodeTargeting.arch) }}
   {{- end }}
+  {{- if .Values.nodeTargeting.regions }}
+  {{- $nodeAffinityExpressions = append $nodeAffinityExpressions (dict "key" .Values.infraSettings.nodeLabels.topologyRegion "operator" "In" "values" .Values.nodeTargeting.regions) }}
+  {{- end }}
+  {{- if .Values.nodeTargeting.zones }}
+  {{- $nodeAffinityExpressions = append $nodeAffinityExpressions (dict "key" .Values.infraSettings.nodeLabels.topologyZone "operator" "In" "values" .Values.nodeTargeting.zones) }}
+  {{- end }}
   {{- if or .Values.podSettings.affinity $nodeAffinityExpressions }}
   affinity:
     {{- with .Values.podSettings.affinity.podAffinity }}

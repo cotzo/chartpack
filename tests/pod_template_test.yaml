@@ -224,6 +224,111 @@ tests:
               - arm64
         template: templates/workloads/deployment.yaml
 
+  - it: should render nodeAffinity from nodeTargeting.regions
+    set:
+      workloadType: Deployment
+      containers:
+        app:
+          image:
+            repository: nginx
+          ports:
+            http:
+              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+      nodeTargeting:
+        regions:
+          - us-east-1
+          - eu-west-1
+    asserts:
+      - contains:
+          path: spec.template.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions
+          content:
+            key: topology.kubernetes.io/region
+            operator: In
+            values:
+              - us-east-1
+              - eu-west-1
+        template: templates/workloads/deployment.yaml
+
+  - it: should render nodeAffinity from nodeTargeting.zones
+    set:
+      workloadType: Deployment
+      containers:
+        app:
+          image:
+            repository: nginx
+          ports:
+            http:
+              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+      nodeTargeting:
+        zones:
+          - us-east-1a
+          - us-east-1b
+    asserts:
+      - contains:
+          path: spec.template.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions
+          content:
+            key: topology.kubernetes.io/zone
+            operator: In
+            values:
+              - us-east-1a
+              - us-east-1b
+        template: templates/workloads/deployment.yaml
+
+  - it: should use custom infraSettings label keys for regions and zones
+    set:
+      workloadType: Deployment
+      containers:
+        app:
+          image:
+            repository: nginx
+          ports:
+            http:
+              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+      infraSettings:
+        nodeLabels:
+          topologyRegion: custom.io/region
+          topologyZone: custom.io/zone
+      nodeTargeting:
+        regions:
+          - us-east-1
+        zones:
+          - us-east-1a
+    asserts:
+      - contains:
+          path: spec.template.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions
+          content:
+            key: custom.io/region
+            operator: In
+            values:
+              - us-east-1
+        template: templates/workloads/deployment.yaml
+      - contains:
+          path: spec.template.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions
+          content:
+            key: custom.io/zone
+            operator: In
+            values:
+              - us-east-1a
+        template: templates/workloads/deployment.yaml
+
   - it: should render priorityClassName
     set:
       workloadType: Deployment

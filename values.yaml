@@ -59,14 +59,21 @@ argocd:
 
 # -- Node targeting settings. Always lists. Rendered as nodeAffinity matchExpressions.
 nodeTargeting:
-  # -- Target OS(es) (kubernetes.io/os)
+  # -- Target OS(es). Uses infraSettings.nodeLabels.os as the label key.
   os: []
   # - linux
-  # - windows
-  # -- Target architecture(s) (kubernetes.io/arch)
+  # -- Target architecture(s). Uses infraSettings.nodeLabels.arch as the label key.
   arch: []
   # - amd64
   # - arm64
+  # -- Target region(s). Uses infraSettings.nodeLabels.topologyRegion as the label key.
+  regions: []
+  # - us-east-1
+  # - eu-west-1
+  # -- Target zone(s). Uses infraSettings.nodeLabels.topologyZone as the label key.
+  zones: []
+  # - us-east-1a
+  # - us-east-1b
 
 # =============================================================================
 # Containers
