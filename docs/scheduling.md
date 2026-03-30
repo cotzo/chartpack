@@ -2,26 +2,27 @@
 
 ## Node Targeting
 
-High-level node targeting. Each property accepts `values` (list) and `enforcement` (`soft` or `hard`, default `soft`). Values are rendered as [nodeAffinity](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity) `In` expressions. Label keys come from `infraSettings.nodeLabels`.
+High-level node targeting rendered as [nodeAffinity](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity) `In` expressions. Label keys come from `infraSettings.nodeLabels`.
+
+Each targeting property supports two forms:
+
+- **Array shorthand** — soft enforcement (default): `os: [linux]`
+- **Object form** — explicit enforcement: `os: { values: [linux], enforcement: hard }`
 
 ```yaml
 nodeTargeting:
   restrictions:
     type: differentNodes
     enforcement: soft
-  os:
-    values: [linux]
+  os: [linux]                               # shorthand → soft
   arch:
     values: [amd64, arm64]
-    enforcement: hard
-  regions:
-    values: [us-east-1, eu-west-1]
-  zones:
-    values: [us-east-1a, us-east-1b]
-  nodeTypes:
-    values: [m5.xlarge, c5.2xlarge]
-  nodePools:
-    values: [general-purpose]
+    enforcement: hard                       # explicit → hard
+  regions: [us-east-1, eu-west-1]           # shorthand → soft
+  zones: [us-east-1a, us-east-1b]
+  racks: [rack-a, rack-b]
+  nodeTypes: [m5.xlarge, c5.2xlarge]
+  nodePools: [general-purpose]
 ```
 
 ### Restrictions
@@ -54,7 +55,9 @@ Use `soft` for most workloads. Use `hard` when colocation or separation is a str
 
 ### Node Affinity
 
-The targeting fields (`os`, `arch`, `regions`, `zones`, `nodeTypes`, `nodePools`) generate nodeAffinity `In` expressions. The `enforcement` field controls whether expressions are required or preferred.
+The targeting fields (`os`, `arch`, `regions`, `zones`, `racks`, `nodeTypes`, `nodePools`) generate nodeAffinity `In` expressions. The `enforcement` field controls whether expressions are required or preferred.
+
+> **Warning:** `hard` enforcement can leave pods in `Pending` state indefinitely if no nodes match the criteria. Use `soft` (the default) unless you have a strict scheduling requirement.
 
 **Enforcement:**
 
@@ -93,6 +96,7 @@ infraSettings:
   nodeLabels:
     topologyRegion: custom.io/region              # used by nodeTargeting.regions
     topologyZone: custom.io/zone                  # used by nodeTargeting.zones
+    topologyRack: custom.io/rack                  # used by nodeTargeting.racks
     os: kubernetes.io/os                          # used by nodeTargeting.os
     arch: kubernetes.io/arch                      # used by nodeTargeting.arch
     nodeType: node.kubernetes.io/instance-type    # used by nodeTargeting.nodeTypes
@@ -105,8 +109,12 @@ infraSettings:
 | `arch` | `arch` | `kubernetes.io/arch` |
 | `regions` | `topologyRegion` | `topology.kubernetes.io/region` |
 | `zones` | `topologyZone` | `topology.kubernetes.io/zone` |
+| `racks` | `topologyRack` | `topology.kubernetes.io/rack` |
 | `nodeTypes` | `nodeType` | `node.kubernetes.io/instance-type` |
-| `nodePools` | `nodePool` | (cluster-specific) |
+| `nodePools` | `nodePool` | `node.cluster.x-k8s.io/node-pool` |
+
+> **Cloud-specific nodePool labels:** The default `nodePool` label is Cluster API standard. Override it for your cloud:
+> GKE: `cloud.google.com/gke-nodepool`, EKS: `eks.amazonaws.com/nodegroup`, AKS: `kubernetes.azure.com/agentpool`.
 
 These expressions are **merged** with any existing `podSettings.affinity.nodeAffinity`. Hard-enforced expressions merge into `requiredDuringSchedulingIgnoredDuringExecution`; soft-enforced ones merge into `preferredDuringSchedulingIgnoredDuringExecution`.
 

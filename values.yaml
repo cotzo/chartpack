@@ -60,7 +60,9 @@ argocd:
 # =============================================================================
 
 # -- Node targeting settings.
-# Each targeting property accepts `values` (list) and `enforcement` (soft|hard, default soft).
+# Each targeting property supports two forms:
+#   Short:    os: [linux]                                  → soft enforcement
+#   Explicit: os: { values: [linux], enforcement: hard }   → hard enforcement
 # soft = preferredDuringScheduling (best-effort), hard = requiredDuringScheduling (strict).
 nodeTargeting:
   # -- Pod placement restrictions.
@@ -69,30 +71,21 @@ nodeTargeting:
     type: differentNodes
     # -- Enforcement: soft (preferred, best-effort) or hard (required, may leave pods unschedulable)
     enforcement: soft
-  # -- Target OS(es). Uses infraSettings.nodeLabels.os as the label key.
-  os:
-    values: []
-    # enforcement: soft
-  # -- Target architecture(s). Uses infraSettings.nodeLabels.arch as the label key.
-  arch:
-    values: []
-    # enforcement: soft
-  # -- Target region(s). Uses infraSettings.nodeLabels.topologyRegion as the label key.
-  regions:
-    values: []
-    # enforcement: soft
-  # -- Target zone(s). Uses infraSettings.nodeLabels.topologyZone as the label key.
-  zones:
-    values: []
-    # enforcement: soft
-  # -- Target node type(s). Uses infraSettings.nodeLabels.nodeType as the label key.
-  nodeTypes:
-    values: []
-    # enforcement: soft
-  # -- Target node pool(s). Uses infraSettings.nodeLabels.nodePool as the label key.
-  nodePools:
-    values: []
-    # enforcement: soft
+  # -- Target OS(es). Label key: infraSettings.nodeLabels.os
+  os: []
+  # -- Target architecture(s). Label key: infraSettings.nodeLabels.arch
+  arch: []
+  # -- Target region(s). Label key: infraSettings.nodeLabels.topologyRegion
+  regions: []
+  # -- Target zone(s). Label key: infraSettings.nodeLabels.topologyZone
+  zones: []
+  # -- Target rack(s). Label key: infraSettings.nodeLabels.topologyRack
+  racks: []
+  # -- Target node/instance type(s). Label key: infraSettings.nodeLabels.nodeType
+  nodeTypes: []
+  # -- Target node pool(s). Label key: infraSettings.nodeLabels.nodePool
+  # Common cloud labels: GKE=cloud.google.com/gke-nodepool, EKS=eks.amazonaws.com/nodegroup, AKS=kubernetes.azure.com/agentpool
+  nodePools: []
 
 # =============================================================================
 # Containers

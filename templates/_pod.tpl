@@ -54,35 +54,30 @@ spec:
   {{- $nl := default (dict) (default (dict) .Values.infraSettings).nodeLabels }}
   {{- $hardNodeAffinityExpressions := list }}
   {{- $softNodeAffinityExpressions := list }}
-  {{- $osObj := default (dict) .Values.nodeTargeting.os }}
-  {{- if $osObj.values }}
-  {{- $expr := dict "key" (default "kubernetes.io/os" $nl.os) "operator" "In" "values" $osObj.values }}
-  {{- if eq (default "soft" $osObj.enforcement) "hard" }}{{ $hardNodeAffinityExpressions = append $hardNodeAffinityExpressions $expr }}{{ else }}{{ $softNodeAffinityExpressions = append $softNodeAffinityExpressions $expr }}{{ end }}
+  {{- /* Each entry: (fieldName, defaultLabelKey, infraSettingsKey) */ -}}
+  {{- range $entry := list
+    (list "os"        "kubernetes.io/os"                 "os")
+    (list "arch"      "kubernetes.io/arch"               "arch")
+    (list "regions"   "topology.kubernetes.io/region"    "topologyRegion")
+    (list "zones"     "topology.kubernetes.io/zone"      "topologyZone")
+    (list "racks"     "topology.kubernetes.io/rack"      "topologyRack")
+    (list "nodeTypes" "node.kubernetes.io/instance-type" "nodeType")
+    (list "nodePools" "node.cluster.x-k8s.io/node-pool" "nodePool")
+  }}
+  {{- $raw := index $.Values.nodeTargeting (index $entry 0) }}
+  {{- $vals := list }}
+  {{- $enforcement := "soft" }}
+  {{- if kindIs "slice" $raw }}
+    {{- $vals = $raw }}
+  {{- else }}
+    {{- $obj := default (dict) $raw }}
+    {{- $vals = default (list) $obj.values }}
+    {{- $enforcement = default "soft" $obj.enforcement }}
   {{- end }}
-  {{- $archObj := default (dict) .Values.nodeTargeting.arch }}
-  {{- if $archObj.values }}
-  {{- $expr := dict "key" (default "kubernetes.io/arch" $nl.arch) "operator" "In" "values" $archObj.values }}
-  {{- if eq (default "soft" $archObj.enforcement) "hard" }}{{ $hardNodeAffinityExpressions = append $hardNodeAffinityExpressions $expr }}{{ else }}{{ $softNodeAffinityExpressions = append $softNodeAffinityExpressions $expr }}{{ end }}
+  {{- if $vals }}
+  {{- $expr := dict "key" (default (index $entry 1) (index $nl (index $entry 2))) "operator" "In" "values" $vals }}
+  {{- if eq $enforcement "hard" }}{{ $hardNodeAffinityExpressions = append $hardNodeAffinityExpressions $expr }}{{ else }}{{ $softNodeAffinityExpressions = append $softNodeAffinityExpressions $expr }}{{ end }}
   {{- end }}
-  {{- $regionsObj := default (dict) .Values.nodeTargeting.regions }}
-  {{- if $regionsObj.values }}
-  {{- $expr := dict "key" (default "topology.kubernetes.io/region" $nl.topologyRegion) "operator" "In" "values" $regionsObj.values }}
-  {{- if eq (default "soft" $regionsObj.enforcement) "hard" }}{{ $hardNodeAffinityExpressions = append $hardNodeAffinityExpressions $expr }}{{ else }}{{ $softNodeAffinityExpressions = append $softNodeAffinityExpressions $expr }}{{ end }}
-  {{- end }}
-  {{- $zonesObj := default (dict) .Values.nodeTargeting.zones }}
-  {{- if $zonesObj.values }}
-  {{- $expr := dict "key" (default "topology.kubernetes.io/zone" $nl.topologyZone) "operator" "In" "values" $zonesObj.values }}
-  {{- if eq (default "soft" $zonesObj.enforcement) "hard" }}{{ $hardNodeAffinityExpressions = append $hardNodeAffinityExpressions $expr }}{{ else }}{{ $softNodeAffinityExpressions = append $softNodeAffinityExpressions $expr }}{{ end }}
-  {{- end }}
-  {{- $nodeTypesObj := default (dict) .Values.nodeTargeting.nodeTypes }}
-  {{- if $nodeTypesObj.values }}
-  {{- $expr := dict "key" (default "node.kubernetes.io/instance-type" $nl.nodeType) "operator" "In" "values" $nodeTypesObj.values }}
-  {{- if eq (default "soft" $nodeTypesObj.enforcement) "hard" }}{{ $hardNodeAffinityExpressions = append $hardNodeAffinityExpressions $expr }}{{ else }}{{ $softNodeAffinityExpressions = append $softNodeAffinityExpressions $expr }}{{ end }}
-  {{- end }}
-  {{- $nodePoolsObj := default (dict) .Values.nodeTargeting.nodePools }}
-  {{- if $nodePoolsObj.values }}
-  {{- $expr := dict "key" (default "node.cluster.x-k8s.io/node-pool" $nl.nodePool) "operator" "In" "values" $nodePoolsObj.values }}
-  {{- if eq (default "soft" $nodePoolsObj.enforcement) "hard" }}{{ $hardNodeAffinityExpressions = append $hardNodeAffinityExpressions $expr }}{{ else }}{{ $softNodeAffinityExpressions = append $softNodeAffinityExpressions $expr }}{{ end }}
   {{- end }}
   {{- $r := default (dict) (default (dict) .Values.nodeTargeting).restrictions }}
   {{- $rType := default "differentNodes" $r.type }}

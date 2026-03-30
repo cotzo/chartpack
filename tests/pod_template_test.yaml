@@ -289,7 +289,7 @@ tests:
           path: spec.template.spec.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution
         template: templates/workloads/deployment.yaml
 
-  - it: should render soft nodeAffinity from nodeTargeting.os (default enforcement)
+  - it: should render soft nodeAffinity from nodeTargeting.os using array shorthand
     set:
       workloadType: Deployment
       containers:
@@ -307,8 +307,7 @@ tests:
                 port: 80
       nodeTargeting:
         os:
-          values:
-            - linux
+          - linux
     asserts:
       - contains:
           path: spec.template.spec.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution
@@ -322,7 +321,7 @@ tests:
                     - linux
         template: templates/workloads/deployment.yaml
 
-  - it: should render soft nodeAffinity from nodeTargeting.arch (default enforcement)
+  - it: should render soft nodeAffinity from nodeTargeting.arch using array shorthand
     set:
       workloadType: Deployment
       containers:
@@ -340,9 +339,8 @@ tests:
                 port: 80
       nodeTargeting:
         arch:
-          values:
-            - amd64
-            - arm64
+          - amd64
+          - arm64
     asserts:
       - contains:
           path: spec.template.spec.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution
@@ -357,7 +355,7 @@ tests:
                     - arm64
         template: templates/workloads/deployment.yaml
 
-  - it: should render soft nodeAffinity from nodeTargeting.regions (default enforcement)
+  - it: should render soft nodeAffinity from nodeTargeting.regions using object form
     set:
       workloadType: Deployment
       containers:
@@ -392,7 +390,7 @@ tests:
                     - eu-west-1
         template: templates/workloads/deployment.yaml
 
-  - it: should render soft nodeAffinity from nodeTargeting.zones (default enforcement)
+  - it: should render soft nodeAffinity from nodeTargeting.zones using array shorthand
     set:
       workloadType: Deployment
       containers:
@@ -410,9 +408,8 @@ tests:
                 port: 80
       nodeTargeting:
         zones:
-          values:
-            - us-east-1a
-            - us-east-1b
+          - us-east-1a
+          - us-east-1b
     asserts:
       - contains:
           path: spec.template.spec.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution
@@ -425,6 +422,106 @@ tests:
                   values:
                     - us-east-1a
                     - us-east-1b
+        template: templates/workloads/deployment.yaml
+
+  - it: should render soft nodeAffinity from nodeTargeting.racks
+    set:
+      workloadType: Deployment
+      containers:
+        app:
+          image:
+            repository: nginx
+          ports:
+            http:
+              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+      nodeTargeting:
+        racks:
+          - rack-a
+          - rack-b
+    asserts:
+      - contains:
+          path: spec.template.spec.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution
+          content:
+            weight: 100
+            preference:
+              matchExpressions:
+                - key: topology.kubernetes.io/rack
+                  operator: In
+                  values:
+                    - rack-a
+                    - rack-b
+        template: templates/workloads/deployment.yaml
+
+  - it: should render soft nodeAffinity from nodeTargeting.nodeTypes
+    set:
+      workloadType: Deployment
+      containers:
+        app:
+          image:
+            repository: nginx
+          ports:
+            http:
+              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+      nodeTargeting:
+        nodeTypes:
+          - m5.xlarge
+          - c5.2xlarge
+    asserts:
+      - contains:
+          path: spec.template.spec.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution
+          content:
+            weight: 100
+            preference:
+              matchExpressions:
+                - key: node.kubernetes.io/instance-type
+                  operator: In
+                  values:
+                    - m5.xlarge
+                    - c5.2xlarge
+        template: templates/workloads/deployment.yaml
+
+  - it: should render soft nodeAffinity from nodeTargeting.nodePools
+    set:
+      workloadType: Deployment
+      containers:
+        app:
+          image:
+            repository: nginx
+          ports:
+            http:
+              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+      nodeTargeting:
+        nodePools:
+          - general-purpose
+    asserts:
+      - contains:
+          path: spec.template.spec.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution
+          content:
+            weight: 100
+            preference:
+              matchExpressions:
+                - key: node.cluster.x-k8s.io/node-pool
+                  operator: In
+                  values:
+                    - general-purpose
         template: templates/workloads/deployment.yaml
 
   - it: should render hard nodeAffinity from nodeTargeting.os with enforcement hard
@@ -458,7 +555,7 @@ tests:
               - linux
         template: templates/workloads/deployment.yaml
 
-  - it: should render hard nodeAffinity from nodeTargeting.arch with enforcement hard
+  - it: should render hard nodeAffinity from nodeTargeting.nodePools with enforcement hard
     set:
       workloadType: Deployment
       containers:
@@ -475,18 +572,18 @@ tests:
               http:
                 port: 80
       nodeTargeting:
-        arch:
+        nodePools:
           values:
-            - amd64
+            - gpu
           enforcement: hard
     asserts:
       - contains:
           path: spec.template.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions
           content:
-            key: kubernetes.io/arch
+            key: node.cluster.x-k8s.io/node-pool
             operator: In
             values:
-              - amd64
+              - gpu
         template: templates/workloads/deployment.yaml
 
   - it: should render mixed hard and soft nodeAffinity
@@ -511,8 +608,7 @@ tests:
             - linux
           enforcement: hard
         arch:
-          values:
-            - amd64
+          - amd64
     asserts:
       - contains:
           path: spec.template.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions
@@ -534,7 +630,88 @@ tests:
                     - amd64
         template: templates/workloads/deployment.yaml
 
-  - it: should use custom infraSettings label keys with new format
+  - it: should merge nodeTargeting with podSettings.affinity.nodeAffinity
+    set:
+      workloadType: Deployment
+      containers:
+        app:
+          image:
+            repository: nginx
+          ports:
+            http:
+              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+      nodeTargeting:
+        arch:
+          values:
+            - amd64
+          enforcement: hard
+        regions:
+          - us-east-1
+      podSettings:
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+                - matchExpressions:
+                    - key: custom.io/label
+                      operator: In
+                      values:
+                        - value1
+            preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 50
+                preference:
+                  matchExpressions:
+                    - key: custom.io/other
+                      operator: In
+                      values:
+                        - value2
+    asserts:
+      - contains:
+          path: spec.template.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions
+          content:
+            key: custom.io/label
+            operator: In
+            values:
+              - value1
+        template: templates/workloads/deployment.yaml
+      - contains:
+          path: spec.template.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions
+          content:
+            key: kubernetes.io/arch
+            operator: In
+            values:
+              - amd64
+        template: templates/workloads/deployment.yaml
+      - contains:
+          path: spec.template.spec.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution
+          content:
+            weight: 100
+            preference:
+              matchExpressions:
+                - key: topology.kubernetes.io/region
+                  operator: In
+                  values:
+                    - us-east-1
+        template: templates/workloads/deployment.yaml
+      - contains:
+          path: spec.template.spec.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution
+          content:
+            weight: 50
+            preference:
+              matchExpressions:
+                - key: custom.io/other
+                  operator: In
+                  values:
+                    - value2
+        template: templates/workloads/deployment.yaml
+
+  - it: should use custom infraSettings label keys
     set:
       workloadType: Deployment
       containers:

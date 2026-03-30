@@ -4,12 +4,21 @@
   "required": ["workloadType", "containers"],
   "definitions": {
     "nodeTargetingProperty": {
-      "type": "object",
-      "properties": {
-        "values": { "type": "array", "items": { "type": "string" }, "description": "Target values list" },
-        "enforcement": { "type": "string", "enum": ["soft", "hard"], "description": "soft (preferred, best-effort) or hard (required, may leave pods unschedulable)" }
-      },
-      "additionalProperties": false
+      "oneOf": [
+        {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Shorthand: list of values with soft (default) enforcement"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "values": { "type": "array", "items": { "type": "string" }, "description": "Target values list" },
+            "enforcement": { "type": "string", "enum": ["soft", "hard"], "description": "soft (preferred, best-effort) or hard (required, may leave pods unschedulable)" }
+          },
+          "additionalProperties": false
+        }
+      ]
     },
     "containerSpec": {
       "type": "object",
@@ -142,15 +151,16 @@
           "properties": {
             "topologyRegion": { "type": "string", "minLength": 1, "description": "Region topology label key" },
             "topologyZone": { "type": "string", "minLength": 1, "description": "Zone topology label key" },
-            "topologyRack": { "type": "string", "description": "Rack topology label key" },
-            "nodePool": { "type": "string", "description": "Node pool label key" },
+            "topologyRack": { "type": "string", "minLength": 1, "description": "Rack topology label key" },
+            "nodePool": { "type": "string", "minLength": 1, "description": "Node pool label key" },
             "os": { "type": "string", "minLength": 1, "description": "OS label key" },
             "arch": { "type": "string", "minLength": 1, "description": "Architecture label key" },
             "nodeType": { "type": "string", "minLength": 1, "description": "Node type/instance type label key" }
           },
           "additionalProperties": false
         }
-      }
+      },
+      "additionalProperties": false
     },
     "argocd": {
       "type": "object",
@@ -193,6 +203,7 @@
         "arch": { "$ref": "#/definitions/nodeTargetingProperty", "description": "Target architecture(s)" },
         "regions": { "$ref": "#/definitions/nodeTargetingProperty", "description": "Target region(s)" },
         "zones": { "$ref": "#/definitions/nodeTargetingProperty", "description": "Target zone(s)" },
+        "racks": { "$ref": "#/definitions/nodeTargetingProperty", "description": "Target rack(s)" },
         "nodeTypes": { "$ref": "#/definitions/nodeTargetingProperty", "description": "Target node/instance type(s)" },
         "nodePools": { "$ref": "#/definitions/nodeTargetingProperty", "description": "Target node pool(s)" }
       },
