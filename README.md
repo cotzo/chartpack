@@ -57,6 +57,8 @@ This produces a Deployment with 1 replica, a ClusterIP Service, and a ServiceAcc
 
 **Lifecycle hooks** -- Pre-install/pre-upgrade Jobs for DB migrations, schema setup, etc. Auto-generates both Helm and Argo CD hook annotations. Hooks share the main workload's pod settings (SA, volumes, secrets).
 
+**Argo CD native** -- Auto sync waves for ordered deployment, sync options, and dual hook annotations. Works with Argo CD, Flux, and Helm CLI without configuration changes.
+
 **Schema validation** -- Catches misconfigurations at install time: missing mounts, port mismatches, conflicting settings.
 
 ## Documentation
@@ -97,11 +99,18 @@ This produces a Deployment with 1 replica, a ClusterIP Service, and a ServiceAcc
 | [Alerting](docs/alerting.md) | PrometheusRule, VMRule (alerting + recording rules) |
 | [Dashboards](docs/dashboards.md) | GrafanaDashboard (inline JSON, grafana.com, URL, ConfigMap, Jsonnet) |
 
+### GitOps & Deployment
+
+| Guide | Description |
+|-------|-------------|
+| [Argo CD](docs/argocd.md) | Sync waves, sync options, hook annotations |
+| [Hooks](docs/hooks.md) | Pre-install/pre-upgrade Jobs, Argo CD + Flux compatible |
+
 ### Advanced
 
 | Guide | Description |
 |-------|-------------|
-| [Hooks](docs/hooks.md) | Pre-install/pre-upgrade Jobs, Argo CD + Flux compatible |
+| [Resource Quotas](docs/resource-quotas.md) | LimitRange, ResourceQuota |
 | [Extra Resources](docs/advanced.md) | Escape hatch for arbitrary resources, global settings, pod settings |
 
 ## Requirements
