@@ -164,7 +164,7 @@ tests:
             effect: NoSchedule
         template: templates/workloads/deployment.yaml
 
-  - it: should render nodeAffinity from nodeSettings.os
+  - it: should render nodeAffinity from nodeTargeting.os
     set:
       workloadType: Deployment
       containers:
@@ -180,7 +180,7 @@ tests:
             ports:
               http:
                 port: 80
-      nodeSettings:
+      nodeTargeting:
         os:
           - linux
     asserts:
@@ -193,7 +193,7 @@ tests:
               - linux
         template: templates/workloads/deployment.yaml
 
-  - it: should render nodeAffinity from nodeSettings.arch
+  - it: should render nodeAffinity from nodeTargeting.arch
     set:
       workloadType: Deployment
       containers:
@@ -209,7 +209,7 @@ tests:
             ports:
               http:
                 port: 80
-      nodeSettings:
+      nodeTargeting:
         arch:
           - amd64
           - arm64

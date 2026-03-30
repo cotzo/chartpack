@@ -58,7 +58,7 @@ argocd:
 # =============================================================================
 
 # -- Node targeting settings. Always lists. Rendered as nodeAffinity matchExpressions.
-nodeSettings:
+nodeTargeting:
   # -- Target OS(es) (kubernetes.io/os)
   os: []
   # - linux

@@ -50,13 +50,13 @@ spec:
   nodeSelector:
     {{- toYaml . | nindent 4 }}
   {{- end }}
-  {{- /* Build nodeAffinity expressions from nodeSettings */ -}}
+  {{- /* Build nodeAffinity expressions from nodeTargeting */ -}}
   {{- $nodeAffinityExpressions := list }}
-  {{- if .Values.nodeSettings.os }}
-  {{- $nodeAffinityExpressions = append $nodeAffinityExpressions (dict "key" .Values.infraSettings.nodeLabels.os "operator" "In" "values" .Values.nodeSettings.os) }}
+  {{- if .Values.nodeTargeting.os }}
+  {{- $nodeAffinityExpressions = append $nodeAffinityExpressions (dict "key" .Values.infraSettings.nodeLabels.os "operator" "In" "values" .Values.nodeTargeting.os) }}
   {{- end }}
-  {{- if .Values.nodeSettings.arch }}
-  {{- $nodeAffinityExpressions = append $nodeAffinityExpressions (dict "key" .Values.infraSettings.nodeLabels.arch "operator" "In" "values" .Values.nodeSettings.arch) }}
+  {{- if .Values.nodeTargeting.arch }}
+  {{- $nodeAffinityExpressions = append $nodeAffinityExpressions (dict "key" .Values.infraSettings.nodeLabels.arch "operator" "In" "values" .Values.nodeTargeting.arch) }}
   {{- end }}
   {{- if or .Values.podSettings.affinity $nodeAffinityExpressions }}
   affinity:

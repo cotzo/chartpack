@@ -169,7 +169,7 @@
       "additionalProperties": { "$ref": "#/definitions/initContainerSpec" },
       "description": "Map of init container name to container spec (processed in alphabetical key order)"
     },
-    "nodeSettings": {
+    "nodeTargeting": {
       "type": "object",
       "properties": {
         "os": { "type": "array", "items": { "type": "string" }, "description": "Target OS(es) (kubernetes.io/os)" },

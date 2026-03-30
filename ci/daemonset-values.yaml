@@ -1,6 +1,6 @@
 workloadType: DaemonSet
 
-nodeSettings:
+nodeTargeting:
   os:
     - linux
 

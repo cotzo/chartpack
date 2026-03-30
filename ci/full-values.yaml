@@ -6,7 +6,7 @@ workloadType: Deployment
 
 nameOverride: "full-test"
 
-nodeSettings:
+nodeTargeting:
   os:
     - linux
   arch:

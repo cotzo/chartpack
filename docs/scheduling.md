@@ -5,7 +5,7 @@
 High-level node targeting. Values are always lists, rendered as [nodeAffinity](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity) `In` expressions.
 
 ```yaml
-nodeSettings:
+nodeTargeting:
   os:
     - linux
   arch:
@@ -49,7 +49,7 @@ podSettings:
 
 ### Affinity
 
-Full affinity rules. `nodeSettings` expressions are merged into `nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution`.
+Full affinity rules. `nodeTargeting` expressions are merged into `nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution`.
 
 ```yaml
 podSettings:
