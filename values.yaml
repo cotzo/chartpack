@@ -59,36 +59,40 @@ argocd:
 # Node Settings
 # =============================================================================
 
-# -- Node targeting settings. Always lists. Rendered as nodeAffinity matchExpressions.
+# -- Node targeting settings.
+# Each targeting property accepts `values` (list) and `enforcement` (soft|hard, default soft).
+# soft = preferredDuringScheduling (best-effort), hard = requiredDuringScheduling (strict).
 nodeTargeting:
-  # -- Pod placement restriction across nodes.
-  # differentNodes (default): replicas spread across different nodes (podAntiAffinity)
-  # sameNode: all replicas on the same node (podAffinity)
-  # none: no placement preference
-  restrictions: differentNodes
+  # -- Pod placement restrictions.
+  restrictions:
+    # -- Placement type: differentNodes (spread), sameNode (colocate), none
+    type: differentNodes
+    # -- Enforcement: soft (preferred, best-effort) or hard (required, may leave pods unschedulable)
+    enforcement: soft
   # -- Target OS(es). Uses infraSettings.nodeLabels.os as the label key.
-  os: []
-  # - linux
+  os:
+    values: []
+    # enforcement: soft
   # -- Target architecture(s). Uses infraSettings.nodeLabels.arch as the label key.
-  arch: []
-  # - amd64
-  # - arm64
+  arch:
+    values: []
+    # enforcement: soft
   # -- Target region(s). Uses infraSettings.nodeLabels.topologyRegion as the label key.
-  regions: []
-  # - us-east-1
-  # - eu-west-1
+  regions:
+    values: []
+    # enforcement: soft
   # -- Target zone(s). Uses infraSettings.nodeLabels.topologyZone as the label key.
-  zones: []
-  # - us-east-1a
-  # - us-east-1b
+  zones:
+    values: []
+    # enforcement: soft
   # -- Target node type(s). Uses infraSettings.nodeLabels.nodeType as the label key.
-  nodeTypes: []
-  # - m5.xlarge
-  # - c5.2xlarge
+  nodeTypes:
+    values: []
+    # enforcement: soft
   # -- Target node pool(s). Uses infraSettings.nodeLabels.nodePool as the label key.
-  nodePools: []
-  # - general-purpose
-  # - gpu
+  nodePools:
+    values: []
+    # enforcement: soft
 
 # =============================================================================
 # Containers

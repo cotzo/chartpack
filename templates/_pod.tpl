@@ -50,35 +50,60 @@ spec:
   nodeSelector:
     {{- toYaml . | nindent 4 }}
   {{- end }}
-  {{- /* Build nodeAffinity expressions from nodeTargeting */ -}}
-  {{- $nodeAffinityExpressions := list }}
-  {{- if .Values.nodeTargeting.os }}
-  {{- $nodeAffinityExpressions = append $nodeAffinityExpressions (dict "key" .Values.infraSettings.nodeLabels.os "operator" "In" "values" .Values.nodeTargeting.os) }}
+  {{- /* Build nodeAffinity expressions from nodeTargeting, split by enforcement */ -}}
+  {{- $nl := default (dict) (default (dict) .Values.infraSettings).nodeLabels }}
+  {{- $hardNodeAffinityExpressions := list }}
+  {{- $softNodeAffinityExpressions := list }}
+  {{- $osObj := default (dict) .Values.nodeTargeting.os }}
+  {{- if $osObj.values }}
+  {{- $expr := dict "key" (default "kubernetes.io/os" $nl.os) "operator" "In" "values" $osObj.values }}
+  {{- if eq (default "soft" $osObj.enforcement) "hard" }}{{ $hardNodeAffinityExpressions = append $hardNodeAffinityExpressions $expr }}{{ else }}{{ $softNodeAffinityExpressions = append $softNodeAffinityExpressions $expr }}{{ end }}
   {{- end }}
-  {{- if .Values.nodeTargeting.arch }}
-  {{- $nodeAffinityExpressions = append $nodeAffinityExpressions (dict "key" .Values.infraSettings.nodeLabels.arch "operator" "In" "values" .Values.nodeTargeting.arch) }}
+  {{- $archObj := default (dict) .Values.nodeTargeting.arch }}
+  {{- if $archObj.values }}
+  {{- $expr := dict "key" (default "kubernetes.io/arch" $nl.arch) "operator" "In" "values" $archObj.values }}
+  {{- if eq (default "soft" $archObj.enforcement) "hard" }}{{ $hardNodeAffinityExpressions = append $hardNodeAffinityExpressions $expr }}{{ else }}{{ $softNodeAffinityExpressions = append $softNodeAffinityExpressions $expr }}{{ end }}
   {{- end }}
-  {{- if .Values.nodeTargeting.regions }}
-  {{- $nodeAffinityExpressions = append $nodeAffinityExpressions (dict "key" .Values.infraSettings.nodeLabels.topologyRegion "operator" "In" "values" .Values.nodeTargeting.regions) }}
+  {{- $regionsObj := default (dict) .Values.nodeTargeting.regions }}
+  {{- if $regionsObj.values }}
+  {{- $expr := dict "key" (default "topology.kubernetes.io/region" $nl.topologyRegion) "operator" "In" "values" $regionsObj.values }}
+  {{- if eq (default "soft" $regionsObj.enforcement) "hard" }}{{ $hardNodeAffinityExpressions = append $hardNodeAffinityExpressions $expr }}{{ else }}{{ $softNodeAffinityExpressions = append $softNodeAffinityExpressions $expr }}{{ end }}
   {{- end }}
-  {{- if .Values.nodeTargeting.zones }}
-  {{- $nodeAffinityExpressions = append $nodeAffinityExpressions (dict "key" .Values.infraSettings.nodeLabels.topologyZone "operator" "In" "values" .Values.nodeTargeting.zones) }}
+  {{- $zonesObj := default (dict) .Values.nodeTargeting.zones }}
+  {{- if $zonesObj.values }}
+  {{- $expr := dict "key" (default "topology.kubernetes.io/zone" $nl.topologyZone) "operator" "In" "values" $zonesObj.values }}
+  {{- if eq (default "soft" $zonesObj.enforcement) "hard" }}{{ $hardNodeAffinityExpressions = append $hardNodeAffinityExpressions $expr }}{{ else }}{{ $softNodeAffinityExpressions = append $softNodeAffinityExpressions $expr }}{{ end }}
   {{- end }}
-  {{- if .Values.nodeTargeting.nodeTypes }}
-  {{- $nodeAffinityExpressions = append $nodeAffinityExpressions (dict "key" .Values.infraSettings.nodeLabels.nodeType "operator" "In" "values" .Values.nodeTargeting.nodeTypes) }}
+  {{- $nodeTypesObj := default (dict) .Values.nodeTargeting.nodeTypes }}
+  {{- if $nodeTypesObj.values }}
+  {{- $expr := dict "key" (default "node.kubernetes.io/instance-type" $nl.nodeType) "operator" "In" "values" $nodeTypesObj.values }}
+  {{- if eq (default "soft" $nodeTypesObj.enforcement) "hard" }}{{ $hardNodeAffinityExpressions = append $hardNodeAffinityExpressions $expr }}{{ else }}{{ $softNodeAffinityExpressions = append $softNodeAffinityExpressions $expr }}{{ end }}
   {{- end }}
-  {{- if .Values.nodeTargeting.nodePools }}
-  {{- $nodeAffinityExpressions = append $nodeAffinityExpressions (dict "key" .Values.infraSettings.nodeLabels.nodePool "operator" "In" "values" .Values.nodeTargeting.nodePools) }}
+  {{- $nodePoolsObj := default (dict) .Values.nodeTargeting.nodePools }}
+  {{- if $nodePoolsObj.values }}
+  {{- $expr := dict "key" (default "node.cluster.x-k8s.io/node-pool" $nl.nodePool) "operator" "In" "values" $nodePoolsObj.values }}
+  {{- if eq (default "soft" $nodePoolsObj.enforcement) "hard" }}{{ $hardNodeAffinityExpressions = append $hardNodeAffinityExpressions $expr }}{{ else }}{{ $softNodeAffinityExpressions = append $softNodeAffinityExpressions $expr }}{{ end }}
   {{- end }}
-  {{- $restrictions := default "differentNodes" .Values.nodeTargeting.restrictions }}
-  {{- if or .Values.podSettings.affinity $nodeAffinityExpressions (ne $restrictions "none") }}
+  {{- $r := default (dict) (default (dict) .Values.nodeTargeting).restrictions }}
+  {{- $rType := default "differentNodes" $r.type }}
+  {{- $rEnforcement := default "soft" $r.enforcement }}
+  {{- $rSchedulingKey := "preferredDuringSchedulingIgnoredDuringExecution" }}
+  {{- if eq $rEnforcement "hard" }}{{ $rSchedulingKey = "requiredDuringSchedulingIgnoredDuringExecution" }}{{ end }}
+  {{- if or .Values.podSettings.affinity $hardNodeAffinityExpressions $softNodeAffinityExpressions (ne $rType "none") }}
   affinity:
-    {{- if or .Values.podSettings.affinity.podAffinity (eq $restrictions "sameNode") }}
+    {{- if or .Values.podSettings.affinity.podAffinity (eq $rType "sameNode") }}
     podAffinity:
       {{- with .Values.podSettings.affinity.podAffinity }}
       {{- toYaml . | nindent 6 }}
       {{- end }}
-      {{- if eq $restrictions "sameNode" }}
+      {{- if eq $rType "sameNode" }}
+      {{- if eq $rEnforcement "hard" }}
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchLabels:
+              {{- include "chartpack.selectorLabels" . | nindent 14 }}
+          topologyKey: kubernetes.io/hostname
+      {{- else }}
       preferredDuringSchedulingIgnoredDuringExecution:
         - weight: 100
           podAffinityTerm:
@@ -87,13 +112,21 @@ spec:
                 {{- include "chartpack.selectorLabels" . | nindent 16 }}
             topologyKey: kubernetes.io/hostname
       {{- end }}
+      {{- end }}
     {{- end }}
-    {{- if or .Values.podSettings.affinity.podAntiAffinity (eq $restrictions "differentNodes") }}
+    {{- if or .Values.podSettings.affinity.podAntiAffinity (eq $rType "differentNodes") }}
     podAntiAffinity:
       {{- with .Values.podSettings.affinity.podAntiAffinity }}
       {{- toYaml . | nindent 6 }}
       {{- end }}
-      {{- if eq $restrictions "differentNodes" }}
+      {{- if eq $rType "differentNodes" }}
+      {{- if eq $rEnforcement "hard" }}
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchLabels:
+              {{- include "chartpack.selectorLabels" . | nindent 14 }}
+          topologyKey: kubernetes.io/hostname
+      {{- else }}
       preferredDuringSchedulingIgnoredDuringExecution:
         - weight: 100
           podAffinityTerm:
@@ -102,26 +135,37 @@ spec:
                 {{- include "chartpack.selectorLabels" . | nindent 16 }}
             topologyKey: kubernetes.io/hostname
       {{- end }}
+      {{- end }}
     {{- end }}
-    {{- if or $nodeAffinityExpressions .Values.podSettings.affinity.nodeAffinity }}
+    {{- if or $hardNodeAffinityExpressions $softNodeAffinityExpressions .Values.podSettings.affinity.nodeAffinity }}
     nodeAffinity:
+      {{- if or $hardNodeAffinityExpressions (and .Values.podSettings.affinity.nodeAffinity .Values.podSettings.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution) }}
       requiredDuringSchedulingIgnoredDuringExecution:
         nodeSelectorTerms:
           {{- if and .Values.podSettings.affinity.nodeAffinity .Values.podSettings.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution }}
           {{- range .Values.podSettings.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms }}
           - matchExpressions:
-              {{- $allExpressions := concat (default (list) .matchExpressions) $nodeAffinityExpressions }}
+              {{- $allExpressions := concat (default (list) .matchExpressions) $hardNodeAffinityExpressions }}
               {{- toYaml $allExpressions | nindent 14 }}
           {{- end }}
-          {{- else if $nodeAffinityExpressions }}
+          {{- else if $hardNodeAffinityExpressions }}
           - matchExpressions:
-              {{- toYaml $nodeAffinityExpressions | nindent 14 }}
+              {{- toYaml $hardNodeAffinityExpressions | nindent 14 }}
           {{- end }}
-      {{- with .Values.podSettings.affinity.nodeAffinity }}
-      {{- with .preferredDuringSchedulingIgnoredDuringExecution }}
-      preferredDuringSchedulingIgnoredDuringExecution:
-        {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- if or $softNodeAffinityExpressions (and .Values.podSettings.affinity.nodeAffinity .Values.podSettings.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution) }}
+      preferredDuringSchedulingIgnoredDuringExecution:
+        {{- if $softNodeAffinityExpressions }}
+        - weight: 100
+          preference:
+            matchExpressions:
+              {{- toYaml $softNodeAffinityExpressions | nindent 14 }}
+        {{- end }}
+        {{- with .Values.podSettings.affinity.nodeAffinity }}
+        {{- with .preferredDuringSchedulingIgnoredDuringExecution }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- end }}
       {{- end }}
     {{- end }}
   {{- end }}
@@ -134,7 +178,8 @@ spec:
     {{- range $name, $tsc := .Values.podSettings.topologySpreadConstraints }}
     {{- if $tsc }}
     {{- $topologyKey := $tsc.topologyKey -}}
-    {{- $infraLabel := index $.Values.infraSettings.nodeLabels $tsc.topologyKey -}}
+    {{- $nlTsc := default (dict) (default (dict) $.Values.infraSettings).nodeLabels -}}
+    {{- $infraLabel := index $nlTsc $tsc.topologyKey -}}
     {{- if $infraLabel }}{{ $topologyKey = $infraLabel }}{{ end }}
     - maxSkew: {{ default 1 $tsc.maxSkew }}
       topologyKey: {{ $topologyKey }}
