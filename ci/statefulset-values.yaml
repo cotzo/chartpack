@@ -51,8 +51,7 @@ persistence:
   data:
     enabled: true
     storageClass: standard
-    accessModes:
-      - ReadWriteOnce
+    accessMode: ReadWriteOnce
     size: 20Gi
 
 pdb:

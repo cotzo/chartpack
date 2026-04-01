@@ -565,45 +565,14 @@ networking:
                 port: 443
 
   # =============================================================================
-  # =============================================================================
-  # =============================================================================
-  # Certificates (cert-manager)
-  # =============================================================================
-
-  certificates:
-    app-tls:
-      issuerRef:
-        name: letsencrypt-prod
-        kind: ClusterIssuer
-      dnsNames:
-        - app.example.com
-        - www.example.com
-      duration: 2160h
-      renewBefore: 360h
-    internal-tls:
-      issuerRef:
-        name: internal-ca
-        kind: Issuer
-      dnsNames:
-        - app.internal.example.com
-      privateKey:
-        algorithm: ECDSA
-        size: 256
-      mount:
-        path: /etc/internal-tls
-
-  # =============================================================================
   # Network Policies
   # =============================================================================
 
   networkPolicies:
     deny-all:
-      policyTypes:
-        - Ingress
-        - Egress
+      policyTypes: Ingress+Egress
     allow-ingress:
-      policyTypes:
-        - Ingress
+      policyTypes: Ingress
       ingress:
         - from:
             - namespaceSelector:
@@ -613,8 +582,7 @@ networking:
             - protocol: TCP
               port: 80
     allow-dns-egress:
-      policyTypes:
-        - Egress
+      policyTypes: Egress
       egress:
         - to:
             - namespaceSelector: {}
@@ -679,6 +647,31 @@ networking:
 # =============================================================================
 
 config:
+  # =============================================================================
+  # Certificates (cert-manager)
+  # =============================================================================
+
+  certificates:
+    app-tls:
+      issuerRef:
+        name: letsencrypt-prod
+        kind: ClusterIssuer
+      dnsNames:
+        - app.example.com
+        - www.example.com
+      duration: 2160h
+      renewBefore: 360h
+    internal-tls:
+      issuerRef:
+        name: internal-ca
+        kind: Issuer
+      dnsNames:
+        - app.internal.example.com
+      privateKey:
+        algorithm: ECDSA
+        size: 256
+      mountPath: /etc/internal-tls
+
   configMaps:
     app-config:
       data:
@@ -799,15 +792,13 @@ persistence:
   cache:
     storageClass: fast-ssd
     size: 10Gi
-    accessModes:
-      - ReadWriteOnce
+    accessMode: ReadWriteOnce
     annotations:
       volume.kubernetes.io/storage-provisioner: ebs.csi.aws.com
   shared-storage:
     storageClass: efs-sc
     size: 50Gi
-    accessModes:
-      - ReadWriteMany
+    accessMode: ReadWriteMany
   existing-data:
     existingClaim: legacy-data-pvc
 
@@ -1070,9 +1061,7 @@ extraResources:
       podSelector:
         matchLabels:
           app.kubernetes.io/name: full-test
-      policyTypes:
-        - Ingress
-        - Egress
+      policyTypes: Ingress+Egress
       ingress:
         - from:
             - namespaceSelector:

@@ -29,8 +29,7 @@ workloads:
 persistence:
   data:
     size: 1Gi
-    accessModes:
-      - ReadWriteOnce
+    accessMode: ReadWriteOnce
 pdb:
   enabled: true
   maxUnavailable: 1
