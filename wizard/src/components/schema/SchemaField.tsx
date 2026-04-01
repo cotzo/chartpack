@@ -325,8 +325,8 @@ export function SchemaObjectFields({
     if (wizard?.visibleWhen) {
       const hidden = Object.entries(wizard.visibleWhen).some(
         ([field, allowed]) => {
-          const current = value?.[field]
-          return current !== undefined && !(allowed as string[]).includes(current as string)
+          const current = value?.[field] ?? properties[field]?.default
+          return !(allowed as string[]).includes(current as string)
         }
       )
       if (hidden) continue

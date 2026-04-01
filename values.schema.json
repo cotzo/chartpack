@@ -1258,40 +1258,33 @@
             "properties": {
               "mode": {
                 "type": "string",
+                "x-wizard": { "narrow": true },
                 "enum": [
                   "sidecar",
                   "deployment"
                 ],
                 "default": "sidecar",
-                "description": "sidecar runs in app pod, deployment creates separate pods"
-              },
-              "image": {
-                "type": "object",
-                "description": "OAuth2 Proxy container image (defaults to quay.io/oauth2-proxy/oauth2-proxy:v7.15.1)"
-              },
-              "replicas": {
-                "type": "integer",
-                "default": 1,
-                "description": "Only for deployment mode"
-              },
-              "port": {
-                "type": "integer",
-                "default": 4180,
-                "description": "Port the OAuth2 proxy listens on"
-              },
-              "portName": {
-                "type": "string",
-                "default": "proxy",
-                "description": "Port name suffix"
+                "description": "sidecar runs in app pod; deployment creates separate pods. See https://oauth2-proxy.github.io/oauth2-proxy/"
               },
               "provider": {
                 "type": "string",
+                "x-wizard": { "narrow": true },
+                "enum": [
+                  "oidc",
+                  "google",
+                  "github",
+                  "azure",
+                  "gitlab",
+                  "bitbucket",
+                  "keycloak-oidc",
+                  "login.gov"
+                ],
                 "default": "oidc",
                 "description": "OAuth2 provider type. See https://oauth2-proxy.github.io/oauth2-proxy/configuration/providers/"
               },
               "issuerUrl": {
                 "type": "string",
-                "description": "OIDC issuer URL for token validation (e.g. https://accounts.google.com)"
+                "description": "OIDC issuer URL for token validation (e.g. https://accounts.google.com). See https://oauth2-proxy.github.io/oauth2-proxy/configuration/providers/openid_connect"
               },
               "emailDomains": {
                 "type": "array",
@@ -1305,41 +1298,113 @@
               },
               "upstream": {
                 "type": "string",
-                "description": "Override auto-derived upstream URL"
+                "x-wizard": { "visibleWhen": { "mode": ["deployment"] } },
+                "description": "Upstream URL to proxy to (required for deployment mode, e.g. http://my-app-svc:8080). See https://oauth2-proxy.github.io/oauth2-proxy/configuration/overview#upstreams-configuration"
               },
-              "extraArgs": {
+              "replicas": {
+                "type": "integer",
+                "x-wizard": { "narrow": true, "visibleWhen": { "mode": ["deployment"] } },
+                "default": 1,
+                "description": "Number of proxy replicas (deployment mode only)"
+              },
+              "port": {
+                "type": "integer",
+                "x-wizard": { "narrow": true },
+                "default": 4180,
+                "description": "Port the OAuth2 proxy listens on"
+              },
+              "portName": {
+                "type": "string",
+                "x-wizard": { "narrow": true },
+                "default": "proxy",
+                "description": "Port name suffix"
+              },
+              "image": {
                 "type": "object",
-                "additionalProperties": {
-                  "type": "string"
+                "x-wizard": { "advanced": true },
+                "description": "Override container image (defaults to quay.io/oauth2-proxy/oauth2-proxy:v7.15.1). See https://quay.io/repository/oauth2-proxy/oauth2-proxy",
+                "properties": {
+                  "repository": {
+                    "type": "string",
+                    "x-wizard": { "narrow": true },
+                    "description": "Image repository"
+                  },
+                  "tag": {
+                    "type": "string",
+                    "x-wizard": { "narrow": true },
+                    "description": "Image tag"
+                  }
                 },
-                "description": "Extra arguments passed to oauth2-proxy as key-value pairs"
-              },
-              "args": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                },
-                "description": "Override the container command arguments entirely"
+                "additionalProperties": false
               },
               "env": {
                 "type": "object",
                 "x-wizard-field": "env",
-                "description": "Environment variables for the OAuth2 proxy container"
+                "description": "Environment variables (CLIENT_ID, CLIENT_SECRET, COOKIE_SECRET are auto-injected as args). See https://oauth2-proxy.github.io/oauth2-proxy/configuration/overview"
+              },
+              "extraArgs": {
+                "type": "object",
+                "x-wizard": { "advanced": true },
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "description": "Extra arguments as key-value pairs (e.g. cookie-refresh: '1h'). See https://oauth2-proxy.github.io/oauth2-proxy/configuration/overview"
+              },
+              "args": {
+                "type": "array",
+                "x-wizard": { "advanced": true },
+                "items": {
+                  "type": "string"
+                },
+                "description": "Override the entire command arguments array"
               },
               "resources": {
                 "type": "object",
-                "description": "CPU/memory resource requests and limits for the proxy"
+                "x-wizard": { "advanced": true },
+                "description": "CPU/memory resource requests and limits. See https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/",
+                "properties": {
+                  "requests": {
+                    "type": "object",
+                    "description": "Minimum resources guaranteed",
+                    "properties": {
+                      "cpu": { "type": "string", "x-wizard": { "narrow": true }, "description": "CPU request (e.g. 50m)" },
+                      "memory": { "type": "string", "x-wizard": { "narrow": true }, "description": "Memory request (e.g. 64Mi)" }
+                    },
+                    "additionalProperties": false
+                  },
+                  "limits": {
+                    "type": "object",
+                    "description": "Maximum resources allowed",
+                    "properties": {
+                      "cpu": { "type": "string", "x-wizard": { "narrow": true }, "description": "CPU limit (e.g. 200m)" },
+                      "memory": { "type": "string", "x-wizard": { "narrow": true }, "description": "Memory limit (e.g. 128Mi)" }
+                    },
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false
               },
               "securityContext": {
                 "type": "object",
-                "description": "Security context for the OAuth2 proxy container"
+                "x-wizard": { "advanced": true },
+                "description": "Container security context. See https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context-1",
+                "properties": {
+                  "runAsUser": { "type": "integer", "x-wizard": { "narrow": true }, "description": "UID to run as" },
+                  "runAsGroup": { "type": "integer", "x-wizard": { "narrow": true }, "description": "GID to run as" },
+                  "runAsNonRoot": { "type": "boolean", "x-wizard": { "narrow": true }, "description": "Require non-root" },
+                  "readOnlyRootFilesystem": { "type": "boolean", "x-wizard": { "narrow": true }, "description": "Read-only root filesystem" },
+                  "allowPrivilegeEscalation": { "type": "boolean", "x-wizard": { "narrow": true }, "description": "Allow privilege escalation" }
+                },
+                "additionalProperties": false
               },
               "annotations": {
                 "type": "object",
+                "x-wizard": { "advanced": true },
                 "description": "Extra annotations on OAuth2 proxy resources"
               },
               "labels": {
                 "type": "object",
+                "x-wizard": { "advanced": true },
                 "description": "Extra labels on OAuth2 proxy resources"
               }
             },
@@ -2394,11 +2459,13 @@
             },
             "minReplicas": {
               "type": "integer",
+              "x-wizard": { "narrow": true },
               "minimum": 1,
               "description": "Minimum number of replicas"
             },
             "maxReplicas": {
               "type": "integer",
+              "x-wizard": { "narrow": true },
               "minimum": 1,
               "description": "Maximum number of replicas"
             },
@@ -2415,10 +2482,12 @@
             },
             "annotations": {
               "type": "object",
+              "x-wizard": { "advanced": true },
               "description": "Annotations on the HPA resource"
             },
             "labels": {
               "type": "object",
+              "x-wizard": { "advanced": true },
               "description": "Labels on the HPA resource"
             }
           },
@@ -2430,29 +2499,93 @@
           "properties": {
             "enabled": {
               "type": "boolean",
-              "description": "Enable VPA for this workload"
+              "description": "Enable VPA for this workload. See https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler"
             },
             "updatePolicy": {
               "type": "object",
-              "description": "How VPA applies recommendations (Auto, Recreate, Initial, Off)"
+              "description": "How VPA applies recommendations. See https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler#quick-start",
+              "properties": {
+                "updateMode": {
+                  "type": "string",
+                  "enum": ["Auto", "Recreate", "Initial", "Off"],
+                  "default": "Auto",
+                  "description": "Auto: applies on pod restart; Recreate: evicts pods; Initial: only at creation; Off: recommendations only"
+                }
+              },
+              "additionalProperties": false
             },
             "resourcePolicy": {
               "type": "object",
-              "description": "Per-container resource policies (min/max allowed, controlled resources)"
+              "x-wizard": { "advanced": true },
+              "description": "Per-container resource policies. See https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go",
+              "properties": {
+                "containerPolicies": {
+                  "type": "array",
+                  "description": "List of per-container resource policies",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "containerName": {
+                        "type": "string",
+                        "description": "Container name (or '*' for all containers)"
+                      },
+                      "mode": {
+                        "type": "string",
+                        "x-wizard": { "narrow": true },
+                        "enum": ["Auto", "Off"],
+                        "description": "Auto: VPA manages this container; Off: VPA ignores it"
+                      },
+                      "controlledResources": {
+                        "type": "array",
+                        "items": { "type": "string" },
+                        "description": "Resources to control (e.g. cpu, memory)"
+                      },
+                      "minAllowed": {
+                        "type": "object",
+                        "description": "Minimum allowed resources",
+                        "properties": {
+                          "cpu": { "type": "string", "x-wizard": { "narrow": true }, "description": "Min CPU (e.g. 50m)" },
+                          "memory": { "type": "string", "x-wizard": { "narrow": true }, "description": "Min memory (e.g. 64Mi)" }
+                        },
+                        "additionalProperties": false
+                      },
+                      "maxAllowed": {
+                        "type": "object",
+                        "description": "Maximum allowed resources",
+                        "properties": {
+                          "cpu": { "type": "string", "x-wizard": { "narrow": true }, "description": "Max CPU (e.g. 4)" },
+                          "memory": { "type": "string", "x-wizard": { "narrow": true }, "description": "Max memory (e.g. 8Gi)" }
+                        },
+                        "additionalProperties": false
+                      }
+                    }
+                  }
+                }
+              },
+              "additionalProperties": false
             },
             "recommenders": {
               "type": "array",
+              "x-wizard": { "advanced": true },
               "items": {
-                "type": "object"
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Custom recommender name"
+                  }
+                }
               },
-              "description": "Custom recommender configurations"
+              "description": "Custom recommender configurations. See https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler#using-alternative-recommender"
             },
             "annotations": {
               "type": "object",
+              "x-wizard": { "advanced": true },
               "description": "Annotations on the VPA resource"
             },
             "labels": {
               "type": "object",
+              "x-wizard": { "advanced": true },
               "description": "Labels on the VPA resource"
             }
           },
@@ -2468,11 +2601,13 @@
             },
             "minReplicaCount": {
               "type": "integer",
+              "x-wizard": { "narrow": true },
               "minimum": 0,
               "description": "Minimum number of replicas (0 = scale to zero)"
             },
             "maxReplicaCount": {
               "type": "integer",
+              "x-wizard": { "narrow": true },
               "minimum": 1,
               "description": "Maximum number of replicas"
             },
@@ -2488,6 +2623,7 @@
                 "integer",
                 "string"
               ],
+              "x-wizard": { "narrow": true },
               "description": "Wait period after last trigger before scaling down (seconds, default: 300)"
             },
             "idleReplicaCount": {
@@ -2495,6 +2631,7 @@
                 "integer",
                 "string"
               ],
+              "x-wizard": { "narrow": true },
               "description": "Replica count when idle (below minReplicaCount). See https://keda.sh/docs/latest/concepts/scaling-deployments/#idlereplicacount"
             },
             "fallback": {
@@ -2544,6 +2681,7 @@
                 "integer",
                 "string"
               ],
+              "x-wizard": { "narrow": true },
               "description": "ScaledJob: how many successful jobs to keep (default: 100)"
             },
             "failedJobsHistoryLimit": {
@@ -2551,6 +2689,7 @@
                 "integer",
                 "string"
               ],
+              "x-wizard": { "narrow": true },
               "description": "ScaledJob: how many failed jobs to keep (default: 100)"
             },
             "scalingStrategy": {
@@ -2559,10 +2698,12 @@
             },
             "annotations": {
               "type": "object",
+              "x-wizard": { "advanced": true },
               "description": "Annotations on the KEDA ScaledObject/ScaledJob resource"
             },
             "labels": {
               "type": "object",
+              "x-wizard": { "advanced": true },
               "description": "Labels on the KEDA ScaledObject/ScaledJob resource"
             }
           },
@@ -2588,6 +2729,7 @@
       "properties": {
         "enabled": {
           "type": "boolean",
+          "x-wizard": { "narrow": true },
           "description": "Enable Pod Disruption Budget for this workload"
         },
         "minAvailable": {
@@ -2595,6 +2737,7 @@
             "integer",
             "string"
           ],
+          "x-wizard": { "narrow": true },
           "description": "Minimum pods that must be available during disruptions (number or percentage like '50%'). See https://kubernetes.io/docs/tasks/run-application/configure-pdb/"
         },
         "maxUnavailable": {
@@ -2602,18 +2745,25 @@
             "integer",
             "string"
           ],
+          "x-wizard": { "narrow": true },
           "description": "Maximum pods that can be unavailable during disruptions (number or percentage)"
         },
         "unhealthyPodEvictionPolicy": {
           "type": "string",
-          "description": "Policy for evicting unhealthy pods: IfHealthyBudget or AlwaysAllow (K8s 1.31+)"
+          "x-wizard": { "narrow": true },
+          "enum": ["IfHealthyBudget", "AlwaysAllow"],
+          "description": "Policy for evicting unhealthy pods (K8s 1.31+). See https://kubernetes.io/docs/tasks/run-application/configure-pdb/#unhealthy-pod-eviction-policy"
         },
         "annotations": {
           "type": "object",
+          "x-wizard": {
+            "advanced": true
+          },
           "description": "Annotations on the PDB resource"
         },
         "labels": {
           "type": "object",
+          "x-wizard": { "advanced": true },
           "description": "Labels on the PDB resource"
         }
       },
@@ -2903,6 +3053,7 @@
               "service",
               "pod"
             ],
+            "x-wizard": { "narrow": true },
             "default": "service",
             "description": "Monitor type: 'service' creates ServiceMonitor, 'pod' creates PodMonitor"
           },
@@ -2912,130 +3063,161 @@
               "prometheus",
               "victoriametrics"
             ],
+            "x-wizard": { "narrow": true },
             "default": "prometheus",
             "description": "Target operator: 'prometheus' creates ServiceMonitor/PodMonitor, 'victoriametrics' creates VMServiceScrape/VMPodScrape"
           },
           "port": {
             "type": "string",
+            "x-wizard": { "narrow": true, "visibleWhen": { "kind": ["service"] } },
             "default": "http",
             "description": "Named port to scrape (must match a port name in networking.services)"
           },
           "path": {
             "type": "string",
+            "x-wizard": { "narrow": true },
             "description": "Metrics endpoint path (default: /metrics)"
           },
           "interval": {
             "type": "string",
+            "x-wizard": { "narrow": true },
             "description": "Scrape interval (e.g. '30s', '1m')"
           },
           "scrapeTimeout": {
             "type": "string",
+            "x-wizard": { "narrow": true },
             "description": "Per-scrape timeout (must be less than interval)"
           },
           "scheme": {
             "type": "string",
-            "description": "HTTP scheme: http or https"
+            "x-wizard": { "narrow": true },
+            "enum": ["http", "https"],
+            "description": "HTTP scheme for scraping"
           },
           "honorLabels": {
             "type": "boolean",
+            "x-wizard": { "narrow": true, "advanced": true },
             "description": "Keep metric labels from the target even if they conflict with attached labels"
           },
           "honorTimestamps": {
             "type": "boolean",
+            "x-wizard": { "narrow": true, "advanced": true },
             "description": "Use timestamps from scraped metrics instead of scrape time"
           },
           "followRedirects": {
             "type": "boolean",
+            "x-wizard": { "narrow": true, "advanced": true },
             "description": "Follow HTTP redirects during scraping"
           },
           "params": {
             "type": "object",
+            "x-wizard": { "advanced": true },
             "description": "Optional HTTP query parameters for the scrape request"
           },
           "tlsConfig": {
             "type": "object",
+            "x-wizard": { "advanced": true },
             "description": "TLS configuration for scraping HTTPS endpoints"
           },
           "bearerTokenSecret": {
             "type": "object",
+            "x-wizard": { "advanced": true },
             "description": "Secret reference for bearer token authentication"
           },
           "basicAuth": {
             "type": "object",
+            "x-wizard": { "advanced": true },
             "description": "Basic auth credentials for scraping"
           },
           "authorization": {
             "type": "object",
+            "x-wizard": { "advanced": true },
             "description": "Authorization header configuration"
           },
           "oauth2": {
             "type": "object",
+            "x-wizard": { "advanced": true },
             "description": "OAuth2 client credentials for scraping"
           },
           "proxyURL": {
             "type": "string",
+            "x-wizard": { "advanced": true },
             "description": "HTTP proxy URL for scrape requests"
           },
           "metricRelabelings": {
             "type": "array",
+            "x-wizard": { "advanced": true },
             "description": "Relabeling rules applied to scraped metrics before ingestion"
           },
           "relabelings": {
             "type": "array",
+            "x-wizard": { "advanced": true },
             "description": "Relabeling rules applied to discovered targets before scraping"
           },
           "endpoints": {
             "type": "array",
+            "x-wizard": { "advanced": true },
             "description": "Multiple endpoint configurations (overrides single-endpoint fields above)"
           },
           "selector": {
             "type": "object",
+            "x-wizard": { "advanced": true },
             "description": "Override label selector for discovering target services/pods"
           },
           "namespaceSelector": {
             "type": "object",
+            "x-wizard": { "advanced": true },
             "description": "Namespace selector for discovering targets across namespaces"
           },
           "jobLabel": {
             "type": "string",
-            "description": "Label whose value becomes the Prometheus job name"
+            "x-wizard": { "advanced": true, "visibleWhen": { "kind": ["service"] } },
+            "description": "Label whose value becomes the Prometheus job name (ServiceMonitor only)"
           },
           "targetLabels": {
             "type": "array",
+            "x-wizard": { "advanced": true, "visibleWhen": { "kind": ["service"] } },
             "items": {
               "type": "string"
             },
-            "description": "Service labels to transfer to scraped metrics"
+            "description": "Service labels to transfer to scraped metrics (ServiceMonitor only)"
           },
           "podTargetLabels": {
             "type": "array",
+            "x-wizard": { "advanced": true, "visibleWhen": { "kind": ["pod"] } },
             "items": {
               "type": "string"
             },
-            "description": "Pod labels to transfer to scraped metrics"
+            "description": "Pod labels to transfer to scraped metrics (PodMonitor only)"
           },
           "sampleLimit": {
             "type": "integer",
+            "x-wizard": { "narrow": true, "advanced": true },
             "description": "Per-scrape limit on number of samples accepted"
           },
           "vmScrapeParams": {
             "type": "object",
+            "x-wizard": { "advanced": true, "visibleWhen": { "operator": ["victoriametrics"] } },
             "description": "VictoriaMetrics-specific scrape parameters. See https://docs.victoriametrics.com/operator/api/#vmservicescrapespec"
           },
           "maxScrapeSize": {
             "type": "string",
+            "x-wizard": { "narrow": true, "advanced": true, "visibleWhen": { "operator": ["victoriametrics"] } },
             "description": "Maximum size of a single scrape response (VictoriaMetrics only)"
           },
           "seriesLimit": {
             "type": "integer",
+            "x-wizard": { "narrow": true, "advanced": true, "visibleWhen": { "operator": ["victoriametrics"] } },
             "description": "Limit on unique time series per scrape target (VictoriaMetrics only)"
           },
           "labels": {
             "type": "object",
+            "x-wizard": { "advanced": true },
             "description": "Labels on the monitor resource"
           },
           "annotations": {
             "type": "object",
+            "x-wizard": { "advanced": true },
             "description": "Annotations on the monitor resource"
           }
         },
@@ -3083,10 +3265,12 @@
                 },
                 "interval": {
                   "type": "string",
+                  "x-wizard": { "narrow": true },
                   "description": "Evaluation interval for rules in this group"
                 },
                 "limit": {
                   "type": "integer",
+                  "x-wizard": { "narrow": true },
                   "description": "Maximum number of alerts produced by this group"
                 },
                 "labels": {
@@ -3106,10 +3290,12 @@
           },
           "annotations": {
             "type": "object",
+            "x-wizard": { "advanced": true },
             "description": "Annotations on the rule resource"
           },
           "labels": {
             "type": "object",
+            "x-wizard": { "advanced": true },
             "description": "Labels on the rule resource"
           }
         },
@@ -3123,7 +3309,7 @@
         "group": "Observability",
         "label": "Dashboards",
         "icon": "Activity",
-        "description": "Configure Grafana dashboards via the Grafana Operator."
+        "description": "Configure Grafana dashboards via the Grafana Operator. See https://grafana.com/docs/grafana/latest/as-code/infrastructure-as-code/grafana-operator/operator-dashboards-folders-datasources/#add-a-dashboard-to-a-folder"
       },
       "properties": {
         "grafana": {
@@ -3141,31 +3327,38 @@
               },
               "folder": {
                 "type": "string",
+                "x-wizard": { "narrow": true },
                 "description": "Grafana folder name"
               },
               "folderUID": {
                 "type": "string",
+                "x-wizard": { "narrow": true },
                 "description": "Grafana folder UID (takes precedence over folder name)"
               },
               "folderRef": {
                 "type": "string",
+                "x-wizard": { "narrow": true },
                 "description": "Reference to a GrafanaFolder resource name"
               },
               "resyncPeriod": {
                 "type": "string",
+                "x-wizard": { "narrow": true },
                 "description": "How often to re-sync the dashboard (e.g. '5m')"
               },
               "allowCrossNamespaceImport": {
                 "type": "boolean",
+                "x-wizard": { "narrow": true },
                 "description": "Allow this dashboard to be imported by Grafana instances in other namespaces"
               },
               "suspend": {
                 "type": "boolean",
+                "x-wizard": { "narrow": true },
                 "description": "Suspend reconciliation of this dashboard"
               },
               "uid": {
                 "type": "string",
                 "maxLength": 40,
+                "x-wizard": { "narrow": true },
                 "description": "Explicit dashboard UID (max 40 chars, auto-generated if omitted)"
               },
               "json": {
@@ -3182,10 +3375,12 @@
               },
               "urlAuthorization": {
                 "type": "object",
+                "x-wizard": { "advanced": true },
                 "description": "Authorization config for fetching dashboard from URL"
               },
               "configMapRef": {
                 "type": "object",
+                "x-wizard": { "advanced": true },
                 "description": "Reference to a ConfigMap key containing dashboard JSON"
               },
               "grafanaCom": {
@@ -3194,10 +3389,12 @@
               },
               "jsonnet": {
                 "type": "string",
+                "x-wizard": { "advanced": true },
                 "description": "Jsonnet source for generating the dashboard"
               },
               "contentCacheDuration": {
                 "type": "string",
+                "x-wizard": { "advanced": true },
                 "description": "How long to cache fetched dashboard content"
               },
               "datasources": {
@@ -3205,6 +3402,7 @@
                 "items": {
                   "type": "object"
                 },
+                "x-wizard": { "advanced": true },
                 "description": "Datasource variable substitutions"
               },
               "envs": {
@@ -3212,6 +3410,7 @@
                 "items": {
                   "type": "object"
                 },
+                "x-wizard": { "advanced": true },
                 "description": "Environment variable substitutions in the dashboard JSON"
               },
               "envFrom": {
@@ -3219,6 +3418,7 @@
                 "items": {
                   "type": "object"
                 },
+                "x-wizard": { "advanced": true },
                 "description": "Environment variable sources (ConfigMap/Secret references)"
               },
               "plugins": {
@@ -3226,14 +3426,17 @@
                 "items": {
                   "type": "object"
                 },
+                "x-wizard": { "advanced": true },
                 "description": "Required Grafana plugins"
               },
               "annotations": {
                 "type": "object",
+                "x-wizard": { "advanced": true },
                 "description": "Annotations on the GrafanaDashboard resource"
               },
               "labels": {
                 "type": "object",
+                "x-wizard": { "advanced": true },
                 "description": "Labels on the GrafanaDashboard resource"
               }
             },
