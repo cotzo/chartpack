@@ -4,6 +4,9 @@ import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
 import fs from 'fs'
 
+let base = process.env.VITE_BASE || '/chartpack/wizard/'
+if (!base.endsWith('/')) base += '/'
+
 export default defineConfig({
   plugins: [
     react(),
@@ -11,8 +14,6 @@ export default defineConfig({
     {
       name: 'serve-root-schema',
       configureServer(server) {
-        let base = process.env.VITE_BASE || '/chartpack/wizard/'
-        if (!base.endsWith('/')) base += '/'
         server.middlewares.use(`${base}values.schema.json`, (_req, res) => {
           const file = path.resolve(__dirname, '../values.schema.json')
           res.setHeader('Content-Type', 'application/json')
@@ -26,7 +27,7 @@ export default defineConfig({
       },
     },
   ],
-  base: process.env.VITE_BASE || '/chartpack/wizard/',
+  base,
   build: {
     rollupOptions: {
       plugins: [
