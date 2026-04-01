@@ -82,7 +82,7 @@ export function NodeTargetingField({ label, value, onChange, helpText, placehold
           onChange={e => setNewItem(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addItem())}
           placeholder={placeholder}
-          className="flex-1 rounded-md border border-gray-300 px-3 py-1.5 text-sm"
+          className="flex-1 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm"
         />
         <button
           type="button"

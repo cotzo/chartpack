@@ -327,22 +327,41 @@ export function SchemaObjectFields({
     />
   )
 
+  const isNarrow = (f: [string, JsonSchema]) => !!f[1]['x-wizard']?.narrow
+
+  /** Group consecutive narrow fields into rows of 2, leaving wide fields standalone */
+  const renderRows = (fields: [string, JsonSchema][]) => {
+    const rows: React.ReactNode[] = []
+    let i = 0
+    while (i < fields.length) {
+      if (isNarrow(fields[i]) && i + 1 < fields.length && isNarrow(fields[i + 1])) {
+        rows.push(
+          <div key={fields[i][0]} className="py-4 first:pt-0 last:pb-0 grid grid-cols-2 gap-4">
+            {renderField(fields[i])}
+            {renderField(fields[i + 1])}
+          </div>
+        )
+        i += 2
+      } else {
+        rows.push(
+          <div key={fields[i][0]} className="py-4 first:pt-0 last:pb-0">
+            {renderField(fields[i])}
+          </div>
+        )
+        i++
+      }
+    }
+    return rows
+  }
+
   return (
     <div className="divide-y divide-gray-300">
-      {normalFields.map(([key, propSchema]) => (
-        <div key={key} className="py-4 first:pt-0 last:pb-0">
-          {renderField([key, propSchema])}
-        </div>
-      ))}
+      {renderRows(normalFields)}
       {advancedFields.length > 0 && (
         <div className="pt-4">
           <CollapsibleSection title="Advanced">
             <div className="divide-y divide-gray-300">
-              {advancedFields.map(([key, propSchema]) => (
-                <div key={key} className="py-4 first:pt-0 last:pb-0">
-                  {renderField([key, propSchema])}
-                </div>
-              ))}
+              {renderRows(advancedFields)}
             </div>
           </CollapsibleSection>
         </div>

@@ -60,10 +60,12 @@
             },
             "tag": {
               "type": "string",
+              "x-wizard": { "narrow": true },
               "description": "Image tag. Defaults to the chart's appVersion. See https://kubernetes.io/docs/concepts/containers/images/#image-names"
             },
             "pullPolicy": {
               "type": "string",
+              "x-wizard": { "narrow": true },
               "enum": [
                 "Always",
                 "IfNotPresent",
@@ -126,12 +128,14 @@
             "properties": {
               "port": {
                 "type": "integer",
+                "x-wizard": { "narrow": true },
                 "minimum": 1,
                 "maximum": 65535,
                 "description": "Port number to expose on the container"
               },
               "protocol": {
                 "type": "string",
+                "x-wizard": { "narrow": true },
                 "enum": [
                   "TCP",
                   "UDP",
@@ -153,10 +157,12 @@
               "properties": {
                 "cpu": {
                   "type": "string",
+                  "x-wizard": { "narrow": true },
                   "description": "CPU request (e.g. 100m, 0.5, 1)"
                 },
                 "memory": {
                   "type": "string",
+                  "x-wizard": { "narrow": true },
                   "description": "Memory request (e.g. 128Mi, 1Gi)"
                 }
               },
@@ -168,10 +174,12 @@
               "properties": {
                 "cpu": {
                   "type": "string",
+                  "x-wizard": { "narrow": true },
                   "description": "CPU limit (e.g. 500m, 1, 2)"
                 },
                 "memory": {
                   "type": "string",
+                  "x-wizard": { "narrow": true },
                   "description": "Memory limit (e.g. 256Mi, 1Gi)"
                 }
               },
@@ -193,11 +201,13 @@
             "properties": {
               "resourceName": {
                 "type": "string",
+                "x-wizard": { "narrow": true },
                 "enum": ["cpu", "memory"],
                 "description": "Resource name: cpu or memory"
               },
               "restartPolicy": {
                 "type": "string",
+                "x-wizard": { "narrow": true },
                 "enum": [
                   "NotRequired",
                   "RestartContainer"
@@ -214,10 +224,12 @@
           "properties": {
             "runAsUser": {
               "type": "integer",
+              "x-wizard": { "narrow": true },
               "description": "UID to run the container process as"
             },
             "runAsGroup": {
               "type": "integer",
+              "x-wizard": { "narrow": true },
               "description": "GID to run the container process as"
             },
             "runAsNonRoot": {
@@ -259,11 +271,13 @@
               "properties": {
                 "type": {
                   "type": "string",
+                  "x-wizard": { "narrow": true },
                   "enum": ["RuntimeDefault", "Unconfined", "Localhost"],
                   "description": "Seccomp profile type"
                 },
                 "localhostProfile": {
                   "type": "string",
+                  "x-wizard": { "narrow": true },
                   "description": "Path to a localhost seccomp profile (when type is Localhost)"
                 }
               },
@@ -286,8 +300,8 @@
                   "description": "HTTP GET probe",
                   "properties": {
                     "path": { "type": "string", "description": "URL path (e.g. /healthz)" },
-                    "port": { "type": ["integer", "string"], "description": "Port number or name" },
-                    "scheme": { "type": "string", "enum": ["HTTP", "HTTPS"], "description": "URI scheme" }
+                    "port": { "type": ["integer", "string"], "x-wizard": { "narrow": true }, "description": "Port number or name" },
+                    "scheme": { "type": "string", "enum": ["HTTP", "HTTPS"], "x-wizard": { "narrow": true }, "description": "URI scheme" }
                   },
                   "additionalProperties": false
                 },
@@ -311,16 +325,16 @@
                   "type": "object",
                   "description": "gRPC probe",
                   "properties": {
-                    "port": { "type": "integer", "description": "gRPC service port" },
-                    "service": { "type": "string", "description": "gRPC service name" }
+                    "port": { "type": "integer", "x-wizard": { "narrow": true }, "description": "gRPC service port" },
+                    "service": { "type": "string", "x-wizard": { "narrow": true }, "description": "gRPC service name" }
                   },
                   "additionalProperties": false
                 },
-                "initialDelaySeconds": { "type": "integer", "minimum": 0, "description": "Seconds before the first probe" },
-                "periodSeconds": { "type": "integer", "minimum": 1, "description": "How often to probe (seconds)" },
-                "timeoutSeconds": { "type": "integer", "minimum": 1, "description": "Probe timeout (seconds)" },
-                "successThreshold": { "type": "integer", "minimum": 1, "description": "Consecutive successes to be considered healthy" },
-                "failureThreshold": { "type": "integer", "minimum": 1, "description": "Consecutive failures to be considered unhealthy" }
+                "initialDelaySeconds": { "type": "integer", "minimum": 0, "x-wizard": { "narrow": true }, "description": "Seconds before the first probe" },
+                "periodSeconds": { "type": "integer", "minimum": 1, "x-wizard": { "narrow": true }, "description": "How often to probe (seconds)" },
+                "timeoutSeconds": { "type": "integer", "minimum": 1, "x-wizard": { "narrow": true }, "description": "Probe timeout (seconds)" },
+                "successThreshold": { "type": "integer", "minimum": 1, "x-wizard": { "narrow": true }, "description": "Consecutive successes to be considered healthy" },
+                "failureThreshold": { "type": "integer", "minimum": 1, "x-wizard": { "narrow": true }, "description": "Consecutive failures to be considered unhealthy" }
               },
               "additionalProperties": false
             },
@@ -333,8 +347,8 @@
                   "description": "HTTP GET probe",
                   "properties": {
                     "path": { "type": "string", "description": "URL path (e.g. /ready)" },
-                    "port": { "type": ["integer", "string"], "description": "Port number or name" },
-                    "scheme": { "type": "string", "enum": ["HTTP", "HTTPS"], "description": "URI scheme" }
+                    "port": { "type": ["integer", "string"], "x-wizard": { "narrow": true }, "description": "Port number or name" },
+                    "scheme": { "type": "string", "enum": ["HTTP", "HTTPS"], "x-wizard": { "narrow": true }, "description": "URI scheme" }
                   },
                   "additionalProperties": false
                 },
@@ -358,16 +372,16 @@
                   "type": "object",
                   "description": "gRPC probe",
                   "properties": {
-                    "port": { "type": "integer", "description": "gRPC service port" },
-                    "service": { "type": "string", "description": "gRPC service name" }
+                    "port": { "type": "integer", "x-wizard": { "narrow": true }, "description": "gRPC service port" },
+                    "service": { "type": "string", "x-wizard": { "narrow": true }, "description": "gRPC service name" }
                   },
                   "additionalProperties": false
                 },
-                "initialDelaySeconds": { "type": "integer", "minimum": 0, "description": "Seconds before the first probe" },
-                "periodSeconds": { "type": "integer", "minimum": 1, "description": "How often to probe (seconds)" },
-                "timeoutSeconds": { "type": "integer", "minimum": 1, "description": "Probe timeout (seconds)" },
-                "successThreshold": { "type": "integer", "minimum": 1, "description": "Consecutive successes to be considered healthy" },
-                "failureThreshold": { "type": "integer", "minimum": 1, "description": "Consecutive failures to be considered unhealthy" }
+                "initialDelaySeconds": { "type": "integer", "minimum": 0, "x-wizard": { "narrow": true }, "description": "Seconds before the first probe" },
+                "periodSeconds": { "type": "integer", "minimum": 1, "x-wizard": { "narrow": true }, "description": "How often to probe (seconds)" },
+                "timeoutSeconds": { "type": "integer", "minimum": 1, "x-wizard": { "narrow": true }, "description": "Probe timeout (seconds)" },
+                "successThreshold": { "type": "integer", "minimum": 1, "x-wizard": { "narrow": true }, "description": "Consecutive successes to be considered healthy" },
+                "failureThreshold": { "type": "integer", "minimum": 1, "x-wizard": { "narrow": true }, "description": "Consecutive failures to be considered unhealthy" }
               },
               "additionalProperties": false
             },
@@ -380,8 +394,8 @@
                   "description": "HTTP GET probe",
                   "properties": {
                     "path": { "type": "string", "description": "URL path (e.g. /startup)" },
-                    "port": { "type": ["integer", "string"], "description": "Port number or name" },
-                    "scheme": { "type": "string", "enum": ["HTTP", "HTTPS"], "description": "URI scheme" }
+                    "port": { "type": ["integer", "string"], "x-wizard": { "narrow": true }, "description": "Port number or name" },
+                    "scheme": { "type": "string", "enum": ["HTTP", "HTTPS"], "x-wizard": { "narrow": true }, "description": "URI scheme" }
                   },
                   "additionalProperties": false
                 },
@@ -405,16 +419,16 @@
                   "type": "object",
                   "description": "gRPC probe",
                   "properties": {
-                    "port": { "type": "integer", "description": "gRPC service port" },
-                    "service": { "type": "string", "description": "gRPC service name" }
+                    "port": { "type": "integer", "x-wizard": { "narrow": true }, "description": "gRPC service port" },
+                    "service": { "type": "string", "x-wizard": { "narrow": true }, "description": "gRPC service name" }
                   },
                   "additionalProperties": false
                 },
-                "initialDelaySeconds": { "type": "integer", "minimum": 0, "description": "Seconds before the first probe" },
-                "periodSeconds": { "type": "integer", "minimum": 1, "description": "How often to probe (seconds)" },
-                "timeoutSeconds": { "type": "integer", "minimum": 1, "description": "Probe timeout (seconds)" },
-                "successThreshold": { "type": "integer", "minimum": 1, "description": "Consecutive successes to be considered healthy" },
-                "failureThreshold": { "type": "integer", "minimum": 1, "description": "Consecutive failures to be considered unhealthy" }
+                "initialDelaySeconds": { "type": "integer", "minimum": 0, "x-wizard": { "narrow": true }, "description": "Seconds before the first probe" },
+                "periodSeconds": { "type": "integer", "minimum": 1, "x-wizard": { "narrow": true }, "description": "How often to probe (seconds)" },
+                "timeoutSeconds": { "type": "integer", "minimum": 1, "x-wizard": { "narrow": true }, "description": "Probe timeout (seconds)" },
+                "successThreshold": { "type": "integer", "minimum": 1, "x-wizard": { "narrow": true }, "description": "Consecutive successes to be considered healthy" },
+                "failureThreshold": { "type": "integer", "minimum": 1, "x-wizard": { "narrow": true }, "description": "Consecutive failures to be considered unhealthy" }
               },
               "additionalProperties": false
             }
@@ -443,8 +457,8 @@
                   "description": "HTTP GET request",
                   "properties": {
                     "path": { "type": "string", "description": "URL path" },
-                    "port": { "type": ["integer", "string"], "description": "Port number or name" },
-                    "scheme": { "type": "string", "enum": ["HTTP", "HTTPS"], "description": "URI scheme" }
+                    "port": { "type": ["integer", "string"], "x-wizard": { "narrow": true }, "description": "Port number or name" },
+                    "scheme": { "type": "string", "enum": ["HTTP", "HTTPS"], "x-wizard": { "narrow": true }, "description": "URI scheme" }
                   },
                   "additionalProperties": false
                 },
@@ -476,8 +490,8 @@
                   "description": "HTTP GET request",
                   "properties": {
                     "path": { "type": "string", "description": "URL path" },
-                    "port": { "type": ["integer", "string"], "description": "Port number or name" },
-                    "scheme": { "type": "string", "enum": ["HTTP", "HTTPS"], "description": "URI scheme" }
+                    "port": { "type": ["integer", "string"], "x-wizard": { "narrow": true }, "description": "Port number or name" },
+                    "scheme": { "type": "string", "enum": ["HTTP", "HTTPS"], "x-wizard": { "narrow": true }, "description": "URI scheme" }
                   },
                   "additionalProperties": false
                 },
@@ -852,10 +866,12 @@
           "properties": {
             "runAsUser": {
               "type": "integer",
+              "x-wizard": { "narrow": true },
               "description": "UID to run all pod containers as"
             },
             "runAsGroup": {
               "type": "integer",
+              "x-wizard": { "narrow": true },
               "description": "GID to run all pod containers as"
             },
             "runAsNonRoot": {
@@ -882,11 +898,13 @@
               "properties": {
                 "type": {
                   "type": "string",
+                  "x-wizard": { "narrow": true },
                   "enum": ["RuntimeDefault", "Unconfined", "Localhost"],
                   "description": "Seccomp profile type"
                 },
                 "localhostProfile": {
                   "type": "string",
+                  "x-wizard": { "narrow": true },
                   "description": "Path to a localhost seccomp profile (when type is Localhost)"
                 }
               },

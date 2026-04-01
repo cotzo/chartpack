@@ -50,13 +50,13 @@ export function KeyValueEditor({ label, value = {}, onChange, keyPlaceholder = '
             value={key}
             onChange={e => updateKey(key, e.target.value)}
             placeholder={keyPlaceholder}
-            className="flex-1 rounded-md border border-gray-300 px-2 py-1.5 text-sm"
+            className="flex-1 rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm"
           />
           <input
             value={val}
             onChange={e => updateValue(key, e.target.value)}
             placeholder={valuePlaceholder}
-            className="flex-1 rounded-md border border-gray-300 px-2 py-1.5 text-sm"
+            className="flex-1 rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm"
           />
           <button type="button" onClick={() => removeEntry(key)} className="text-gray-400 hover:text-red-600">
             <X className="h-4 w-4" />

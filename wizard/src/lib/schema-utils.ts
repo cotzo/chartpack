@@ -12,6 +12,8 @@ export interface WizardMeta {
   advanced?: boolean
   /** If true, the collapsible section is expanded by default */
   expanded?: boolean
+  /** If true, render this field as narrow (half-width) to allow side-by-side layout */
+  narrow?: boolean
 }
 
 export interface JsonSchema {

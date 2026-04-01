@@ -272,7 +272,7 @@ function EnvValueFields({ entry, type, onUpdate }: {
           value={entry.value ?? ''}
           onChange={e => onUpdate({ value: e.target.value })}
           placeholder="value"
-          className="flex-1 rounded border border-gray-300 px-2 py-1.5 text-sm"
+          className="flex-1 rounded border border-gray-300 bg-white px-2 py-1.5 text-sm"
         />
       )
     case 'secretKeyRef':
@@ -282,13 +282,13 @@ function EnvValueFields({ entry, type, onUpdate }: {
             value={entry.valueFrom?.secretKeyRef?.name ?? ''}
             onChange={e => onUpdate({ valueFrom: { secretKeyRef: { name: e.target.value, key: entry.valueFrom?.secretKeyRef?.key ?? '' } } })}
             placeholder="secret name"
-            className="flex-1 rounded border border-gray-300 px-2 py-1.5 text-sm"
+            className="flex-1 rounded border border-gray-300 bg-white px-2 py-1.5 text-sm"
           />
           <input
             value={entry.valueFrom?.secretKeyRef?.key ?? ''}
             onChange={e => onUpdate({ valueFrom: { secretKeyRef: { name: entry.valueFrom?.secretKeyRef?.name ?? '', key: e.target.value } } })}
             placeholder="key"
-            className="flex-1 rounded border border-gray-300 px-2 py-1.5 text-sm"
+            className="flex-1 rounded border border-gray-300 bg-white px-2 py-1.5 text-sm"
           />
         </>
       )
@@ -299,13 +299,13 @@ function EnvValueFields({ entry, type, onUpdate }: {
             value={entry.valueFrom?.configMapKeyRef?.name ?? ''}
             onChange={e => onUpdate({ valueFrom: { configMapKeyRef: { name: e.target.value, key: entry.valueFrom?.configMapKeyRef?.key ?? '' } } })}
             placeholder="configmap name"
-            className="flex-1 rounded border border-gray-300 px-2 py-1.5 text-sm"
+            className="flex-1 rounded border border-gray-300 bg-white px-2 py-1.5 text-sm"
           />
           <input
             value={entry.valueFrom?.configMapKeyRef?.key ?? ''}
             onChange={e => onUpdate({ valueFrom: { configMapKeyRef: { name: entry.valueFrom?.configMapKeyRef?.name ?? '', key: e.target.value } } })}
             placeholder="key"
-            className="flex-1 rounded border border-gray-300 px-2 py-1.5 text-sm"
+            className="flex-1 rounded border border-gray-300 bg-white px-2 py-1.5 text-sm"
           />
         </>
       )
@@ -315,7 +315,7 @@ function EnvValueFields({ entry, type, onUpdate }: {
           value={entry.valueFrom?.fieldRef?.fieldPath ?? ''}
           onChange={e => onUpdate({ valueFrom: { fieldRef: { fieldPath: e.target.value } } })}
           placeholder="e.g. metadata.name, status.podIP"
-          className="flex-1 rounded border border-gray-300 px-2 py-1.5 text-sm"
+          className="flex-1 rounded border border-gray-300 bg-white px-2 py-1.5 text-sm"
         />
       )
     case 'resourceFieldRef':
@@ -325,13 +325,13 @@ function EnvValueFields({ entry, type, onUpdate }: {
             value={entry.valueFrom?.resourceFieldRef?.resource ?? ''}
             onChange={e => onUpdate({ valueFrom: { resourceFieldRef: { resource: e.target.value, containerName: entry.valueFrom?.resourceFieldRef?.containerName } } })}
             placeholder="resource (e.g. limits.cpu)"
-            className="flex-1 rounded border border-gray-300 px-2 py-1.5 text-sm"
+            className="flex-1 rounded border border-gray-300 bg-white px-2 py-1.5 text-sm"
           />
           <input
             value={entry.valueFrom?.resourceFieldRef?.containerName ?? ''}
             onChange={e => onUpdate({ valueFrom: { resourceFieldRef: { resource: entry.valueFrom?.resourceFieldRef?.resource ?? '', containerName: e.target.value || undefined } } })}
             placeholder="container (optional)"
-            className="flex-1 rounded border border-gray-300 px-2 py-1.5 text-sm"
+            className="flex-1 rounded border border-gray-300 bg-white px-2 py-1.5 text-sm"
           />
         </>
       )
@@ -386,7 +386,7 @@ function BulkRow({ name, entry, onRename, onUpdate, onRemove, onChangeType }: {
         value={refName}
         onChange={e => updateRefName(e.target.value)}
         placeholder="resource name"
-        className="flex-1 rounded border border-gray-300 px-2 py-1.5 text-sm"
+        className="flex-1 rounded border border-gray-300 bg-white px-2 py-1.5 text-sm"
       />
 
       <button type="button" onClick={onRemove} className="shrink-0 text-gray-400 hover:text-red-600">
