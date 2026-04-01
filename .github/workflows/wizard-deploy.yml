@@ -80,7 +80,7 @@ jobs:
 
       - name: Comment PR with preview link
         if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const dest = '${{ needs.build.outputs.dest }}';
