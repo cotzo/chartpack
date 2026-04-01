@@ -1456,7 +1456,7 @@
               },
               "oauth2Proxy": {
                 "type": "string",
-                "x-wizard": { "narrow": true },
+                "x-wizard": { "narrow": true, "optionsFrom": "networking.oauth2Proxies" },
                 "description": "Key from networking.oauth2Proxies map if oauth2proxy should be used for authentication on this Ingress"
               },
               "hosts": {
@@ -1591,8 +1591,8 @@
                   },
                   "oauth2Proxy": {
                     "type": "string",
-                    "x-wizard": { "narrow": true },
-                    "description": "Key from networking.oauth2Proxies map if oauth2proxy should be used for authentication on this Ingress"
+                    "x-wizard": { "narrow": true, "optionsFrom": "networking.oauth2Proxies" },
+                    "description": "Key from networking.oauth2Proxies map if oauth2proxy should be used for authentication on this route"
                   },
                   "parentRefs": {
                     "type": "array",
@@ -2945,7 +2945,7 @@
                 "properties": {
                   "name": {
                     "type": "string",
-                    "x-wizard": { "narrow": true },
+                    "x-wizard": { "narrow": true, "optionsFrom": "rbac.roles" },
                     "description": "Role name (from rbac.roles map key)"
                   },
                   "kind": {
@@ -3009,7 +3009,7 @@
                 "properties": {
                   "name": {
                     "type": "string",
-                    "x-wizard": { "narrow": true },
+                    "x-wizard": { "narrow": true, "optionsFrom": "rbac.clusterRoles" },
                     "description": "ClusterRole name (from rbac.clusterRoles map key)"
                   },
                   "kind": {

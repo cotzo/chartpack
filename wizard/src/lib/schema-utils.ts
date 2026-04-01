@@ -16,6 +16,8 @@ export interface WizardMeta {
   narrow?: boolean
   /** Hide this field when a sibling boolean field is true (e.g. "headless") */
   hiddenWhen?: string
+  /** Populate a dropdown with keys from the map at this dot-separated path in the wizard values */
+  optionsFrom?: string
   /** Show this field only when a sibling field matches one of the listed values (e.g. { "type": ["LoadBalancer"] }) */
   visibleWhen?: Record<string, string[]>
 }

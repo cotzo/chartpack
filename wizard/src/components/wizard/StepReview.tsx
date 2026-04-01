@@ -3,6 +3,7 @@ import { Copy, Download, Check, AlertTriangle, CheckCircle2 } from 'lucide-react
 import Ajv from 'ajv/dist/2020'
 import { generateYaml } from '../../lib/yaml-generator'
 import type { JsonSchema } from '../../lib/schema-utils'
+import { getAtPath } from '../../lib/values-utils'
 
 interface StepReviewProps {
   values: Record<string, unknown>
@@ -41,11 +42,116 @@ function formatParams(params: Record<string, unknown>): string {
   return parts.join(', ')
 }
 
+function validateCrossReferences(values: Record<string, unknown>): ValidationError[] {
+  const errors: ValidationError[] = []
+
+  const mapKeys = (path: string): Set<string> => {
+    const obj = getAtPath(values, path)
+    return new Set(obj && typeof obj === 'object' && !Array.isArray(obj) ? Object.keys(obj as Record<string, unknown>) : [])
+  }
+
+  const configMaps = mapKeys('config.configMaps')
+  const secrets = mapKeys('config.secrets')
+  const persistenceKeys = mapKeys('persistence')
+  const oauth2Proxies = mapKeys('networking.oauth2Proxies')
+  const roles = mapKeys('rbac.roles')
+  const clusterRoles = mapKeys('rbac.clusterRoles')
+
+  const checkRef = (ref: string | undefined, target: Set<string>, targetLabel: string, context: string) => {
+    if (ref && !target.has(ref)) {
+      errors.push({ path: context, message: `${context}: references ${targetLabel} "${ref}" which is not defined` })
+    }
+  }
+
+  // Container env and mount references
+  const checkContainers = (containers: Record<string, unknown> | undefined, prefix: string) => {
+    if (!containers || typeof containers !== 'object') return
+    for (const [cName, cSpec] of Object.entries(containers as Record<string, Record<string, unknown>>)) {
+      if (!cSpec || typeof cSpec !== 'object') continue
+      const ctx = `${prefix}.${cName}`
+
+      // Env references
+      const env = cSpec.env as Record<string, Record<string, unknown>> | undefined
+      if (env && typeof env === 'object') {
+        for (const [envName, envVal] of Object.entries(env)) {
+          if (!envVal || typeof envVal !== 'object') continue
+          const eCtx = `${ctx}.env.${envName}`
+          const vf = envVal.valueFrom as Record<string, Record<string, string>> | undefined
+          if (vf?.configMapKeyRef?.name && !envVal.external) checkRef(vf.configMapKeyRef.name, configMaps, 'configMap', eCtx)
+          if (vf?.secretKeyRef?.name && !envVal.external) checkRef(vf.secretKeyRef.name, secrets, 'secret', eCtx)
+          const cmRef = envVal.configMapRef as Record<string, string> | undefined
+          if (cmRef?.name && !envVal.external) checkRef(cmRef.name, configMaps, 'configMap', eCtx)
+          const sRef = envVal.secretRef as Record<string, string> | undefined
+          if (sRef?.name && !envVal.external) checkRef(sRef.name, secrets, 'secret', eCtx)
+        }
+      }
+
+      // Mount references
+      const mounts = cSpec.mounts as Record<string, unknown>[] | undefined
+      if (Array.isArray(mounts)) {
+        mounts.forEach((m, i) => {
+          if (!m || typeof m !== 'object') return
+          const mount = m as Record<string, unknown>
+          const mCtx = `${ctx}.mounts[${i}]`
+          if (mount.configMap && !mount.external) checkRef(mount.configMap as string, configMaps, 'configMap', mCtx)
+          if (mount.secret && !mount.external) checkRef(mount.secret as string, secrets, 'secret', mCtx)
+          if (mount.persistence) checkRef(mount.persistence as string, persistenceKeys, 'persistence', mCtx)
+        })
+      }
+    }
+  }
+
+  checkContainers(getAtPath(values, 'containers') as Record<string, unknown>, 'containers')
+  checkContainers(getAtPath(values, 'initContainers') as Record<string, unknown>, 'initContainers')
+
+  // Ingress oauth2Proxy references
+  const ingresses = getAtPath(values, 'networking.ingresses') as Record<string, Record<string, unknown>> | undefined
+  if (ingresses && typeof ingresses === 'object') {
+    for (const [name, ing] of Object.entries(ingresses)) {
+      if (ing?.oauth2Proxy) checkRef(ing.oauth2Proxy as string, oauth2Proxies, 'oauth2Proxy', `networking.ingresses.${name}`)
+    }
+  }
+
+  // Route oauth2Proxy references
+  const routes = getAtPath(values, 'networking.gatewayApi.routes') as Record<string, Record<string, unknown>> | undefined
+  if (routes && typeof routes === 'object') {
+    for (const [name, route] of Object.entries(routes)) {
+      if (route?.oauth2Proxy) checkRef(route.oauth2Proxy as string, oauth2Proxies, 'oauth2Proxy', `networking.gatewayApi.routes.${name}`)
+    }
+  }
+
+  // RoleBinding references
+  const roleBindings = getAtPath(values, 'rbac.roleBindings') as Record<string, Record<string, unknown>> | undefined
+  if (roleBindings && typeof roleBindings === 'object') {
+    for (const [name, rb] of Object.entries(roleBindings)) {
+      const ref = rb?.roleRef as Record<string, string> | undefined
+      if (ref?.name) {
+        const kind = ref.kind || 'Role'
+        if (kind === 'Role') checkRef(ref.name, roles, 'role', `rbac.roleBindings.${name}`)
+        else checkRef(ref.name, clusterRoles, 'clusterRole', `rbac.roleBindings.${name}`)
+      }
+    }
+  }
+
+  // ClusterRoleBinding references
+  const crbindings = getAtPath(values, 'rbac.clusterRoleBindings') as Record<string, Record<string, unknown>> | undefined
+  if (crbindings && typeof crbindings === 'object') {
+    for (const [name, crb] of Object.entries(crbindings)) {
+      const ref = crb?.roleRef as Record<string, string> | undefined
+      if (ref?.name) checkRef(ref.name, clusterRoles, 'clusterRole', `rbac.clusterRoleBindings.${name}`)
+    }
+  }
+
+  return errors
+}
+
 export function StepReview({ values, schema }: StepReviewProps) {
   const [copied, setCopied] = useState(false)
 
   const yamlOutput = useMemo(() => generateYaml(values), [values])
-  const errors = useMemo(() => validateValues(values, schema), [values, schema])
+  const schemaErrors = useMemo(() => validateValues(values, schema), [values, schema])
+  const refErrors = useMemo(() => validateCrossReferences(values), [values])
+  const errors = useMemo(() => [...schemaErrors, ...refErrors], [schemaErrors, refErrors])
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(yamlOutput)

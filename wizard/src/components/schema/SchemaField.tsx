@@ -21,6 +21,8 @@ import { NodeTargetingField } from '../shared/NodeTargetingField'
 import { MountsEditor } from '../shared/MountsEditor'
 import { CollapsibleSection } from '../shared/CollapsibleSection'
 import { HelpText } from '../shared/HelpText'
+import { useWizardValues, useWizardNavigate } from '../../lib/use-wizard'
+import { getKeysAtPath, getStepForPath } from '../../lib/values-utils'
 
 interface SchemaFieldProps {
   schema: JsonSchema
@@ -39,8 +41,11 @@ interface SchemaFieldProps {
 export function SchemaField({ schema, rootSchema, value, onChange, label, required, depth = 0 }: SchemaFieldProps) {
   const resolved = resolveSchema(schema, rootSchema)
   const wizardField = schema['x-wizard-field'] || resolved['x-wizard-field']
+  const wizard = schema['x-wizard'] || resolved['x-wizard']
   const type = getEffectiveType(resolved)
   const desc = schema.description || resolved.description
+  const allValues = useWizardValues()
+  const navigateTo = useWizardNavigate()
 
   // --- Node targeting field (oneOf: string[] | {values, enforcement}) ---
   if (wizardField === 'nodeTargeting') {
@@ -108,6 +113,44 @@ export function SchemaField({ schema, rootSchema, value, onChange, label, requir
         required={required}
         helpText={desc}
       />
+    )
+  }
+
+  // --- String ---
+  // --- String with optionsFrom (dynamic dropdown from other values) ---
+  if (type === 'string' && wizard?.optionsFrom) {
+    const options = getKeysAtPath(allValues, wizard.optionsFrom)
+    const stepInfo = getStepForPath(wizard.optionsFrom)
+    if (options.length > 0) {
+      return (
+        <EnumSelect
+          label={label || ''}
+          value={(value as string) ?? ''}
+          onChange={v => onChange(v || undefined)}
+          options={options}
+          required={required}
+          helpText={desc}
+          placeholder="Select..."
+        />
+      )
+    }
+    return (
+      <div className="space-y-1">
+        <label className="block text-sm font-medium text-gray-700">
+          {label}{required && <span className="text-red-500 ml-0.5">*</span>}
+        </label>
+        <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-700">
+          No {wizard.optionsFrom.split('.').pop()} defined.{' '}
+          {stepInfo && navigateTo ? (
+            <button type="button" onClick={() => navigateTo(stepInfo.stepId)} className="underline font-medium hover:text-amber-900">
+              Go to {stepInfo.label}
+            </button>
+          ) : (
+            <span>Create one first.</span>
+          )}
+        </div>
+        {desc && <HelpText text={desc} />}
+      </div>
     )
   }
 

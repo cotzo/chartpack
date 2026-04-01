@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Plus, Trash2, ChevronDown, ChevronRight } from 'lucide-react'
 import { HelpText } from './HelpText'
+import { useWizardValues, useWizardNavigate } from '../../lib/use-wizard'
+import { getKeysAtPath, getStepForPath } from '../../lib/values-utils'
 
 type SourceType = 'configMap' | 'secret' | 'persistence' | 'volume'
 
@@ -22,6 +24,13 @@ const SOURCE_LABELS: Record<SourceType, string> = {
   secret: 'Secret',
   persistence: 'Persistence',
   volume: 'Volume',
+}
+
+const SOURCE_OPTIONS_PATH: Record<SourceType, string | null> = {
+  configMap: 'config.configMaps',
+  secret: 'config.secrets',
+  persistence: 'persistence',
+  volume: null, // podSettings.volumes is an array, not a map
 }
 
 function detectSource(entry: MountEntry): SourceType {
@@ -60,6 +69,8 @@ interface MountsEditorProps {
 
 export function MountsEditor({ label, value = [], onChange, helpText }: MountsEditorProps) {
   const [expandedIdx, setExpandedIdx] = useState<Set<number>>(new Set())
+  const allValues = useWizardValues()
+  const navigateTo = useWizardNavigate()
 
   const addMount = () => {
     onChange([...value, { path: '' }])
@@ -154,12 +165,48 @@ export function MountsEditor({ label, value = [], onChange, helpText }: MountsEd
                   </div>
                   <div className="space-y-1">
                     <label className="block text-xs font-medium text-gray-600">Source Name</label>
-                    <input
-                      value={sourceValue}
-                      onChange={e => updateMount(idx, setSource(entry, sourceType, e.target.value))}
-                      placeholder={sourceType === 'volume' ? 'volume-name' : 'resource-key'}
-                      className="block w-full rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm"
-                    />
+                    {(() => {
+                      const optPath = SOURCE_OPTIONS_PATH[sourceType]
+                      if (!optPath) {
+                        return (
+                          <input
+                            value={sourceValue}
+                            onChange={e => updateMount(idx, setSource(entry, sourceType, e.target.value))}
+                            placeholder="volume-name"
+                            className="block w-full rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm"
+                          />
+                        )
+                      }
+                      const options = getKeysAtPath(allValues, optPath)
+                      if (options.length > 0) {
+                        return (
+                          <div className="relative">
+                            <select
+                              value={sourceValue}
+                              onChange={e => updateMount(idx, setSource(entry, sourceType, e.target.value))}
+                              className="block w-full appearance-none rounded-md border border-gray-300 bg-white pl-3 pr-8 py-1.5 text-sm"
+                            >
+                              <option value="">Select...</option>
+                              {options.map(o => <option key={o} value={o}>{o}</option>)}
+                            </select>
+                            <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                          </div>
+                        )
+                      }
+                      const stepInfo = getStepForPath(optPath)
+                      return (
+                        <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs text-amber-700">
+                          No {SOURCE_LABELS[sourceType].toLowerCase()}s defined.{' '}
+                          {stepInfo && navigateTo ? (
+                            <button type="button" onClick={() => navigateTo(stepInfo.stepId)} className="underline font-medium hover:text-amber-900">
+                              Go to {stepInfo.label}
+                            </button>
+                          ) : (
+                            <span>Create one first.</span>
+                          )}
+                        </div>
+                      )
+                    })()}
                   </div>
                 </div>
 

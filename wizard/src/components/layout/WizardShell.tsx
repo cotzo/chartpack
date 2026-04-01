@@ -8,6 +8,7 @@ import { StepWorkloadType } from '../wizard/StepWorkloadType'
 import { StepReview } from '../wizard/StepReview'
 import { ImportModal } from '../shared/ImportModal'
 import { generateYaml, parseYaml } from '../../lib/yaml-generator'
+import { ValuesProvider } from '../../lib/values-context'
 
 export function WizardShell() {
   const [schema, setSchema] = useState<JsonSchema | null>(null)
@@ -129,6 +130,7 @@ export function WizardShell() {
   const navGroups = useMemo(() => groupSteps(visibleSteps), [visibleSteps])
 
   return (
+    <ValuesProvider values={values} navigateTo={setCurrentStep}>
     <div className="flex h-screen bg-gray-50">
       {sidebarOpen && (
         <StepNavigation
@@ -195,5 +197,6 @@ export function WizardShell() {
 
       {showImport && <ImportModal onImport={handleImport} onClose={() => setShowImport(false)} />}
     </div>
+    </ValuesProvider>
   )
 }

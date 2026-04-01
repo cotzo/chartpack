@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Plus, Trash2, ChevronDown } from 'lucide-react'
 import { HelpText } from './HelpText'
+import { useWizardValues, useWizardNavigate } from '../../lib/use-wizard'
+import { getKeysAtPath, getStepForPath } from '../../lib/values-utils'
 
 type EnvType = 'value' | 'secretKeyRef' | 'configMapKeyRef' | 'fieldRef' | 'resourceFieldRef' | 'configMapRef' | 'secretRef'
 
@@ -259,6 +261,48 @@ function EnvRow({ name, entry, onRename, onUpdate, onRemove, onChangeType }: {
   )
 }
 
+/** Dropdown if options exist, warning with link otherwise */
+function RefSelect({ value, onChange, optionsPath, placeholder }: {
+  value: string
+  onChange: (v: string) => void
+  optionsPath: string
+  placeholder: string
+}) {
+  const allValues = useWizardValues()
+  const navigateTo = useWizardNavigate()
+  const options = getKeysAtPath(allValues, optionsPath)
+  const stepInfo = getStepForPath(optionsPath)
+
+  if (options.length > 0) {
+    return (
+      <div className="relative flex-1">
+        <select
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          className="block w-full appearance-none rounded border border-gray-300 bg-white pl-2 pr-7 py-1.5 text-sm"
+        >
+          <option value="">Select...</option>
+          {options.map(o => <option key={o} value={o}>{o}</option>)}
+        </select>
+        <ChevronDown className="pointer-events-none absolute right-1.5 top-2 h-3.5 w-3.5 text-gray-400" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex-1 rounded border border-amber-300 bg-amber-50 px-2 py-1.5 text-xs text-amber-700">
+      No {placeholder}s defined.{' '}
+      {stepInfo && navigateTo ? (
+        <button type="button" onClick={() => navigateTo(stepInfo.stepId)} className="underline font-medium hover:text-amber-900">
+          Go to {stepInfo.label}
+        </button>
+      ) : (
+        <span>Create one first.</span>
+      )}
+    </div>
+  )
+}
+
 function EnvValueFields({ entry, type, onUpdate }: {
   entry: EnvEntry
   type: EnvType
@@ -277,11 +321,11 @@ function EnvValueFields({ entry, type, onUpdate }: {
     case 'secretKeyRef':
       return (
         <>
-          <input
+          <RefSelect
             value={entry.valueFrom?.secretKeyRef?.name ?? ''}
-            onChange={e => onUpdate({ valueFrom: { secretKeyRef: { name: e.target.value, key: entry.valueFrom?.secretKeyRef?.key ?? '' } } })}
+            onChange={v => onUpdate({ valueFrom: { secretKeyRef: { name: v, key: entry.valueFrom?.secretKeyRef?.key ?? '' } } })}
+            optionsPath="config.secrets"
             placeholder="secret name"
-            className="flex-1 rounded border border-gray-300 bg-white px-2 py-1.5 text-sm"
           />
           <input
             value={entry.valueFrom?.secretKeyRef?.key ?? ''}
@@ -294,11 +338,11 @@ function EnvValueFields({ entry, type, onUpdate }: {
     case 'configMapKeyRef':
       return (
         <>
-          <input
+          <RefSelect
             value={entry.valueFrom?.configMapKeyRef?.name ?? ''}
-            onChange={e => onUpdate({ valueFrom: { configMapKeyRef: { name: e.target.value, key: entry.valueFrom?.configMapKeyRef?.key ?? '' } } })}
+            onChange={v => onUpdate({ valueFrom: { configMapKeyRef: { name: v, key: entry.valueFrom?.configMapKeyRef?.key ?? '' } } })}
+            optionsPath="config.configMaps"
             placeholder="configmap name"
-            className="flex-1 rounded border border-gray-300 bg-white px-2 py-1.5 text-sm"
           />
           <input
             value={entry.valueFrom?.configMapKeyRef?.key ?? ''}
@@ -381,11 +425,11 @@ function BulkRow({ name, entry, onRename, onUpdate, onRemove, onChangeType }: {
         <ChevronDown className="pointer-events-none absolute right-1.5 top-2 h-3.5 w-3.5 text-gray-400" />
       </div>
 
-      <input
+      <RefSelect
         value={refName}
-        onChange={e => updateRefName(e.target.value)}
+        onChange={updateRefName}
+        optionsPath={type === 'configMapRef' ? 'config.configMaps' : 'config.secrets'}
         placeholder="resource name"
-        className="flex-1 rounded border border-gray-300 bg-white px-2 py-1.5 text-sm"
       />
 
       <button type="button" aria-label="Remove source" onClick={onRemove} className="shrink-0 text-gray-400 hover:text-red-600">
