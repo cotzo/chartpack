@@ -778,30 +778,37 @@
         },
         "os": {
           "$ref": "#/definitions/nodeTargetingProperty",
+          "x-wizard-field": "nodeTargeting",
           "description": "Target operating system(s) (e.g. linux, windows). Maps to node label from infraSettings.nodeLabels.os"
         },
         "arch": {
           "$ref": "#/definitions/nodeTargetingProperty",
+          "x-wizard-field": "nodeTargeting",
           "description": "Target CPU architecture(s) (e.g. amd64, arm64). Maps to node label from infraSettings.nodeLabels.arch"
         },
         "regions": {
           "$ref": "#/definitions/nodeTargetingProperty",
+          "x-wizard-field": "nodeTargeting",
           "description": "Target cloud region(s). Maps to node label from infraSettings.nodeLabels.topologyRegion"
         },
         "zones": {
           "$ref": "#/definitions/nodeTargetingProperty",
+          "x-wizard-field": "nodeTargeting",
           "description": "Target availability zone(s). Maps to node label from infraSettings.nodeLabels.topologyZone"
         },
         "racks": {
           "$ref": "#/definitions/nodeTargetingProperty",
+          "x-wizard-field": "nodeTargeting",
           "description": "Target rack(s) for rack-aware scheduling. Maps to node label from infraSettings.nodeLabels.topologyRack"
         },
         "nodeTypes": {
           "$ref": "#/definitions/nodeTargetingProperty",
+          "x-wizard-field": "nodeTargeting",
           "description": "Target node/instance type(s) (e.g. m5.xlarge). Maps to node label from infraSettings.nodeLabels.nodeType"
         },
         "nodePools": {
           "$ref": "#/definitions/nodeTargetingProperty",
+          "x-wizard-field": "nodeTargeting",
           "description": "Target node pool(s) (e.g. default, gpu-pool). Maps to node label from infraSettings.nodeLabels.nodePool"
         }
       },

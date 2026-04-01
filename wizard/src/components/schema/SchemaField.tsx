@@ -17,6 +17,7 @@ import { KeyValueEditor } from '../shared/KeyValueEditor'
 import { MapEditor } from '../shared/MapEditor'
 import { ArrayObjectEditor } from '../shared/ArrayObjectEditor'
 import { EnvEditor } from '../shared/EnvEditor'
+import { NodeTargetingField } from '../shared/NodeTargetingField'
 import { CollapsibleSection } from '../shared/CollapsibleSection'
 
 interface SchemaFieldProps {
@@ -35,8 +36,21 @@ interface SchemaFieldProps {
  */
 export function SchemaField({ schema, rootSchema, value, onChange, label, required, depth = 0 }: SchemaFieldProps) {
   const resolved = resolveSchema(schema, rootSchema)
+  const wizardField = schema['x-wizard-field'] || resolved['x-wizard-field']
   const type = getEffectiveType(resolved)
-  const desc = resolved.description
+  const desc = schema.description || resolved.description
+
+  // --- Node targeting field (oneOf: string[] | {values, enforcement}) ---
+  if (wizardField === 'nodeTargeting') {
+    return (
+      <NodeTargetingField
+        label={label || ''}
+        value={value as Record<string, unknown> | string[] | undefined}
+        onChange={onChange}
+        helpText={desc}
+      />
+    )
+  }
 
   // --- Enum (string with enum values) ---
   if (type === 'enum' || resolved.enum) {
@@ -154,7 +168,7 @@ export function SchemaField({ schema, rootSchema, value, onChange, label, requir
   }
 
   // --- Env map (custom editor) ---
-  if (resolved['x-wizard-field'] === 'env') {
+  if (wizardField === 'env') {
     const mapValue = (value ?? {}) as Record<string, Record<string, unknown>>
     return (
       <EnvEditor
