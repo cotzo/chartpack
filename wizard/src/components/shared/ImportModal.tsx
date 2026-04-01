@@ -2,7 +2,8 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { X, Upload } from 'lucide-react'
 
 interface ImportModalProps {
-  onImport: (yaml: string) => void
+  /** Return an error string to display, or undefined/void on success */
+  onImport: (yaml: string) => string | void
   onClose: () => void
 }
 
@@ -30,7 +31,8 @@ export function ImportModal({ onImport, onClose }: ImportModalProps) {
       return
     }
     setError(null)
-    onImport(text)
+    const err = onImport(text)
+    if (err) setError(err)
   }
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {

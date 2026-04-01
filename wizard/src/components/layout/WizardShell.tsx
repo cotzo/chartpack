@@ -81,10 +81,14 @@ export function WizardShell() {
     }
   }
 
-  const handleImport = (yamlStr: string) => {
-    const parsed = parseYaml(yamlStr)
-    setValues(parsed)
-    setShowImport(false)
+  const handleImport = (yamlStr: string): string | void => {
+    try {
+      const parsed = parseYaml(yamlStr)
+      setValues(parsed)
+      setShowImport(false)
+    } catch (e) {
+      return (e as Error).message || 'Invalid YAML'
+    }
   }
 
   const handleDownload = () => {
