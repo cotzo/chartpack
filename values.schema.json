@@ -2558,6 +2558,7 @@
             "replicaCount": {
               "type": "integer",
               "minimum": 0,
+              "default": 1,
               "description": "Number of pod replicas"
             },
             "strategy": {
@@ -2569,6 +2570,7 @@
                 "integer",
                 "string"
               ],
+              "default": 0,
               "description": "Minimum seconds a pod must be ready before considered available"
             },
             "revisionHistoryLimit": {
@@ -2576,6 +2578,7 @@
                 "integer",
                 "string"
               ],
+              "default": 10,
               "description": "Number of old ReplicaSets to retain for rollback"
             },
             "restartAt": {
@@ -2619,6 +2622,7 @@
                 "integer",
                 "string"
               ],
+              "default": 0,
               "description": "Minimum seconds a pod must be ready before considered available"
             },
             "revisionHistoryLimit": {
@@ -2626,7 +2630,8 @@
                 "integer",
                 "string"
               ],
-              "description": "Number of old ReplicaSets to retain for rollback (default: 10)"
+              "default": 10,
+              "description": "Number of old ReplicaSets to retain for rollback"
             }
           },
           "additionalProperties": false
@@ -2638,6 +2643,7 @@
             "replicaCount": {
               "type": "integer",
               "minimum": 0,
+              "default": 1,
               "description": "Number of pod replicas"
             },
             "serviceName": {
@@ -2678,6 +2684,7 @@
                 "integer",
                 "string"
               ],
+              "default": 0,
               "description": "Minimum seconds a pod must be ready before considered available"
             },
             "revisionHistoryLimit": {
@@ -2685,7 +2692,8 @@
                 "integer",
                 "string"
               ],
-              "description": "Number of old revisions to retain for rollback (default: 10)"
+              "default": 10,
+              "description": "Number of old revisions to retain for rollback"
             },
             "ordinals": {
               "type": "object",
@@ -2722,6 +2730,7 @@
                 "integer",
                 "string"
               ],
+              "default": 0,
               "description": "Minimum seconds a pod must be ready before considered available"
             },
             "revisionHistoryLimit": {
@@ -2729,7 +2738,8 @@
                 "integer",
                 "string"
               ],
-              "description": "Number of old DaemonSet revisions to retain for rollback (default: 10)"
+              "default": 10,
+              "description": "Number of old DaemonSet revisions to retain for rollback"
             }
           },
           "additionalProperties": false

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Plus, Trash2, ChevronDown, ChevronRight } from 'lucide-react'
 import { HelpText } from './HelpText'
 
@@ -15,12 +15,26 @@ interface MapEditorProps<T> {
 export function MapEditor<T>({ label, value = {} as Record<string, T>, onChange, renderItem, createDefault, helpText, keyPlaceholder = 'Name' }: MapEditorProps<T>) {
   const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set())
   const [newKeyName, setNewKeyName] = useState('')
+  const stableIdsRef = useRef<Map<string, string>>(new Map())
 
   const entries = Object.entries(value)
+
+  // Assign stable IDs to map keys so React doesn't remount on rename
+  const stableIds = stableIdsRef.current
+  for (const [key] of entries) {
+    if (!stableIds.has(key)) {
+      stableIds.set(key, crypto.randomUUID())
+    }
+  }
+  // Clean up removed keys
+  for (const tracked of stableIds.keys()) {
+    if (!(tracked in value)) stableIds.delete(tracked)
+  }
 
   const addEntry = () => {
     const name = newKeyName.trim() || `item-${entries.length + 1}`
     if (value[name]) return
+    stableIds.set(name, crypto.randomUUID())
     onChange({ ...value, [name]: createDefault() })
     setExpandedKeys(new Set([...expandedKeys, name]))
     setNewKeyName('')
@@ -53,6 +67,12 @@ export function MapEditor<T>({ label, value = {} as Record<string, T>, onChange,
     for (const [k, v] of Object.entries(value)) {
       next[k === oldKey ? newKey : k] = v
     }
+    // Transfer stable ID to new key
+    const id = stableIds.get(oldKey)
+    if (id) {
+      stableIds.delete(oldKey)
+      stableIds.set(newKey, id)
+    }
     onChange(next)
     const nextExpanded = new Set(expandedKeys)
     if (nextExpanded.has(oldKey)) {
@@ -70,7 +90,7 @@ export function MapEditor<T>({ label, value = {} as Record<string, T>, onChange,
       {helpText && <HelpText text={helpText} />}
 
       {entries.map(([key, item]) => (
-        <div key={key} className="border border-gray-200 rounded-lg overflow-hidden">
+        <div key={stableIds.get(key) ?? key} className="border border-gray-200 rounded-lg overflow-hidden">
           <div className="flex items-center gap-2 px-3 py-2 bg-gray-50">
             <button type="button" onClick={() => toggleExpand(key)} className="text-gray-500">
               {expandedKeys.has(key) ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
