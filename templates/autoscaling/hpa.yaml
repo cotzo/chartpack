@@ -8,8 +8,8 @@ spec:
     apiVersion: {{ if eq .Values.workloadType "Rollout" }}argoproj.io/v1alpha1{{ else }}apps/v1{{ end }}
     kind: {{ .Values.workloadType }}
     name: {{ include "chartpack.fullname" . }}
-  minReplicas: {{ default 1 .Values.autoscaling.hpa.minReplicas }}
-  maxReplicas: {{ default 10 .Values.autoscaling.hpa.maxReplicas }}
+  minReplicas: {{ if kindIs "invalid" .Values.autoscaling.hpa.minReplicas }}1{{ else }}{{ .Values.autoscaling.hpa.minReplicas }}{{ end }}
+  maxReplicas: {{ if kindIs "invalid" .Values.autoscaling.hpa.maxReplicas }}10{{ else }}{{ .Values.autoscaling.hpa.maxReplicas }}{{ end }}
   {{- with .Values.autoscaling.hpa.metrics }}
   metrics:
     {{- toYaml . | nindent 4 }}

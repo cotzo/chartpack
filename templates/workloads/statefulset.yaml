@@ -4,7 +4,7 @@ kind: StatefulSet
 {{ include "chartpack.metadata" (dict "context" $ "workload" true "syncWaveDefault" "0") }}
 spec:
   {{- if not (or .Values.autoscaling.hpa.enabled .Values.autoscaling.keda.enabled) }}
-  replicas: {{ default 1 .Values.workloads.statefulSet.replicaCount }}
+  replicas: {{ if kindIs "invalid" .Values.workloads.statefulSet.replicaCount }}1{{ else }}{{ .Values.workloads.statefulSet.replicaCount }}{{ end }}
   {{- end }}
   serviceName: {{ include "chartpack.networking.headlessServiceName" . }}
   {{- with .Values.workloads.statefulSet.podManagementPolicy }}

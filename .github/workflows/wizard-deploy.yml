@@ -32,15 +32,13 @@ jobs:
         id: path
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            PR_NAME=$(echo "$HEAD_REF" | sed 's/[^a-zA-Z0-9-]/-/g')
-            echo "dest=dev/${PR_NAME}" >> "$GITHUB_OUTPUT"
-            echo "base=/chartpack/dev/${PR_NAME}/" >> "$GITHUB_OUTPUT"
+            PR_NUMBER="${{ github.event.pull_request.number }}"
+            echo "dest=dev/pr-${PR_NUMBER}" >> "$GITHUB_OUTPUT"
+            echo "base=/chartpack/dev/pr-${PR_NUMBER}/" >> "$GITHUB_OUTPUT"
           else
             echo "dest=wizard" >> "$GITHUB_OUTPUT"
             echo "base=/chartpack/wizard/" >> "$GITHUB_OUTPUT"
           fi
-        env:
-          HEAD_REF: ${{ github.head_ref }}
 
       - name: Build wizard
         run: |

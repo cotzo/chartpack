@@ -2,6 +2,11 @@ import { useState, useCallback } from 'react'
 import yaml from 'js-yaml'
 import { HelpText } from './HelpText'
 
+function valueToYaml(value: Record<string, unknown>): string {
+  if (!value || Object.keys(value).length === 0) return ''
+  return yaml.dump(value, { lineWidth: -1, noRefs: true }).trim()
+}
+
 interface ObjectEditorProps {
   label: string
   value: Record<string, unknown>
@@ -11,23 +16,34 @@ interface ObjectEditorProps {
 }
 
 export function ObjectEditor({ label, value = {}, onChange, helpText, rows = 6 }: ObjectEditorProps) {
-  const [text, setText] = useState(() => {
-    if (!value || Object.keys(value).length === 0) return ''
-    return yaml.dump(value, { lineWidth: -1, noRefs: true }).trim()
-  })
+  const [localText, setLocalText] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [lastEmitted, setLastEmitted] = useState(value)
+
+  // Detect external value changes (import, reset) and clear local edits
+  if (value !== lastEmitted && localText !== null) {
+    setLocalText(null)
+    setError(null)
+    setLastEmitted(value)
+  }
+
+  // Show local text while editing, otherwise derive from value prop
+  const text = localText !== null ? localText : valueToYaml(value)
 
   const handleChange = useCallback((newText: string) => {
-    setText(newText)
+    setLocalText(newText)
     if (!newText.trim()) {
       setError(null)
-      onChange({})
+      const empty = {}
+      setLastEmitted(empty)
+      onChange(empty)
       return
     }
     try {
       const parsed = yaml.load(newText)
       if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
         setError(null)
+        setLastEmitted(parsed as Record<string, unknown>)
         onChange(parsed as Record<string, unknown>)
       } else {
         setError('Must be a YAML object')

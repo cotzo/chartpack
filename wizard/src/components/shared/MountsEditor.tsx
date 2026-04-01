@@ -111,7 +111,7 @@ export function MountsEditor({ label, value = [], onChange, helpText }: MountsEd
               </button>
               <span className="flex-1 text-sm font-medium text-gray-800 truncate">{summary}</span>
               <span className="text-xs text-gray-400">{SOURCE_LABELS[sourceType]}{sourceValue ? `: ${sourceValue}` : ''}</span>
-              <button type="button" onClick={() => removeMount(idx)} className="text-gray-400 hover:text-red-600">
+              <button type="button" aria-label="Remove mount" onClick={() => removeMount(idx)} className="text-gray-400 hover:text-red-600">
                 <Trash2 className="h-4 w-4" />
               </button>
             </div>

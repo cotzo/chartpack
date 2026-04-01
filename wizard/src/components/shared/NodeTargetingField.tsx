@@ -68,7 +68,7 @@ export function NodeTargetingField({ label, value, onChange, helpText, placehold
           {items.map((item, idx) => (
             <span key={idx} className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-1 text-sm text-blue-700">
               {item}
-              <button type="button" onClick={() => removeItem(idx)} className="text-blue-400 hover:text-blue-700">
+              <button type="button" aria-label="Remove value" onClick={() => removeItem(idx)} className="text-blue-400 hover:text-blue-700">
                 <X className="h-3 w-3" />
               </button>
             </span>

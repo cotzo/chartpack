@@ -78,13 +78,7 @@ spec:
   {{- end }}
   {{- with $svc.ipFamilies }}
   ipFamilies:
-    {{- if kindIs "string" . }}
-    {{- range (splitList "+" .) }}
-    - {{ . }}
-    {{- end }}
-    {{- else }}
     {{- toYaml . | nindent 4 }}
-    {{- end }}
   {{- end }}
   {{- if $svc.publishNotReadyAddresses }}
   publishNotReadyAddresses: true

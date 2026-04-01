@@ -28,7 +28,15 @@ export function WizardShell() {
 
   const workloadType = (values.workloadType as string) || 'Deployment'
   const visibleSteps = getVisibleSteps(allSteps, workloadType)
-  const currentIndex = visibleSteps.findIndex(s => s.id === currentStep)
+  let currentIndex = visibleSteps.findIndex(s => s.id === currentStep)
+
+  // Re-anchor if the current step is no longer visible (workload type change, import)
+  if (currentIndex === -1 && visibleSteps.length > 0) {
+    currentIndex = 0
+    // Defer the state update to avoid setting state during render
+    queueMicrotask(() => setCurrentStep(visibleSteps[0].id))
+  }
+
   const currentStepConfig = visibleSteps[currentIndex]
 
   const getValue = useCallback((path: string) => {

@@ -252,7 +252,7 @@ function EnvRow({ name, entry, onRename, onUpdate, onRemove, onChangeType }: {
         <EnvValueFields entry={entry} type={type} onUpdate={onUpdate} />
       </div>
 
-      <button type="button" onClick={onRemove} className="shrink-0 mt-1 text-gray-400 hover:text-red-600">
+      <button type="button" aria-label="Remove variable" onClick={onRemove} className="shrink-0 mt-1 text-gray-400 hover:text-red-600">
         <Trash2 className="h-4 w-4" />
       </button>
     </div>
@@ -388,7 +388,7 @@ function BulkRow({ name, entry, onRename, onUpdate, onRemove, onChangeType }: {
         className="flex-1 rounded border border-gray-300 bg-white px-2 py-1.5 text-sm"
       />
 
-      <button type="button" onClick={onRemove} className="shrink-0 text-gray-400 hover:text-red-600">
+      <button type="button" aria-label="Remove source" onClick={onRemove} className="shrink-0 text-gray-400 hover:text-red-600">
         <Trash2 className="h-4 w-4" />
       </button>
     </div>

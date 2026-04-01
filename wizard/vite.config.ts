@@ -11,11 +11,17 @@ export default defineConfig({
     {
       name: 'serve-root-schema',
       configureServer(server) {
-        const base = process.env.VITE_BASE || '/chartpack/wizard/'
+        let base = process.env.VITE_BASE || '/chartpack/wizard/'
+        if (!base.endsWith('/')) base += '/'
         server.middlewares.use(`${base}values.schema.json`, (_req, res) => {
           const file = path.resolve(__dirname, '../values.schema.json')
           res.setHeader('Content-Type', 'application/json')
-          fs.createReadStream(file).pipe(res)
+          fs.createReadStream(file)
+            .on('error', () => {
+              res.statusCode = 500
+              res.end(JSON.stringify({ error: 'Failed to read values.schema.json' }))
+            })
+            .pipe(res)
         })
       },
     },

@@ -278,7 +278,7 @@ tests:
           path: metadata.name
           value: RELEASE-NAME-chartpack-headless
 
-  - it: should render ipFamilies from string format
+  - it: should render dual-stack ipFamilies
     set:
       containers:
         app:
@@ -293,7 +293,9 @@ tests:
             ports:
               http:
                 port: 80
-            ipFamilies: "IPv4+IPv6"
+            ipFamilies:
+              - IPv4
+              - IPv6
     asserts:
       - contains:
           path: spec.ipFamilies
@@ -302,7 +304,7 @@ tests:
           path: spec.ipFamilies
           content: IPv6
 
-  - it: should render single ipFamily from string
+  - it: should render single ipFamily
     set:
       containers:
         app:
@@ -317,7 +319,8 @@ tests:
             ports:
               http:
                 port: 80
-            ipFamilies: "IPv6"
+            ipFamilies:
+              - IPv6
     asserts:
       - contains:
           path: spec.ipFamilies

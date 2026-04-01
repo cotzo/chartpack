@@ -42,7 +42,7 @@ export function ArrayObjectEditor({ label, value = [], onChange, renderItem, cre
             <span className="text-sm font-medium text-gray-600">
               {itemLabel ? itemLabel(item, idx) : `#${idx + 1}`}
             </span>
-            <button type="button" onClick={() => removeItem(idx)} className="text-gray-400 hover:text-red-600">
+            <button type="button" aria-label="Remove item" onClick={() => removeItem(idx)} className="text-gray-400 hover:text-red-600">
               <Trash2 className="h-4 w-4" />
             </button>
           </div>

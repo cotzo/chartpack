@@ -103,7 +103,7 @@ export function MapEditor<T>({ label, value = {} as Record<string, T>, onChange,
               onChange={e => renameEntry(key, e.target.value)}
               className="flex-1 bg-transparent text-sm font-medium text-gray-800 border-none focus:outline-none focus:ring-0"
             />
-            <button type="button" onClick={() => removeEntry(key)} className="text-gray-400 hover:text-red-600">
+            <button type="button" aria-label="Remove entry" onClick={() => removeEntry(key)} className="text-gray-400 hover:text-red-600">
               <Trash2 className="h-4 w-4" />
             </button>
           </div>

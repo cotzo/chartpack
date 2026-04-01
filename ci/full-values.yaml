@@ -570,9 +570,12 @@ networking:
 
   networkPolicies:
     deny-all:
-      policyTypes: Ingress+Egress
+      policyTypes:
+        - Ingress
+        - Egress
     allow-ingress:
-      policyTypes: Ingress
+      policyTypes:
+        - Ingress
       ingress:
         - from:
             - namespaceSelector:
@@ -582,7 +585,8 @@ networking:
             - protocol: TCP
               port: 80
     allow-dns-egress:
-      policyTypes: Egress
+      policyTypes:
+        - Egress
       egress:
         - to:
             - namespaceSelector: {}
@@ -1061,7 +1065,9 @@ extraResources:
       podSelector:
         matchLabels:
           app.kubernetes.io/name: full-test
-      policyTypes: Ingress+Egress
+      policyTypes:
+        - Ingress
+        - Egress
       ingress:
         - from:
             - namespaceSelector:

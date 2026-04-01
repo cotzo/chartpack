@@ -26,7 +26,8 @@ tests:
       networking:
         networkPolicies:
           deny-all:
-            policyTypes: Ingress
+            policyTypes:
+              - Ingress
     asserts:
       - isKind:
           of: NetworkPolicy
@@ -43,7 +44,8 @@ tests:
       networking:
         networkPolicies:
           allow-ingress:
-            policyTypes: Ingress
+            policyTypes:
+              - Ingress
             ingress:
               - from:
                   - namespaceSelector:
@@ -65,7 +67,8 @@ tests:
       networking:
         networkPolicies:
           allow-dns:
-            policyTypes: Egress
+            policyTypes:
+              - Egress
             egress:
               - to:
                   - namespaceSelector: {}
@@ -91,7 +94,8 @@ tests:
             podSelector:
               matchLabels:
                 custom: label
-            policyTypes: Ingress
+            policyTypes:
+              - Ingress
     asserts:
       - equal:
           path: spec.podSelector.matchLabels.custom
@@ -102,9 +106,12 @@ tests:
       networking:
         networkPolicies:
           deny-all:
-            policyTypes: Ingress+Egress
+            policyTypes:
+              - Ingress
+              - Egress
           allow-dns:
-            policyTypes: Egress
+            policyTypes:
+              - Egress
             egress:
               - ports:
                   - protocol: UDP
@@ -118,7 +125,8 @@ tests:
       networking:
         networkPolicies:
           allow-office:
-            policyTypes: Ingress
+            policyTypes:
+              - Ingress
             ingress:
               - from:
                   - ipBlock:

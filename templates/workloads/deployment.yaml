@@ -5,7 +5,7 @@ kind: Deployment
 {{ include "chartpack.metadata" (dict "context" $ "workload" true "syncWaveDefault" "0") }}
 spec:
   {{- if not (or .Values.autoscaling.hpa.enabled .Values.autoscaling.keda.enabled) }}
-  replicas: {{ default 1 .Values.workloads.deployment.replicaCount }}
+  replicas: {{ if kindIs "invalid" .Values.workloads.deployment.replicaCount }}1{{ else }}{{ .Values.workloads.deployment.replicaCount }}{{ end }}
   {{- end }}
   {{- with .Values.workloads.deployment.strategy }}
   strategy:

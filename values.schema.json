@@ -1220,10 +1220,13 @@
                 "description": "Dual-stack IP family policy. See https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services"
               },
               "ipFamilies": {
-                "type": "string",
+                "type": "array",
                 "x-wizard": { "narrow": true },
-                "enum": ["IPv4", "IPv6", "IPv4+IPv6"],
-                "description": "IP family for the Service. See https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services"
+                "items": {
+                  "type": "string",
+                  "enum": ["IPv4", "IPv6"]
+                },
+                "description": "IP families for the Service. See https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services"
               },
               "publishNotReadyAddresses": {
                 "type": "boolean",
@@ -1750,8 +1753,11 @@
                 "description": "Select which pods this policy applies to (defaults to chart's selectorLabels)"
               },
               "policyTypes": {
-                "type": "string",
-                "enum": ["Ingress", "Egress", "Ingress+Egress"],
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": ["Ingress", "Egress"]
+                },
                 "description": "Policy types to enforce. See https://kubernetes.io/docs/concepts/services-networking/network-policies/"
               },
               "ingress": {

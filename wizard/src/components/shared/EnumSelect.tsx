@@ -12,16 +12,19 @@ interface EnumSelectProps {
 }
 
 export function EnumSelect({ label, value, onChange, options, required, helpText, placeholder }: EnumSelectProps) {
+  const id = label.replace(/\s+/g, '-').toLowerCase()
   return (
     <div className="space-y-1">
-      <label className="block text-sm font-medium text-gray-700">
+      <label htmlFor={id} className="block text-sm font-medium text-gray-700">
         {label}
         {required && <span className="text-red-500 ml-0.5">*</span>}
       </label>
       <div className="relative">
         <select
+          id={id}
           value={value ?? ''}
           onChange={e => onChange(e.target.value)}
+          required={required}
           className="block w-full appearance-none rounded-md border border-gray-300 bg-white px-3 py-2 pr-9 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer"
         >
           {placeholder && <option value="">{placeholder}</option>}

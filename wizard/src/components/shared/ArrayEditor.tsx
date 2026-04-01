@@ -41,7 +41,7 @@ export function ArrayEditor({ label, value = [], onChange, placeholder = 'Value'
             placeholder={placeholder}
             className="flex-1 rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm"
           />
-          <button type="button" onClick={() => removeItem(idx)} className="text-gray-400 hover:text-red-600">
+          <button type="button" aria-label="Remove item" onClick={() => removeItem(idx)} className="text-gray-400 hover:text-red-600">
             <X className="h-4 w-4" />
           </button>
         </div>
