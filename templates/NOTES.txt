@@ -83,11 +83,11 @@ Istio VirtualServices:
 {{- end }}
 
 {{- $certCount := 0 }}
-{{- range $name, $cert := .Values.networking.certificates }}{{ if $cert }}{{ $certCount = add1 $certCount }}{{ end }}{{ end }}
+{{- range $name, $cert := .Values.config.certificates }}{{ if $cert }}{{ $certCount = add1 $certCount }}{{ end }}{{ end }}
 {{- if gt $certCount 0 }}
 
 Certificates:
-{{- range $name, $cert := .Values.networking.certificates }}
+{{- range $name, $cert := .Values.config.certificates }}
 {{- if $cert }}
   {{ $fullName }}-{{ $name }} -> {{ default (printf "%s-%s-tls" $fullName $name) $cert.secretName }}
 {{- end }}

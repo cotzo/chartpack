@@ -66,7 +66,7 @@ and init container mounts. Deduplicates by volume name.
 {{- end }}
 
 {{- /* Certificate volumes (cert-manager automount) */ -}}
-{{- range $name, $cert := .Values.networking.certificates }}
+{{- range $name, $cert := .Values.config.certificates }}
 {{- if and $cert $cert.mount }}
 {{- $volName := printf "cert-%s" $name }}
 {{- if not (hasKey $seen $volName) }}

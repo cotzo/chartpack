@@ -1552,145 +1552,6 @@
           },
           "additionalProperties": false
         },
-        "certificates": {
-          "type": "object",
-          "description": "Map of cert-manager Certificate name to config",
-          "x-wizard": {
-            "order": 11,
-            "group": "Networking",
-            "label": "Certificates",
-            "icon": "FileKey",
-            "description": "Configure cert-manager Certificate resources for TLS. Certificates auto-mount when a mount path is set."
-          },
-          "additionalProperties": {
-            "type": "object",
-            "required": [
-              "issuerRef"
-            ],
-            "properties": {
-              "issuerRef": {
-                "type": "object",
-                "required": [
-                  "name"
-                ],
-                "properties": {
-                  "name": {
-                    "type": "string",
-                    "description": "Issuer resource name"
-                  },
-                  "kind": {
-                    "type": "string",
-                    "enum": [
-                      "Issuer",
-                      "ClusterIssuer"
-                    ],
-                    "default": "ClusterIssuer",
-                    "description": "Issuer or ClusterIssuer"
-                  },
-                  "group": {
-                    "type": "string",
-                    "description": "API group (defaults to cert-manager.io)"
-                  }
-                },
-                "description": "Reference to the cert-manager Issuer or ClusterIssuer. See https://cert-manager.io/docs/configuration/"
-              },
-              "secretName": {
-                "type": "string",
-                "description": "Target Secret name for the TLS cert (defaults to <fullname>-<key>-tls)"
-              },
-              "mount": {
-                "type": "object",
-                "description": "Auto-mount the certificate Secret to all containers",
-                "required": [
-                  "path"
-                ],
-                "properties": {
-                  "path": {
-                    "type": "string",
-                    "description": "Container mount path for the certificate files"
-                  }
-                },
-                "additionalProperties": false
-              },
-              "commonName": {
-                "type": "string",
-                "description": "X.509 common name (CN) for the certificate"
-              },
-              "dnsNames": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                },
-                "description": "Subject Alternative Names (SANs) — DNS entries the cert is valid for"
-              },
-              "ipAddresses": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                },
-                "description": "Subject Alternative Names (SANs) — IP addresses the cert is valid for"
-              },
-              "uris": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                },
-                "description": "Subject Alternative Names (SANs) — URIs the cert is valid for"
-              },
-              "emailAddresses": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                },
-                "description": "Subject Alternative Names (SANs) — email addresses"
-              },
-              "duration": {
-                "type": "string",
-                "description": "Certificate validity duration (e.g. 2160h for 90 days). See https://cert-manager.io/docs/usage/certificate/#renewal"
-              },
-              "renewBefore": {
-                "type": "string",
-                "description": "Time before expiry to begin renewal (e.g. 360h for 15 days)"
-              },
-              "privateKey": {
-                "type": "object",
-                "description": "Private key configuration (algorithm, encoding, size, rotation). See https://cert-manager.io/docs/usage/certificate/#private-key"
-              },
-              "usages": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                },
-                "description": "Key usages (e.g. ['server auth', 'digital signature']). See https://cert-manager.io/docs/reference/api-docs/#cert-manager.io/v1.KeyUsage"
-              },
-              "isCA": {
-                "type": "boolean",
-                "description": "Mark this certificate as a Certificate Authority"
-              },
-              "subject": {
-                "type": "object",
-                "description": "X.509 subject fields (organization, country, etc.)"
-              },
-              "keystores": {
-                "type": "object",
-                "description": "Java/PKCS12 keystore generation. See https://cert-manager.io/docs/usage/certificate/#keystores"
-              },
-              "secretTemplate": {
-                "type": "object",
-                "description": "Template for the generated Secret (annotations, labels)"
-              },
-              "annotations": {
-                "type": "object",
-                "description": "Annotations on the Certificate resource"
-              },
-              "labels": {
-                "type": "object",
-                "description": "Labels on the Certificate resource"
-              }
-            },
-            "description": "cert-manager Certificate configuration. See https://cert-manager.io/docs/usage/certificate/"
-          }
-        },
         "networkPolicies": {
           "type": "object",
           "description": "Map of NetworkPolicy name to config",
@@ -2138,13 +1999,152 @@
             },
             "description": "ExternalSecret configuration. See https://external-secrets.io/latest/api/externalsecret/"
           }
+        },
+        "certificates": {
+          "type": "object",
+          "description": "Map of cert-manager Certificate name to config",
+          "x-wizard": {
+            "order": 17,
+            "group": "Config & Storage",
+            "label": "Certificates",
+            "icon": "FileKey",
+            "description": "Configure cert-manager Certificate resources for TLS. Certificates auto-mount when a mount path is set."
+          },
+          "additionalProperties": {
+            "type": "object",
+            "required": [
+              "issuerRef"
+            ],
+            "properties": {
+              "issuerRef": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Issuer resource name"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "Issuer",
+                      "ClusterIssuer"
+                    ],
+                    "default": "ClusterIssuer",
+                    "description": "Issuer or ClusterIssuer"
+                  },
+                  "group": {
+                    "type": "string",
+                    "description": "API group (defaults to cert-manager.io)"
+                  }
+                },
+                "description": "Reference to the cert-manager Issuer or ClusterIssuer. See https://cert-manager.io/docs/configuration/"
+              },
+              "secretName": {
+                "type": "string",
+                "description": "Target Secret name for the TLS cert (defaults to <fullname>-<key>-tls)"
+              },
+              "mount": {
+                "type": "object",
+                "description": "Auto-mount the certificate Secret to all containers",
+                "required": [
+                  "path"
+                ],
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "description": "Container mount path for the certificate files"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "commonName": {
+                "type": "string",
+                "description": "X.509 common name (CN) for the certificate"
+              },
+              "dnsNames": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Subject Alternative Names (SANs) — DNS entries the cert is valid for"
+              },
+              "ipAddresses": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Subject Alternative Names (SANs) — IP addresses the cert is valid for"
+              },
+              "uris": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Subject Alternative Names (SANs) — URIs the cert is valid for"
+              },
+              "emailAddresses": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Subject Alternative Names (SANs) — email addresses"
+              },
+              "duration": {
+                "type": "string",
+                "description": "Certificate validity duration (e.g. 2160h for 90 days). See https://cert-manager.io/docs/usage/certificate/#renewal"
+              },
+              "renewBefore": {
+                "type": "string",
+                "description": "Time before expiry to begin renewal (e.g. 360h for 15 days)"
+              },
+              "privateKey": {
+                "type": "object",
+                "description": "Private key configuration (algorithm, encoding, size, rotation). See https://cert-manager.io/docs/usage/certificate/#private-key"
+              },
+              "usages": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Key usages (e.g. ['server auth', 'digital signature']). See https://cert-manager.io/docs/reference/api-docs/#cert-manager.io/v1.KeyUsage"
+              },
+              "isCA": {
+                "type": "boolean",
+                "description": "Mark this certificate as a Certificate Authority"
+              },
+              "subject": {
+                "type": "object",
+                "description": "X.509 subject fields (organization, country, etc.)"
+              },
+              "keystores": {
+                "type": "object",
+                "description": "Java/PKCS12 keystore generation. See https://cert-manager.io/docs/usage/certificate/#keystores"
+              },
+              "secretTemplate": {
+                "type": "object",
+                "description": "Template for the generated Secret (annotations, labels)"
+              },
+              "annotations": {
+                "type": "object",
+                "description": "Annotations on the Certificate resource"
+              },
+              "labels": {
+                "type": "object",
+                "description": "Labels on the Certificate resource"
+              }
+            },
+            "description": "cert-manager Certificate configuration. See https://cert-manager.io/docs/usage/certificate/"
+          }
         }
       }
     },
     "persistence": {
       "type": "object",
       "x-wizard": {
-        "order": 17,
+        "order": 18,
         "group": "Config & Storage",
         "label": "Persistence",
         "icon": "HardDrive",

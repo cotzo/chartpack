@@ -108,7 +108,7 @@ Usage: {{ include "chartpack.containers.renderContainer" (dict "name" "app" "con
   {{- $volumeMounts = append $volumeMounts $mount -}}
   {{- end -}}
   {{- /* Auto-mount certificate volumes */ -}}
-  {{- range $certName, $cert := $ctx.Values.networking.certificates -}}
+  {{- range $certName, $cert := $ctx.Values.config.certificates -}}
   {{- if and $cert $cert.mount -}}
   {{- $volumeMounts = append $volumeMounts (dict "name" (printf "cert-%s" $certName) "mountPath" $cert.mount.path "readOnly" true) -}}
   {{- end -}}
