@@ -22,7 +22,7 @@ import { MountsEditor } from '../shared/MountsEditor'
 import { CollapsibleSection } from '../shared/CollapsibleSection'
 import { HelpText } from '../shared/HelpText'
 import { useWizardValues, useWizardNavigate } from '../../lib/use-wizard'
-import { getKeysAtPath, getStepForPath } from '../../lib/values-utils'
+import { getAtPath, getKeysAtPath, getStepForPath } from '../../lib/values-utils'
 
 interface SchemaFieldProps {
   schema: JsonSchema
@@ -163,6 +163,23 @@ export function SchemaField({ schema, rootSchema, value, onChange, label, requir
         onChange={v => onChange(v || undefined)}
         required={required}
         helpText={desc}
+      />
+    )
+  }
+
+  // --- Array of strings with optionsFrom (dropdown per item) ---
+  if (type === 'array' && resolved.items?.type === 'string' && resolved.items?.['x-wizard']?.optionsFrom) {
+    const itemOptions = getKeysAtPath(allValues, resolved.items['x-wizard'].optionsFrom)
+    const stepInfo = getStepForPath(resolved.items['x-wizard'].optionsFrom)
+    return (
+      <ArrayEditor
+        label={label || ''}
+        value={(value as string[]) ?? []}
+        onChange={onChange}
+        helpText={desc}
+        options={itemOptions}
+        uniqueItems={!!resolved.uniqueItems}
+        optionsStepInfo={navigateTo && stepInfo ? { stepId: stepInfo.stepId, label: stepInfo.label, navigate: navigateTo } : undefined}
       />
     )
   }
@@ -342,6 +359,7 @@ export function SchemaObjectFields({
   onChange: (value: unknown) => void
   depth?: number
 }) {
+  const allValues = useWizardValues()
   const resolved = resolveSchema(schema, rootSchema)
   const properties = resolved.properties || {}
   const requiredFields = new Set(resolved.required || [])
@@ -374,6 +392,7 @@ export function SchemaObjectFields({
       )
       if (hidden) continue
     }
+    if (wizard?.visibleIf && !getAtPath(allValues, wizard.visibleIf)) continue
 
     if (propSchema['x-wizard']?.advanced) {
       advancedFields.push([key, propSchema])

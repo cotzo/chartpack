@@ -50,37 +50,86 @@ Checksum annotations are automatically added for `stringData`-based secrets.
 [Secret reference](https://kubernetes.io/docs/concepts/configuration/secret/) |
 [Secret types](https://kubernetes.io/docs/concepts/configuration/secret/#secret-types)
 
-## External Secrets
+## External Secrets (Push & Pull)
 
-Integrates with [External Secrets Operator](https://external-secrets.io/) to sync secrets from external providers.
+The recommended way to integrate with [External Secrets Operator](https://external-secrets.io/). Define your secret stores once in `infraSettings`, then add `push` or `pull` to any secret.
+
+### 1. Define stores
+
+```yaml
+integrations:
+  eso:
+    enabled: true
+    stores:
+      vault:
+        name: vault-backend
+        kind: SecretStore
+      aws:
+        name: aws-secrets-manager
+        kind: ClusterSecretStore
+```
+
+### 2. Push a secret to external stores
+
+Creates the Kubernetes Secret **and** a PushSecret that syncs it to the external store(s).
 
 ```yaml
 config:
-  externalSecrets:
-    aws-credentials:
-      refreshInterval: 1h
-      secretStoreRef:
-        name: aws-secrets-manager
-        kind: ClusterSecretStore     # SecretStore | ClusterSecretStore
-      target:
-        creationPolicy: Owner
-        deletionPolicy: Retain
-        template:                    # optional: template the output secret
-          type: Opaque
-          data:
-            conn: "postgresql://{{ .username }}:{{ .password }}@db:5432/mydb"
-      data:
-        - secretKey: access-key-id
-          remoteRef:
-            key: /prod/app/credentials
-            property: access_key_id
-      # or bulk extract:
-      dataFrom:
-        - extract:
-            key: database/creds/my-role
+  secrets:
+    db-creds:
+      stringData:
+        password: supersecret
+      push:
+        stores: [vault]              # can push to multiple stores
+        updatePolicy: Replace        # Replace | IfNotExists
+        deletionPolicy: None         # Delete | None
+        refreshInterval: 1h
+        data:
+          - match:
+              secretKey: password
+              remoteRef:
+                remoteKey: /prod/db/password
 ```
 
-[External Secrets Operator docs](https://external-secrets.io/)
+### 3. Pull a secret from an external store
+
+Creates an ExternalSecret that populates the Kubernetes Secret from the external store.
+
+```yaml
+config:
+  secrets:
+    cloud-creds:
+      pull:
+        store: aws
+        refreshInterval: 1h
+        data:
+          - secretKey: access-key
+            remoteRef:
+              key: /prod/aws/access-key
+        # or bulk extract:
+        dataFrom:
+          - extract:
+              key: database/creds/my-role
+        target:
+          template:                  # optional: template the output secret
+            type: Opaque
+            data:
+              conn: "postgresql://{{ .username }}:{{ .password }}@db:5432/mydb"
+```
+
+Pull always uses `creationPolicy: Merge` (pulled keys are merged into the secret) and `deletionPolicy: Retain` (the secret survives if the ExternalSecret is removed).
+
+| Field | Default | Description |
+|-------|---------|-------------|
+| `push.stores` | - | Array of named store keys to push to (required) |
+| `push.updatePolicy` | `Replace` | `Replace` overwrites; `IfNotExists` only creates |
+| `push.deletionPolicy` | `None` | `Delete` removes remote secret on PushSecret deletion |
+| `push.refreshInterval` | - | How often to sync (e.g. `1h`, `5m`) |
+| `pull.store` | - | Named store key to pull from (required) |
+| `pull.refreshInterval` | - | How often to sync (e.g. `1h`, `5m`) |
+| `pull.data` | - | Individual key mappings (secretKey + remoteRef) |
+| `pull.dataFrom` | - | Bulk extraction (e.g. `extract`, `find`) |
+| `pull.target.template` | - | Template for the generated Secret |
 
 ## Auto-Generated Secrets
 

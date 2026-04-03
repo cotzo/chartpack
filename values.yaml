@@ -32,6 +32,22 @@ global:
 #     nodeType: node.kubernetes.io/instance-type
 
 # =============================================================================
+# Integrations
+# =============================================================================
+
+# -- Third-party operator integrations.
+# integrations:
+#   eso:
+#     enabled: true
+#     stores:
+#       vault:
+#         name: vault-backend
+#         kind: SecretStore
+#       aws:
+#         name: aws-secrets-manager
+#         kind: ClusterSecretStore
+
+# =============================================================================
 # Argo CD
 # =============================================================================
 
@@ -731,23 +747,25 @@ config:
   #   #     symbols: 0
   #   #     encoding: hex
   #   # generateRefreshInterval: "0"  # "0" = generate once, never rotate
-  #   annotations: {}
-  #   labels: {}
-
-  # -- External secrets (map of name -> config)
-  externalSecrets: {}
-  # cloud-credentials:
-  #   refreshInterval: 1h
-  #   secretStoreRef:
-  #     name: aws-secrets-manager
-  #     kind: SecretStore
-  #   target:
-  #     name: ""  # defaults to <fullname>-<key>
-  #     creationPolicy: Owner
-  #   data:
-  #     - secretKey: password
-  #       remoteRef:
-  #         key: /prod/app/password
+  #   # -- Push this secret to external stores (requires integrations.eso.stores)
+  #   # push:
+  #   #   stores: [vault]            # named store keys
+  #   #   updatePolicy: Replace      # Replace | IfNotExists
+  #   #   deletionPolicy: None       # Delete | None
+  #   #   refreshInterval: 1h
+  #   #   data:
+  #   #     - match:
+  #   #         secretKey: password
+  #   #         remoteRef:
+  #   #           remoteKey: /prod/app/password
+  #   # -- Pull this secret from an external store (requires integrations.eso.stores)
+  #   # pull:
+  #   #   store: aws                 # named store key
+  #   #   refreshInterval: 1h
+  #   #   data:
+  #   #     - secretKey: access-key
+  #   #       remoteRef:
+  #   #         key: /prod/aws/access-key
   #   annotations: {}
   #   labels: {}
 

@@ -6,6 +6,17 @@ workloadType: Deployment
 
 nameOverride: "full-test"
 
+integrations:
+  eso:
+    enabled: true
+    stores:
+      vault:
+        name: vault-backend
+        kind: SecretStore
+      aws:
+        name: aws-secrets-manager
+        kind: ClusterSecretStore
+
 nodeTargeting:
   os:
     - linux
@@ -751,42 +762,53 @@ config:
           noUpper: true
           allowRepeat: true
 
-  # =============================================================================
-  # External Secrets — AWS Secrets Manager + Vault
-  # =============================================================================
+    # Push/pull via infraSettings stores
+    pushed-to-vault:
+      stringData:
+        db-password: supersecret
+      push:
+        stores: [vault]
+        updatePolicy: Replace
+        deletionPolicy: None
+        refreshInterval: 1h
+        data:
+          - match:
+              secretKey: db-password
+              remoteRef:
+                remoteKey: /prod/db/password
 
-  externalSecrets:
-    aws-credentials:
-      refreshInterval: 1h
-      secretStoreRef:
-        name: aws-secrets-manager
-        kind: ClusterSecretStore
-      target:
-        creationPolicy: Owner
-        deletionPolicy: Retain
-      data:
-        - secretKey: access-key-id
-          remoteRef:
-            key: /prod/app/aws-credentials
-            property: access_key_id
-        - secretKey: secret-access-key
-          remoteRef:
-            key: /prod/app/aws-credentials
-            property: secret_access_key
+    pulled-from-aws:
+      pull:
+        store: aws
+        refreshInterval: 30m
+        data:
+          - secretKey: access-key
+            remoteRef:
+              key: /prod/aws/access-key
+              property: access_key_id
+
+    mixed-secret:
+      stringData:
+        local-config: static-value
+      pull:
+        store: vault
+        data:
+          - secretKey: remote-key
+            remoteRef:
+              key: /prod/remote-value
+
     vault-db-creds:
-      refreshInterval: 30m
-      secretStoreRef:
-        name: vault-backend
-        kind: SecretStore
-      target:
-        creationPolicy: Owner
-        template:
-          type: Opaque
-          data:
-            connection-string: "postgresql://{{ .username }}:{{ .password }}@db:5432/mydb"
-      dataFrom:
-        - extract:
-            key: database/creds/my-role
+      pull:
+        store: vault
+        refreshInterval: 30m
+        target:
+          template:
+            type: Opaque
+            data:
+              connection-string: "postgresql://{{ .username }}:{{ .password }}@db:5432/mydb"
+        dataFrom:
+          - extract:
+              key: database/creds/my-role
 
 # =============================================================================
 # Persistence — cache SSD, shared data

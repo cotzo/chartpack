@@ -57,7 +57,7 @@ This produces a Deployment with 1 replica, a ClusterIP Service, and a ServiceAcc
 
 **Event-driven autoscaling** -- HPA v2, VPA, and KEDA (ScaledObject + ScaledJob) with any trigger.
 
-**Secrets management** -- ConfigMaps, Secrets, External Secrets, and auto-generated passwords via ESO (ArgoCD-safe). Stakater Reloader annotations auto-generated per resource.
+**Secrets management** -- ConfigMaps, Secrets with push/pull via ESO, and auto-generated passwords (ArgoCD-safe). Stakater Reloader annotations auto-generated per resource.
 
 **Lifecycle hooks** -- Pre-install/pre-upgrade Jobs for DB migrations, schema setup, etc. Auto-generates both Helm and Argo CD hook annotations. Hooks share the main workload's pod settings (SA, volumes, secrets).
 
@@ -73,7 +73,7 @@ This produces a Deployment with 1 replica, a ClusterIP Service, and a ServiceAcc
 |-------|-------------|
 | [Workloads](docs/workloads.md) | Deployment, StatefulSet, DaemonSet, CronJob, Job, Argo Rollout |
 | [Containers](docs/containers.md) | Container spec, env, mounts, health checks, init/sidecar containers |
-| [Configuration](docs/configuration.md) | ConfigMaps, Secrets, External Secrets, auto-generated secrets |
+| [Configuration](docs/configuration.md) | ConfigMaps, Secrets (push/pull via ESO), auto-generated secrets |
 | [Persistence](docs/persistence.md) | PVCs, StatefulSet volume claim templates, static PV binding |
 | [RBAC](docs/rbac.md) | ServiceAccount, Roles, ClusterRoles, Bindings |
 | [Scheduling](docs/scheduling.md) | Node affinity, tolerations, topology spread, priority classes |
@@ -133,7 +133,7 @@ The core chart (Deployment, Service, Ingress, ConfigMap, Secret, HPA, PDB, RBAC)
 | Envoy policies | [Envoy Gateway](https://gateway.envoyproxy.io/) | `networking.gatewayApi.routes.*.policies.envoy` | v1.0+ |
 | Istio mesh | [Istio](https://istio.io/) | `networking.istio.*` | v1.20+ |
 | TLS certificates | [cert-manager](https://cert-manager.io/) | `config.certificates` | v1.12+ |
-| External Secrets | [ESO](https://external-secrets.io/) | `config.externalSecrets` / `config.secrets.*.generate` | v0.9+ |
+| External Secrets | [ESO](https://external-secrets.io/) | `config.secrets.*.pull` / `config.secrets.*.push` / `config.secrets.*.generate` | v0.9+ |
 | Prometheus | [Prometheus Operator](https://prometheus-operator.dev/) | `monitors` / `alerting` (operator: prometheus) | v0.70+ |
 | VictoriaMetrics | [VictoriaMetrics Operator](https://docs.victoriametrics.com/operator/) | `monitors` / `alerting` (operator: victoriametrics) | v0.44+ |
 | Grafana dashboards | [Grafana Operator](https://grafana-operator.github.io/grafana-operator/) | `dashboards.grafana` | v5.22+ |

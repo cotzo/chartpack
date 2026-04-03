@@ -644,7 +644,7 @@
       },
       "additionalProperties": false,
       "x-wizard": {
-        "order": 26,
+        "order": 27,
         "group": "Operations",
         "label": "Global Settings",
         "icon": "Globe",
@@ -706,9 +706,8 @@
           "additionalProperties": false
         }
       },
-      "additionalProperties": false,
       "x-wizard": {
-        "order": 27,
+        "order": 28,
         "group": "Operations",
         "label": "Infrastructure Settings",
         "icon": "Settings",
@@ -716,10 +715,56 @@
       },
       "description": "Infrastructure-specific settings for your cluster. Customize node label keys used by nodeTargeting."
     },
+    "integrations": {
+      "type": "object",
+      "properties": {
+        "eso": {
+          "type": "object",
+          "x-wizard": {
+            "order": 24,
+            "group": "Integrations",
+            "label": "External Secrets (ESO)",
+            "icon": "FileKey",
+            "description": "Configure External Secrets Operator stores for push/pull on secrets."
+          },
+          "description": "External Secrets Operator configuration. Define named secret stores referenced by push/pull on secrets.",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false,
+              "description": "Enable ESO integration. When false, push, pull, and secret generators are disabled."
+            },
+            "stores": {
+              "type": "object",
+              "description": "Named secret store references. Keys are friendly names used in config.secrets.*.push.stores and config.secrets.*.pull.store.",
+              "additionalProperties": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "x-wizard": { "narrow": true },
+                    "description": "SecretStore resource name"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "x-wizard": { "narrow": true },
+                    "enum": ["SecretStore", "ClusterSecretStore"],
+                    "default": "SecretStore",
+                    "description": "SecretStore or ClusterSecretStore"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "description": "Third-party operator integrations. Configure stores, providers, and other operator-specific settings."
+    },
     "argocd": {
       "type": "object",
       "x-wizard": {
-        "order": 25,
+        "order": 26,
         "group": "Operations",
         "label": "Argo CD",
         "icon": "GitBranch",
@@ -2033,13 +2078,14 @@
             "group": "Config & Storage",
             "label": "Secrets",
             "icon": "Lock",
-            "description": "Manage Secrets with optional auto-generation via ESO Password generators."
+            "description": "Manage Secrets with optional push/pull and auto-generation via ESO. Configure stores in @step:integrations-eso[External Secrets (ESO)]."
           },
           "additionalProperties": {
             "type": "object",
             "properties": {
               "type": {
                 "type": "string",
+                "x-wizard": { "narrow": true },
                 "default": "Opaque",
                 "enum": [
                   "Opaque",
@@ -2050,6 +2096,11 @@
                   "kubernetes.io/service-account-token"
                 ],
                 "description": "Secret type. See https://kubernetes.io/docs/concepts/configuration/secret/#secret-types"
+              },
+              "retain": {
+                "type": "boolean",
+                "x-wizard": { "narrow": true },
+                "description": "Retain this secret on helm uninstall/delete"
               },
               "data": {
                 "type": "object",
@@ -2064,6 +2115,7 @@
               },
               "generate": {
                 "type": "object",
+                "x-wizard": { "visibleIf": "integrations.eso.enabled" },
                 "description": "Auto-generate random values via External Secrets Operator Password generator. See https://external-secrets.io/latest/provider/generator-password/",
                 "additionalProperties": {
                   "type": "object",
@@ -2118,6 +2170,7 @@
               "generateRefreshInterval": {
                 "type": "string",
                 "default": "0",
+                "x-wizard": { "visibleIf": "integrations.eso.enabled" },
                 "description": "How often ESO regenerates the secret. '0' = generate once and never rotate."
               },
               "reloaderEnabled": {
@@ -2134,135 +2187,148 @@
                 "type": "object",
                 "x-wizard": { "advanced": true },
                 "description": "Labels on the Secret resource"
-              }
-            },
-            "description": "Secret configuration. See https://kubernetes.io/docs/concepts/configuration/secret/"
-          }
-        },
-        "externalSecrets": {
-          "type": "object",
-          "x-wizard": {
-            "order": 16,
-            "group": "Config & Storage",
-            "label": "External Secrets",
-            "icon": "FileKey",
-            "description": "Configure ExternalSecrets to sync secrets from external stores (AWS Secrets Manager, Vault, etc.)."
-          },
-          "additionalProperties": {
-            "type": "object",
-            "properties": {
-              "refreshInterval": {
-                "type": "string",
-                "description": "How often to sync the secret from the external store (e.g. '1h', '5m'). See https://external-secrets.io/latest/api/externalsecret/"
               },
-              "secretStoreRef": {
+              "push": {
                 "type": "object",
-                "x-wizard": { "expanded": true },
-                "required": [
-                  "name"
-                ],
+                "x-wizard": { "visibleIf": "integrations.eso.enabled", "hiddenWhen": "pull" },
+                "required": ["stores"],
+                "description": "Push this secret to external stores via PushSecret. Requires integrations.eso.stores.",
                 "properties": {
-                  "name": {
-                    "type": "string",
-                    "x-wizard": { "narrow": true },
-                    "description": "SecretStore resource name"
+                  "stores": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "minItems": 1,
+                    "items": { "type": "string", "x-wizard": { "optionsFrom": "integrations.eso.stores" } },
+                    "description": "Named store keys from integrations.eso.stores to push to"
                   },
-                  "kind": {
+                  "updatePolicy": {
                     "type": "string",
+                    "enum": ["Replace", "IfNotExists"],
                     "x-wizard": { "narrow": true },
-                    "enum": [
-                      "SecretStore",
-                      "ClusterSecretStore"
-                    ],
-                    "default": "SecretStore",
-                    "description": "SecretStore or ClusterSecretStore"
-                  }
-                },
-                "description": "Reference to the SecretStore or ClusterSecretStore. See https://external-secrets.io/latest/api/secretstore/"
-              },
-              "target": {
-                "type": "object",
-                "description": "Target Secret configuration. See https://external-secrets.io/latest/api/externalsecret/#target",
-                "properties": {
-                  "name": {
-                    "type": "string",
-                    "description": "Target Secret name (defaults to <fullname>-<key>)"
-                  },
-                  "creationPolicy": {
-                    "type": "string",
-                    "x-wizard": { "narrow": true },
-                    "enum": ["Owner", "Orphan", "Merge", "None"],
-                    "description": "How the Secret is created. See https://external-secrets.io/latest/api/externalsecret/#target"
+                    "default": "Replace",
+                    "description": "Whether to replace or only create if not exists in the external store"
                   },
                   "deletionPolicy": {
                     "type": "string",
+                    "enum": ["Delete", "None"],
                     "x-wizard": { "narrow": true },
-                    "enum": ["Delete", "Merge", "Retain"],
-                    "description": "What happens when the ExternalSecret is deleted. See https://external-secrets.io/latest/api/externalsecret/#target"
+                    "default": "None",
+                    "description": "What happens to the remote secret when the PushSecret is deleted"
                   },
-                  "template": {
-                    "type": "object",
-                    "x-wizard": { "advanced": true },
-                    "description": "Template for the generated Secret (type, metadata, data). See https://external-secrets.io/latest/guides/templating/"
-                  }
-                },
-                "additionalProperties": false
-              },
-              "data": {
-                "type": "array",
-                "description": "Individual key mappings from the external store. See https://external-secrets.io/latest/api/externalsecret/#data",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "secretKey": {
-                      "type": "string",
-                      "x-wizard": { "narrow": true },
-                      "description": "Key name in the target Kubernetes Secret"
-                    },
-                    "remoteRef": {
+                  "refreshInterval": {
+                    "type": "string",
+                    "x-wizard": { "narrow": true },
+                    "description": "How often to sync (e.g. '1h', '5m')"
+                  },
+                  "data": {
+                    "type": "array",
+                    "description": "Key mappings to push to the external store. See https://external-secrets.io/latest/api/pushsecret/",
+                    "items": {
                       "type": "object",
-                      "description": "Reference to the key in the external store",
                       "properties": {
-                        "key": {
-                          "type": "string",
-                          "description": "Key/path in the external store (e.g. my-secret, /path/to/secret)"
-                        },
-                        "property": {
-                          "type": "string",
-                          "description": "Property within the secret (for JSON secrets)"
-                        },
-                        "version": {
-                          "type": "string",
-                          "description": "Version or stage of the secret"
+                        "match": {
+                          "type": "object",
+                          "properties": {
+                            "secretKey": {
+                              "type": "string",
+                              "x-wizard": { "narrow": true },
+                              "description": "Key in the source Kubernetes Secret"
+                            },
+                            "remoteRef": {
+                              "type": "object",
+                              "description": "Reference to the key in the external store",
+                              "properties": {
+                                "remoteKey": {
+                                  "type": "string",
+                                  "description": "Path/key in the external store"
+                                },
+                                "property": {
+                                  "type": "string",
+                                  "description": "Property within the remote secret"
+                                }
+                              }
+                            }
+                          }
                         }
                       }
                     }
                   }
                 }
               },
-              "dataFrom": {
-                "type": "array",
-                "description": "Bulk data extraction from the external store. See https://external-secrets.io/latest/api/externalsecret/#datafrom"
-              },
-              "annotations": {
+              "pull": {
                 "type": "object",
-                "x-wizard": { "advanced": true },
-                "description": "Annotations on the ExternalSecret resource"
-              },
-              "labels": {
-                "type": "object",
-                "x-wizard": { "advanced": true },
-                "description": "Labels on the ExternalSecret resource"
+                "x-wizard": { "visibleIf": "integrations.eso.enabled", "hiddenWhen": "push" },
+                "required": ["store"],
+                "description": "Pull this secret from an external store via ExternalSecret. Requires integrations.eso.stores.",
+                "properties": {
+                  "store": {
+                    "type": "string",
+                    "x-wizard": { "optionsFrom": "integrations.eso.stores", "narrow": true },
+                    "description": "Named store key from integrations.eso.stores to pull from"
+                  },
+                  "refreshInterval": {
+                    "type": "string",
+                    "x-wizard": { "narrow": true },
+                    "description": "How often to sync (e.g. '1h', '5m')"
+                  },
+                  "data": {
+                    "type": "array",
+                    "description": "Individual key mappings from the external store. See https://external-secrets.io/latest/api/externalsecret/",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "secretKey": {
+                          "type": "string",
+                          "x-wizard": { "narrow": true },
+                          "description": "Key name in the target Kubernetes Secret"
+                        },
+                        "remoteRef": {
+                          "type": "object",
+                          "description": "Reference to the key in the external store",
+                          "properties": {
+                            "key": {
+                              "type": "string",
+                              "description": "Key/path in the external store"
+                            },
+                            "property": {
+                              "type": "string",
+                              "description": "Property within the secret (for JSON secrets)"
+                            },
+                            "version": {
+                              "type": "string",
+                              "description": "Version or stage of the secret"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "dataFrom": {
+                    "type": "array",
+                    "description": "Bulk data extraction from the external store. See https://external-secrets.io/latest/api/externalsecret/#datafrom"
+                  },
+                  "target": {
+                    "type": "object",
+                    "description": "Target Secret configuration (creationPolicy: Merge and deletionPolicy: Retain are hardcoded)",
+                    "properties": {
+                      "template": {
+                        "type": "object",
+                        "x-wizard": { "advanced": true },
+                        "description": "Template for the generated Secret. See https://external-secrets.io/latest/guides/templating/"
+                      }
+                    }
+                  }
+                }
               }
             },
-            "description": "ExternalSecret configuration. See https://external-secrets.io/latest/api/externalsecret/"
+            "description": "Secret configuration. See https://kubernetes.io/docs/concepts/configuration/secret/"
           }
         },
         "certificates": {
           "type": "object",
           "description": "Map of cert-manager Certificate name to config",
           "x-wizard": {
-            "order": 17,
+            "order": 18,
             "group": "Config & Storage",
             "label": "Certificates",
             "icon": "FileKey",
@@ -3897,7 +3963,7 @@
       "type": "object",
       "description": "Map of hook name to hook Job config. Runs at Helm lifecycle events.",
       "x-wizard": {
-        "order": 24,
+        "order": 25,
         "group": "Operations",
         "label": "Hooks",
         "icon": "Anchor",
@@ -4013,7 +4079,7 @@
         "type": "object"
       },
       "x-wizard": {
-        "order": 28,
+        "order": 29,
         "group": "Operations",
         "label": "Extra Resources",
         "icon": "Plus",

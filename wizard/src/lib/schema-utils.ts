@@ -20,6 +20,8 @@ export interface WizardMeta {
   optionsFrom?: string
   /** Show this field only when a sibling field matches one of the listed values (e.g. { "type": ["LoadBalancer"] }) */
   visibleWhen?: Record<string, string[]>
+  /** Show this field only when a boolean value at the given dot-separated path is true (e.g. "integrations.eso.enabled") */
+  visibleIf?: string
 }
 
 export interface JsonSchema {
@@ -31,6 +33,7 @@ export interface JsonSchema {
   additionalProperties?: JsonSchema | boolean
   required?: string[]
   items?: JsonSchema
+  uniqueItems?: boolean
   description?: string
   minimum?: number
   maximum?: number

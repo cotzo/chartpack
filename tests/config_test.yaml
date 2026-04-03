@@ -1,8 +1,9 @@
-suite: Config rendering (ConfigMap, Secret, ExternalSecret, generated-secret)
+suite: Config rendering (ConfigMap, Secret, push, pull, generated-secret)
 templates:
   - templates/config/configmap.yaml
   - templates/config/secret.yaml
-  - templates/config/external-secret.yaml
+  - templates/config/secret-push.yaml
+  - templates/config/secret-pull.yaml
   - templates/config/generated-secret.yaml
 tests:
   # ---------------------------------------------------------------------------
@@ -171,11 +172,8 @@ tests:
           path: stringData.DB_PASSWORD
           value: hunter2
 
-  # ---------------------------------------------------------------------------
-  # ExternalSecret
-  # ---------------------------------------------------------------------------
-  - it: should render ExternalSecret with secretStoreRef
-    template: templates/config/external-secret.yaml
+  - it: should add resource-policy keep annotation when retain is true
+    template: templates/config/secret.yaml
     set:
       containers:
         app:
@@ -191,29 +189,26 @@ tests:
               http:
                 port: 80
       config:
-        externalSecrets:
-          myext:
-            secretStoreRef:
-              name: aws-store
-              kind: ClusterSecretStore
-            target:
-              name: my-target
-            data:
-              - secretKey: password
-                remoteRef:
-                  key: /prod/db/password
+        secrets:
+          retained:
+            retain: true
+            stringData:
+              key: value
     asserts:
       - isKind:
-          of: ExternalSecret
+          of: Secret
       - equal:
-          path: spec.secretStoreRef.name
-          value: aws-store
-      - equal:
-          path: spec.secretStoreRef.kind
-          value: ClusterSecretStore
+          path: metadata.annotations["helm.sh/resource-policy"]
+          value: keep
 
-  - it: should not render ExternalSecret when no externalSecrets defined
-    template: templates/config/external-secret.yaml
+  # ---------------------------------------------------------------------------
+  # ESO enabled guard
+  # ---------------------------------------------------------------------------
+  - it: should not render push/pull/generate when ESO is disabled
+    templates:
+      - templates/config/secret-push.yaml
+      - templates/config/secret-pull.yaml
+      - templates/config/generated-secret.yaml
     set:
       containers:
         app:
@@ -228,6 +223,418 @@ tests:
             ports:
               http:
                 port: 80
+      integrations:
+        eso:
+          enabled: false
+          stores:
+            vault:
+              name: vault-backend
+      config:
+        secrets:
+          test-secret:
+            stringData:
+              key: value
+            push:
+              stores: [vault]
+              data:
+                - match:
+                    secretKey: key
+                    remoteRef:
+                      remoteKey: /prod/key
+            pull:
+              store: vault
+              data:
+                - secretKey: pulled
+                  remoteRef:
+                    key: /prod/pulled
+            generate:
+              password:
+                length: 32
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  # ---------------------------------------------------------------------------
+  # Secret push (via integrations stores)
+  # ---------------------------------------------------------------------------
+  - it: should render PushSecret from secret with push config
+    template: templates/config/secret-push.yaml
+    set:
+      containers:
+        app:
+          image:
+            repository: nginx
+          ports:
+            http:
+              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+      integrations:
+        eso:
+          enabled: true
+          stores:
+            vault:
+              name: vault-backend
+              kind: SecretStore
+      config:
+        secrets:
+          db-creds:
+            stringData:
+              password: supersecret
+            push:
+              stores: [vault]
+              updatePolicy: Replace
+              refreshInterval: 1h
+              data:
+                - match:
+                    secretKey: password
+                    remoteRef:
+                      remoteKey: /prod/db/password
+    asserts:
+      - isKind:
+          of: PushSecret
+      - equal:
+          path: apiVersion
+          value: external-secrets.io/v1alpha1
+      - equal:
+          path: spec.secretStoreRefs[0].name
+          value: vault-backend
+      - equal:
+          path: spec.secretStoreRefs[0].kind
+          value: SecretStore
+      - equal:
+          path: spec.selector.secret.name
+          value: RELEASE-NAME-chartpack-db-creds
+      - equal:
+          path: spec.updatePolicy
+          value: Replace
+      - equal:
+          path: spec.refreshInterval
+          value: 1h
+
+  - it: should render PushSecret with deletionPolicy
+    template: templates/config/secret-push.yaml
+    set:
+      containers:
+        app:
+          image:
+            repository: nginx
+          ports:
+            http:
+              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+      integrations:
+        eso:
+          enabled: true
+          stores:
+            vault:
+              name: vault-backend
+              kind: SecretStore
+      config:
+        secrets:
+          pushed-creds:
+            stringData:
+              password: secret
+            push:
+              stores: [vault]
+              deletionPolicy: Delete
+              data:
+                - match:
+                    secretKey: password
+                    remoteRef:
+                      remoteKey: /prod/password
+    asserts:
+      - isKind:
+          of: PushSecret
+      - equal:
+          path: spec.deletionPolicy
+          value: Delete
+
+  - it: should render PushSecret with multiple stores
+    template: templates/config/secret-push.yaml
+    set:
+      containers:
+        app:
+          image:
+            repository: nginx
+          ports:
+            http:
+              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+      integrations:
+        eso:
+          enabled: true
+          stores:
+            vault:
+              name: vault-backend
+              kind: SecretStore
+            aws:
+              name: aws-sm
+              kind: ClusterSecretStore
+      config:
+        secrets:
+          api-keys:
+            stringData:
+              key: mykey
+            push:
+              stores: [vault, aws]
+              data:
+                - match:
+                    secretKey: key
+                    remoteRef:
+                      remoteKey: /prod/api-key
+    asserts:
+      - isKind:
+          of: PushSecret
+      - equal:
+          path: spec.secretStoreRefs[0].name
+          value: vault-backend
+      - equal:
+          path: spec.secretStoreRefs[1].name
+          value: aws-sm
+      - equal:
+          path: spec.secretStoreRefs[1].kind
+          value: ClusterSecretStore
+
+  - it: should not render secret-push when no push config
+    template: templates/config/secret-push.yaml
+    set:
+      containers:
+        app:
+          image:
+            repository: nginx
+          ports:
+            http:
+              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+      config:
+        secrets:
+          plain-secret:
+            stringData:
+              key: value
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  # ---------------------------------------------------------------------------
+  # Secret pull (via infraSettings stores)
+  # ---------------------------------------------------------------------------
+  - it: should render ExternalSecret from secret with pull config
+    template: templates/config/secret-pull.yaml
+    set:
+      containers:
+        app:
+          image:
+            repository: nginx
+          ports:
+            http:
+              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+      integrations:
+        eso:
+          enabled: true
+          stores:
+            aws:
+              name: aws-secrets-manager
+              kind: ClusterSecretStore
+      config:
+        secrets:
+          cloud-creds:
+            pull:
+              store: aws
+              refreshInterval: 1h
+              data:
+                - secretKey: access-key
+                  remoteRef:
+                    key: /prod/aws/access-key
+    asserts:
+      - isKind:
+          of: ExternalSecret
+      - equal:
+          path: apiVersion
+          value: external-secrets.io/v1
+      - equal:
+          path: spec.secretStoreRef.name
+          value: aws-secrets-manager
+      - equal:
+          path: spec.secretStoreRef.kind
+          value: ClusterSecretStore
+      - equal:
+          path: spec.target.name
+          value: RELEASE-NAME-chartpack-cloud-creds
+      - equal:
+          path: spec.refreshInterval
+          value: 1h
+
+  - it: should hardcode creationPolicy Merge and deletionPolicy Retain
+    template: templates/config/secret-pull.yaml
+    set:
+      containers:
+        app:
+          image:
+            repository: nginx
+          ports:
+            http:
+              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+      integrations:
+        eso:
+          enabled: true
+          stores:
+            vault:
+              name: vault-backend
+      config:
+        secrets:
+          mixed-secret:
+            stringData:
+              static-key: static-value
+            pull:
+              store: vault
+              data:
+                - secretKey: pulled-key
+                  remoteRef:
+                    key: /prod/pulled
+    asserts:
+      - isKind:
+          of: ExternalSecret
+      - equal:
+          path: spec.target.creationPolicy
+          value: Merge
+      - equal:
+          path: spec.target.deletionPolicy
+          value: Retain
+
+  - it: should render ExternalSecret with dataFrom
+    template: templates/config/secret-pull.yaml
+    set:
+      containers:
+        app:
+          image:
+            repository: nginx
+          ports:
+            http:
+              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+      integrations:
+        eso:
+          enabled: true
+          stores:
+            vault:
+              name: vault-backend
+      config:
+        secrets:
+          bulk-creds:
+            pull:
+              store: vault
+              dataFrom:
+                - extract:
+                    key: database/creds/my-role
+    asserts:
+      - isKind:
+          of: ExternalSecret
+      - equal:
+          path: spec.dataFrom[0].extract.key
+          value: database/creds/my-role
+
+  - it: should render ExternalSecret with target template
+    template: templates/config/secret-pull.yaml
+    set:
+      containers:
+        app:
+          image:
+            repository: nginx
+          ports:
+            http:
+              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+      integrations:
+        eso:
+          enabled: true
+          stores:
+            vault:
+              name: vault-backend
+      config:
+        secrets:
+          templated-creds:
+            pull:
+              store: vault
+              target:
+                template:
+                  type: Opaque
+                  data:
+                    conn: "postgresql://{{ .username }}:{{ .password }}@db:5432/mydb"
+              dataFrom:
+                - extract:
+                    key: database/creds/my-role
+    asserts:
+      - isKind:
+          of: ExternalSecret
+      - equal:
+          path: spec.target.template.type
+          value: Opaque
+      - isNotNull:
+          path: spec.target.template.data
+
+  - it: should not render secret-pull when no pull config
+    template: templates/config/secret-pull.yaml
+    set:
+      containers:
+        app:
+          image:
+            repository: nginx
+          ports:
+            http:
+              port: 80
+      networking:
+        services:
+          http:
+            ports:
+              http:
+                port: 80
+      config:
+        secrets:
+          plain-secret:
+            stringData:
+              key: value
     asserts:
       - hasDocuments:
           count: 0
@@ -251,6 +658,9 @@ tests:
             ports:
               http:
                 port: 80
+      integrations:
+        eso:
+          enabled: true
       config:
         secrets:
           dbcreds:
