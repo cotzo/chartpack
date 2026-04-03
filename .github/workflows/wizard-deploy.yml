@@ -48,7 +48,7 @@ jobs:
           VITE_BASE: ${{ steps.path.outputs.base }}
 
       - name: Upload build artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: wizard-dist
           path: wizard/dist
@@ -65,7 +65,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Download build artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: wizard-dist
           path: dist
