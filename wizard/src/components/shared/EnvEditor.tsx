@@ -167,9 +167,7 @@ export function EnvEditor({ label, value = {}, onChange, helpText }: EnvEditorPr
         {bulkEntries.map(([key, entry]) => (
           <BulkRow
             key={stableIds.get(key) ?? key}
-            name={key}
             entry={entry}
-            onRename={(newName) => renameEntry(key, newName)}
             onUpdate={(e) => updateEntry(key, e)}
             onRemove={() => removeEntry(key)}
             onChangeType={(t) => changeType(key, t)}
@@ -427,10 +425,8 @@ function EnvValueFields({ entry, type, onUpdate }: {
 
 /* --- Bulk row (envFrom) --- */
 
-function BulkRow({ name, entry, onRename, onUpdate, onRemove, onChangeType }: {
-  name: string
+function BulkRow({ entry, onUpdate, onRemove, onChangeType }: {
   entry: EnvEntry
-  onRename: (name: string) => void
   onUpdate: (entry: EnvEntry) => void
   onRemove: () => void
   onChangeType: (type: EnvType) => void
