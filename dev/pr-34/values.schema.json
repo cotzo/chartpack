@@ -1,0 +1,4025 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "workloadType",
+    "containers"
+  ],
+  "definitions": {
+    "nodeTargetingProperty": {
+      "oneOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Shorthand: list of values with soft (default) enforcement"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "values": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Target values list"
+            },
+            "enforcement": {
+              "type": "string",
+              "enum": [
+                "soft",
+                "hard"
+              ],
+              "description": "soft (preferred, best-effort) or hard (required, may leave pods unschedulable)"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "containerSpec": {
+      "type": "object",
+      "required": [
+        "image"
+      ],
+      "description": "Container specification. See https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container",
+      "properties": {
+        "image": {
+          "type": "object",
+          "x-wizard": { "expanded": true },
+          "required": [
+            "repository"
+          ],
+          "description": "Container image configuration",
+          "properties": {
+            "repository": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Image repository (e.g. nginx, ghcr.io/org/app). See https://kubernetes.io/docs/concepts/containers/images/#image-names"
+            },
+            "tag": {
+              "type": "string",
+              "x-wizard": { "narrow": true },
+              "description": "Image tag. Defaults to the chart's appVersion. See https://kubernetes.io/docs/concepts/containers/images/#image-names"
+            },
+            "pullPolicy": {
+              "type": "string",
+              "x-wizard": { "narrow": true },
+              "enum": [
+                "Always",
+                "IfNotPresent",
+                "Never"
+              ],
+              "default": "IfNotPresent",
+              "description": "When to pull the image. See https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy"
+            }
+          },
+          "additionalProperties": false
+        },
+        "command": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Entrypoint array (overrides the container image's ENTRYPOINT). Not executed in a shell."
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Arguments to the entrypoint (overrides the container image's CMD)"
+        },
+        "env": {
+          "type": "object",
+          "x-wizard-field": "env",
+          "description": "Environment variables map. Use value for plain strings, valueFrom for field/resource/configMap/secret key refs, or configMapRef/secretRef for bulk injection. See https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "string",
+                "description": "Plain string value"
+              },
+              "valueFrom": {
+                "type": "object",
+                "description": "Source for the value: fieldRef, resourceFieldRef, configMapKeyRef, or secretKeyRef"
+              },
+              "configMapRef": {
+                "type": "object",
+                "description": "Inject all keys from a ConfigMap as env vars (envFrom)"
+              },
+              "secretRef": {
+                "type": "object",
+                "description": "Inject all keys from a Secret as env vars (envFrom)"
+              }
+            }
+          }
+        },
+        "ports": {
+          "type": "object",
+          "description": "Map of port name → port config. The key becomes the port name in the container spec.",
+          "additionalProperties": {
+            "type": "object",
+            "required": [
+              "port"
+            ],
+            "properties": {
+              "port": {
+                "type": "integer",
+                "x-wizard": { "narrow": true },
+                "minimum": 1,
+                "maximum": 65535,
+                "description": "Port number to expose on the container"
+              },
+              "protocol": {
+                "type": "string",
+                "x-wizard": { "narrow": true },
+                "enum": [
+                  "TCP",
+                  "UDP",
+                  "SCTP"
+                ],
+                "default": "TCP",
+                "description": "Protocol for the port"
+              }
+            }
+          }
+        },
+        "mounts": {
+          "type": "array",
+          "x-wizard-field": "mounts",
+          "description": "Volume mounts. Each entry maps a path to a source (configMap, secret, persistence key, or raw volume name).",
+          "items": {
+            "type": "object",
+            "required": [
+              "path"
+            ],
+            "properties": {
+              "path": {
+                "type": "string",
+                "description": "Mount path inside the container"
+              },
+              "configMap": {
+                "type": "string",
+                "description": "ConfigMap key from config.configMaps to mount"
+              },
+              "secret": {
+                "type": "string",
+                "description": "Secret key from config.secrets to mount"
+              },
+              "persistence": {
+                "type": "string",
+                "description": "Persistence key from persistence map to mount"
+              },
+              "volume": {
+                "type": "string",
+                "description": "Raw volume name from podSettings.volumes"
+              },
+              "external": {
+                "type": "boolean",
+                "description": "If true, references an externally-managed resource (not prefixed with release name)"
+              },
+              "readOnly": {
+                "type": "boolean",
+                "description": "Mount the volume as read-only"
+              },
+              "subPath": {
+                "type": "string",
+                "description": "Sub-path within the volume to mount"
+              },
+              "items": {
+                "type": "array",
+                "description": "Key-to-path mappings for selective file projection"
+              },
+              "defaultMode": {
+                "type": "integer",
+                "description": "File permission mode (octal, e.g. 0644)"
+              }
+            }
+          }
+        },
+        "resources": {
+          "type": "object",
+          "x-wizard": { "expanded": true },
+          "description": "CPU/memory resource requests and limits. See https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/",
+          "properties": {
+            "requests": {
+              "type": "object",
+              "description": "Minimum resources guaranteed",
+              "properties": {
+                "cpu": {
+                  "type": "string",
+                  "x-wizard": { "narrow": true },
+                  "description": "CPU request (e.g. 100m, 0.5, 1)"
+                },
+                "memory": {
+                  "type": "string",
+                  "x-wizard": { "narrow": true },
+                  "description": "Memory request (e.g. 128Mi, 1Gi)"
+                }
+              },
+              "additionalProperties": false
+            },
+            "limits": {
+              "type": "object",
+              "description": "Maximum resources allowed",
+              "properties": {
+                "cpu": {
+                  "type": "string",
+                  "x-wizard": { "narrow": true },
+                  "description": "CPU limit (e.g. 500m, 1, 2)"
+                },
+                "memory": {
+                  "type": "string",
+                  "x-wizard": { "narrow": true },
+                  "description": "Memory limit (e.g. 256Mi, 1Gi)"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "resizePolicy": {
+          "type": "array",
+          "x-wizard": { "advanced": true },
+          "description": "In-place resource resize policy per resource (K8s 1.35+). See https://kubernetes.io/docs/concepts/workloads/autoscaling/#in-place-resizing",
+          "items": {
+            "type": "object",
+            "required": [
+              "resourceName",
+              "restartPolicy"
+            ],
+            "properties": {
+              "resourceName": {
+                "type": "string",
+                "x-wizard": { "narrow": true },
+                "enum": ["cpu", "memory"],
+                "description": "Resource name: cpu or memory"
+              },
+              "restartPolicy": {
+                "type": "string",
+                "x-wizard": { "narrow": true },
+                "enum": [
+                  "NotRequired",
+                  "RestartContainer"
+                ],
+                "description": "Whether the container must restart when this resource is resized"
+              }
+            }
+          }
+        },
+        "securityContext": {
+          "type": "object",
+          "x-wizard": { "advanced": true },
+          "description": "Container-level security context. See https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context-1",
+          "properties": {
+            "runAsUser": {
+              "type": "integer",
+              "x-wizard": { "narrow": true },
+              "description": "UID to run the container process as"
+            },
+            "runAsGroup": {
+              "type": "integer",
+              "x-wizard": { "narrow": true },
+              "description": "GID to run the container process as"
+            },
+            "runAsNonRoot": {
+              "type": "boolean",
+              "x-wizard": { "narrow": true },
+              "description": "Require the container to run as a non-root user"
+            },
+            "privileged": {
+              "type": "boolean",
+              "x-wizard": { "narrow": true },
+              "description": "Run container in privileged mode"
+            },
+            "allowPrivilegeEscalation": {
+              "type": "boolean",
+              "x-wizard": { "narrow": true },
+              "description": "Allow the process to gain more privileges than its parent"
+            },
+            "readOnlyRootFilesystem": {
+              "type": "boolean",
+              "x-wizard": { "narrow": true },
+              "description": "Mount the root filesystem as read-only"
+            },
+            "capabilities": {
+              "type": "object",
+              "description": "Linux capabilities to add or drop",
+              "properties": {
+                "add": {
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "description": "Capabilities to add (e.g. NET_ADMIN, SYS_TIME)"
+                },
+                "drop": {
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "description": "Capabilities to drop (e.g. ALL)"
+                }
+              },
+              "additionalProperties": false
+            },
+            "seccompProfile": {
+              "type": "object",
+              "description": "Seccomp profile settings",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "x-wizard": { "narrow": true },
+                  "enum": ["RuntimeDefault", "Unconfined", "Localhost"],
+                  "description": "Seccomp profile type"
+                },
+                "localhostProfile": {
+                  "type": "string",
+                  "x-wizard": { "narrow": true },
+                  "description": "Path to a localhost seccomp profile (when type is Localhost)"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "healthChecks": {
+          "type": "object",
+          "x-wizard": { "expanded": true },
+          "description": "Container health probes. See https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/",
+          "properties": {
+            "liveness": {
+              "type": "object",
+              "description": "Liveness probe — restarts the container if it fails",
+              "properties": {
+                "httpGet": {
+                  "type": "object",
+                  "description": "HTTP GET probe",
+                  "properties": {
+                    "path": { "type": "string", "description": "URL path (e.g. /healthz)" },
+                    "port": { "type": ["integer", "string"], "x-wizard": { "narrow": true }, "description": "Port number or name" },
+                    "scheme": { "type": "string", "enum": ["HTTP", "HTTPS"], "x-wizard": { "narrow": true }, "description": "URI scheme" }
+                  },
+                  "additionalProperties": false
+                },
+                "tcpSocket": {
+                  "type": "object",
+                  "description": "TCP socket probe",
+                  "properties": {
+                    "port": { "type": ["integer", "string"], "description": "Port number or name" }
+                  },
+                  "additionalProperties": false
+                },
+                "exec": {
+                  "type": "object",
+                  "description": "Exec command probe",
+                  "properties": {
+                    "command": { "type": "array", "items": { "type": "string" }, "description": "Command to execute" }
+                  },
+                  "additionalProperties": false
+                },
+                "grpc": {
+                  "type": "object",
+                  "description": "gRPC probe",
+                  "properties": {
+                    "port": { "type": "integer", "x-wizard": { "narrow": true }, "description": "gRPC service port" },
+                    "service": { "type": "string", "x-wizard": { "narrow": true }, "description": "gRPC service name" }
+                  },
+                  "additionalProperties": false
+                },
+                "initialDelaySeconds": { "type": "integer", "minimum": 0, "x-wizard": { "narrow": true }, "description": "Seconds before the first probe" },
+                "periodSeconds": { "type": "integer", "minimum": 1, "x-wizard": { "narrow": true }, "description": "How often to probe (seconds)" },
+                "timeoutSeconds": { "type": "integer", "minimum": 1, "x-wizard": { "narrow": true }, "description": "Probe timeout (seconds)" },
+                "successThreshold": { "type": "integer", "minimum": 1, "x-wizard": { "narrow": true }, "description": "Consecutive successes to be considered healthy" },
+                "failureThreshold": { "type": "integer", "minimum": 1, "x-wizard": { "narrow": true }, "description": "Consecutive failures to be considered unhealthy" }
+              },
+              "additionalProperties": false
+            },
+            "readiness": {
+              "type": "object",
+              "description": "Readiness probe — removes the pod from endpoints if it fails",
+              "properties": {
+                "httpGet": {
+                  "type": "object",
+                  "description": "HTTP GET probe",
+                  "properties": {
+                    "path": { "type": "string", "description": "URL path (e.g. /ready)" },
+                    "port": { "type": ["integer", "string"], "x-wizard": { "narrow": true }, "description": "Port number or name" },
+                    "scheme": { "type": "string", "enum": ["HTTP", "HTTPS"], "x-wizard": { "narrow": true }, "description": "URI scheme" }
+                  },
+                  "additionalProperties": false
+                },
+                "tcpSocket": {
+                  "type": "object",
+                  "description": "TCP socket probe",
+                  "properties": {
+                    "port": { "type": ["integer", "string"], "description": "Port number or name" }
+                  },
+                  "additionalProperties": false
+                },
+                "exec": {
+                  "type": "object",
+                  "description": "Exec command probe",
+                  "properties": {
+                    "command": { "type": "array", "items": { "type": "string" }, "description": "Command to execute" }
+                  },
+                  "additionalProperties": false
+                },
+                "grpc": {
+                  "type": "object",
+                  "description": "gRPC probe",
+                  "properties": {
+                    "port": { "type": "integer", "x-wizard": { "narrow": true }, "description": "gRPC service port" },
+                    "service": { "type": "string", "x-wizard": { "narrow": true }, "description": "gRPC service name" }
+                  },
+                  "additionalProperties": false
+                },
+                "initialDelaySeconds": { "type": "integer", "minimum": 0, "x-wizard": { "narrow": true }, "description": "Seconds before the first probe" },
+                "periodSeconds": { "type": "integer", "minimum": 1, "x-wizard": { "narrow": true }, "description": "How often to probe (seconds)" },
+                "timeoutSeconds": { "type": "integer", "minimum": 1, "x-wizard": { "narrow": true }, "description": "Probe timeout (seconds)" },
+                "successThreshold": { "type": "integer", "minimum": 1, "x-wizard": { "narrow": true }, "description": "Consecutive successes to be considered healthy" },
+                "failureThreshold": { "type": "integer", "minimum": 1, "x-wizard": { "narrow": true }, "description": "Consecutive failures to be considered unhealthy" }
+              },
+              "additionalProperties": false
+            },
+            "startup": {
+              "type": "object",
+              "description": "Startup probe — delays liveness/readiness checks until it succeeds",
+              "properties": {
+                "httpGet": {
+                  "type": "object",
+                  "description": "HTTP GET probe",
+                  "properties": {
+                    "path": { "type": "string", "description": "URL path (e.g. /startup)" },
+                    "port": { "type": ["integer", "string"], "x-wizard": { "narrow": true }, "description": "Port number or name" },
+                    "scheme": { "type": "string", "enum": ["HTTP", "HTTPS"], "x-wizard": { "narrow": true }, "description": "URI scheme" }
+                  },
+                  "additionalProperties": false
+                },
+                "tcpSocket": {
+                  "type": "object",
+                  "description": "TCP socket probe",
+                  "properties": {
+                    "port": { "type": ["integer", "string"], "description": "Port number or name" }
+                  },
+                  "additionalProperties": false
+                },
+                "exec": {
+                  "type": "object",
+                  "description": "Exec command probe",
+                  "properties": {
+                    "command": { "type": "array", "items": { "type": "string" }, "description": "Command to execute" }
+                  },
+                  "additionalProperties": false
+                },
+                "grpc": {
+                  "type": "object",
+                  "description": "gRPC probe",
+                  "properties": {
+                    "port": { "type": "integer", "x-wizard": { "narrow": true }, "description": "gRPC service port" },
+                    "service": { "type": "string", "x-wizard": { "narrow": true }, "description": "gRPC service name" }
+                  },
+                  "additionalProperties": false
+                },
+                "initialDelaySeconds": { "type": "integer", "minimum": 0, "x-wizard": { "narrow": true }, "description": "Seconds before the first probe" },
+                "periodSeconds": { "type": "integer", "minimum": 1, "x-wizard": { "narrow": true }, "description": "How often to probe (seconds)" },
+                "timeoutSeconds": { "type": "integer", "minimum": 1, "x-wizard": { "narrow": true }, "description": "Probe timeout (seconds)" },
+                "successThreshold": { "type": "integer", "minimum": 1, "x-wizard": { "narrow": true }, "description": "Consecutive successes to be considered healthy" },
+                "failureThreshold": { "type": "integer", "minimum": 1, "x-wizard": { "narrow": true }, "description": "Consecutive failures to be considered unhealthy" }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "lifecycle": {
+          "type": "object",
+          "x-wizard": { "advanced": true },
+          "description": "Lifecycle hooks (postStart, preStop). See https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/",
+          "properties": {
+            "postStart": {
+              "type": "object",
+              "description": "Runs immediately after a container is created",
+              "properties": {
+                "exec": {
+                  "type": "object",
+                  "description": "Execute a command",
+                  "properties": {
+                    "command": { "type": "array", "items": { "type": "string" }, "description": "Command to execute" }
+                  },
+                  "additionalProperties": false
+                },
+                "httpGet": {
+                  "type": "object",
+                  "description": "HTTP GET request",
+                  "properties": {
+                    "path": { "type": "string", "description": "URL path" },
+                    "port": { "type": ["integer", "string"], "x-wizard": { "narrow": true }, "description": "Port number or name" },
+                    "scheme": { "type": "string", "enum": ["HTTP", "HTTPS"], "x-wizard": { "narrow": true }, "description": "URI scheme" }
+                  },
+                  "additionalProperties": false
+                },
+                "sleep": {
+                  "type": "object",
+                  "description": "Sleep for a duration",
+                  "properties": {
+                    "seconds": { "type": "integer", "minimum": 0, "description": "Seconds to sleep" }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            },
+            "preStop": {
+              "type": "object",
+              "description": "Runs before a container is terminated",
+              "properties": {
+                "exec": {
+                  "type": "object",
+                  "description": "Execute a command",
+                  "properties": {
+                    "command": { "type": "array", "items": { "type": "string" }, "description": "Command to execute" }
+                  },
+                  "additionalProperties": false
+                },
+                "httpGet": {
+                  "type": "object",
+                  "description": "HTTP GET request",
+                  "properties": {
+                    "path": { "type": "string", "description": "URL path" },
+                    "port": { "type": ["integer", "string"], "x-wizard": { "narrow": true }, "description": "Port number or name" },
+                    "scheme": { "type": "string", "enum": ["HTTP", "HTTPS"], "x-wizard": { "narrow": true }, "description": "URI scheme" }
+                  },
+                  "additionalProperties": false
+                },
+                "sleep": {
+                  "type": "object",
+                  "description": "Sleep for a duration",
+                  "properties": {
+                    "seconds": { "type": "integer", "minimum": 0, "description": "Seconds to sleep" }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "workingDir": {
+          "type": "string",
+          "x-wizard": { "advanced": true },
+          "description": "Working directory inside the container. Defaults to the image's WORKDIR."
+        }
+      }
+    },
+    "initContainerSpec": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/containerSpec"
+        },
+        {
+          "properties": {
+            "restartPolicy": {
+              "type": "string",
+              "enum": [
+                "Always",
+                ""
+              ],
+              "description": "Set to 'Always' for native sidecar containers (K8s 1.33+). See https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "properties": {
+    "workloadType": {
+      "type": "string",
+      "enum": [
+        "Deployment",
+        "StatefulSet",
+        "CronJob",
+        "Job",
+        "DaemonSet",
+        "Rollout"
+      ],
+      "default": "Deployment",
+      "description": "Kubernetes workload type to deploy",
+      "x-wizard": {
+        "order": 1,
+        "group": "Workload",
+        "label": "Workload Type",
+        "icon": "Box",
+        "description": "Choose the type of Kubernetes workload you want to deploy.",
+        "renderer": "workloadType"
+      }
+    },
+    "nameOverride": {
+      "type": "string",
+      "description": "Override the chart name"
+    },
+    "fullnameOverride": {
+      "type": "string",
+      "description": "Override the full release name"
+    },
+    "global": {
+      "type": "object",
+      "properties": {
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Labels applied to every resource"
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Annotations applied to every resource"
+        }
+      },
+      "additionalProperties": false,
+      "x-wizard": {
+        "order": 26,
+        "group": "Operations",
+        "label": "Global Settings",
+        "icon": "Globe",
+        "description": "Global labels and annotations applied to ALL generated resources."
+      },
+      "description": "Global labels and annotations applied to all resources generated by this chart"
+    },
+    "infraSettings": {
+      "type": "object",
+      "properties": {
+        "nodeLabels": {
+          "type": "object",
+          "x-wizard": { "expanded": true },
+          "description": "Node label key mapping. Customize the Kubernetes node label keys used by nodeTargeting.",
+          "properties": {
+            "topologyRegion": {
+              "type": "string",
+              "minLength": 1,
+              "default": "topology.kubernetes.io/region",
+              "description": "Node label key for region topology"
+            },
+            "topologyZone": {
+              "type": "string",
+              "minLength": 1,
+              "default": "topology.kubernetes.io/zone",
+              "description": "Node label key for zone topology"
+            },
+            "topologyRack": {
+              "type": "string",
+              "minLength": 1,
+              "default": "topology.kubernetes.io/rack",
+              "description": "Node label key for rack topology"
+            },
+            "nodePool": {
+              "type": "string",
+              "minLength": 1,
+              "default": "node.cluster.x-k8s.io/node-pool",
+              "description": "Node label key for node pool identification"
+            },
+            "os": {
+              "type": "string",
+              "minLength": 1,
+              "default": "kubernetes.io/os",
+              "description": "Node label key for operating system"
+            },
+            "arch": {
+              "type": "string",
+              "minLength": 1,
+              "default": "kubernetes.io/arch",
+              "description": "Node label key for CPU architecture"
+            },
+            "nodeType": {
+              "type": "string",
+              "minLength": 1,
+              "default": "node.kubernetes.io/instance-type",
+              "description": "Node label key for instance/node type"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false,
+      "x-wizard": {
+        "order": 27,
+        "group": "Operations",
+        "label": "Infrastructure Settings",
+        "icon": "Settings",
+        "description": "Customize node label keys for your cluster (used by nodeTargeting)."
+      },
+      "description": "Infrastructure-specific settings for your cluster. Customize node label keys used by nodeTargeting."
+    },
+    "argocd": {
+      "type": "object",
+      "x-wizard": {
+        "order": 25,
+        "group": "Operations",
+        "label": "Argo CD",
+        "icon": "GitBranch",
+        "description": "Configure Argo CD integration: sync waves and sync options."
+      },
+      "properties": {
+        "syncWaves": {
+          "type": "object",
+          "x-wizard": { "expanded": true },
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable automatic sync wave annotations on all resources"
+            }
+          },
+          "description": "Configure automatic sync wave annotation assignment to resources"
+        },
+        "syncOptions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Sync options applied to all resources (e.g. ServerSideApply=true)"
+        }
+      },
+      "description": "Argo CD integration settings. See https://argo-cd.readthedocs.io/en/stable/"
+    },
+    "containers": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/containerSpec"
+      },
+      "description": "Map of container name to container spec",
+      "x-wizard": {
+        "order": 3,
+        "group": "Workload",
+        "label": "Containers",
+        "icon": "Container",
+        "description": "Define the main application containers. At least one container with an image is required."
+      }
+    },
+    "initContainers": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/initContainerSpec"
+      },
+      "description": "Map of init container name to container spec (processed in alphabetical key order)",
+      "x-wizard": {
+        "order": 4,
+        "group": "Workload",
+        "label": "Init Containers",
+        "icon": "PlayCircle",
+        "description": "Init containers run before the main containers start. Keys are sorted alphabetically - use numeric prefixes (01-, 02-) to control order."
+      }
+    },
+    "nodeTargeting": {
+      "type": "object",
+      "x-wizard": {
+        "order": 6,
+        "group": "Pod",
+        "label": "Node Targeting",
+        "icon": "Target",
+        "description": "Control which nodes your pods can be scheduled on. Use \"soft\" for best-effort, \"hard\" for strict requirements."
+      },
+      "properties": {
+        "restrictions": {
+          "type": "object",
+          "x-wizard": { "expanded": true },
+          "description": "Pod placement restrictions using affinity/anti-affinity. See https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "differentNodes",
+                "sameNode",
+                "none"
+              ],
+              "default": "differentNodes",
+              "description": "differentNodes spreads pods across nodes (anti-affinity); sameNode co-locates pods (affinity); none disables"
+            },
+            "enforcement": {
+              "type": "string",
+              "enum": [
+                "soft",
+                "hard"
+              ],
+              "default": "soft",
+              "description": "soft = preferredDuringScheduling (best-effort); hard = requiredDuringScheduling (strict, may leave pods pending)"
+            }
+          },
+          "additionalProperties": false
+        },
+        "os": {
+          "$ref": "#/definitions/nodeTargetingProperty",
+          "x-wizard-field": "nodeTargeting",
+          "description": "Target operating system(s) (e.g. linux, windows). Maps to node label from infraSettings.nodeLabels.os"
+        },
+        "arch": {
+          "$ref": "#/definitions/nodeTargetingProperty",
+          "x-wizard-field": "nodeTargeting",
+          "description": "Target CPU architecture(s) (e.g. amd64, arm64). Maps to node label from infraSettings.nodeLabels.arch"
+        },
+        "regions": {
+          "$ref": "#/definitions/nodeTargetingProperty",
+          "x-wizard-field": "nodeTargeting",
+          "description": "Target cloud region(s). Maps to node label from infraSettings.nodeLabels.topologyRegion"
+        },
+        "zones": {
+          "$ref": "#/definitions/nodeTargetingProperty",
+          "x-wizard-field": "nodeTargeting",
+          "description": "Target availability zone(s). Maps to node label from infraSettings.nodeLabels.topologyZone"
+        },
+        "racks": {
+          "$ref": "#/definitions/nodeTargetingProperty",
+          "x-wizard-field": "nodeTargeting",
+          "description": "Target rack(s) for rack-aware scheduling. Maps to node label from infraSettings.nodeLabels.topologyRack"
+        },
+        "nodeTypes": {
+          "$ref": "#/definitions/nodeTargetingProperty",
+          "x-wizard-field": "nodeTargeting",
+          "description": "Target node/instance type(s) (e.g. m5.xlarge). Maps to node label from infraSettings.nodeLabels.nodeType"
+        },
+        "nodePools": {
+          "$ref": "#/definitions/nodeTargetingProperty",
+          "x-wizard-field": "nodeTargeting",
+          "description": "Target node pool(s) (e.g. default, gpu-pool). Maps to node label from infraSettings.nodeLabels.nodePool"
+        }
+      },
+      "additionalProperties": false
+    },
+    "podSettings": {
+      "type": "object",
+      "x-wizard": {
+        "order": 5,
+        "group": "Pod",
+        "label": "Pod Settings",
+        "icon": "Cpu",
+        "description": "Pod-level settings that apply to all containers: security context, scheduling, tolerations, volumes."
+      },
+      "properties": {
+        "imagePullSecrets": {
+          "type": "array",
+          "description": "List of image pull secrets for private registries. See https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Name of the Kubernetes Secret containing registry credentials"
+              }
+            },
+            "required": [
+              "name"
+            ]
+          }
+        },
+        "securityContext": {
+          "type": "object",
+          "x-wizard": { "advanced": true },
+          "description": "Pod-level security context (fsGroup, runAsUser, etc.). See https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context",
+          "properties": {
+            "runAsUser": {
+              "type": "integer",
+              "x-wizard": { "narrow": true },
+              "description": "UID to run all pod containers as"
+            },
+            "runAsGroup": {
+              "type": "integer",
+              "x-wizard": { "narrow": true },
+              "description": "GID to run all pod containers as"
+            },
+            "runAsNonRoot": {
+              "type": "boolean",
+              "x-wizard": { "narrow": true },
+              "description": "Require all containers to run as non-root"
+            },
+            "fsGroup": {
+              "type": "integer",
+              "x-wizard": { "narrow": true },
+              "description": "GID applied to all volumes mounted by the pod"
+            },
+            "fsGroupChangePolicy": {
+              "x-wizard": { "narrow": true },
+              "type": "string",
+              "enum": ["OnRootMismatch", "Always"],
+              "description": "When to change ownership of mounted volumes"
+            },
+            "supplementalGroups": {
+              "type": "array",
+              "items": { "type": "integer" },
+              "description": "Additional GIDs applied to the first process in each container"
+            },
+            "seccompProfile": {
+              "type": "object",
+              "description": "Seccomp profile settings",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "x-wizard": { "narrow": true },
+                  "enum": ["RuntimeDefault", "Unconfined", "Localhost"],
+                  "description": "Seccomp profile type"
+                },
+                "localhostProfile": {
+                  "type": "string",
+                  "x-wizard": { "narrow": true },
+                  "description": "Path to a localhost seccomp profile (when type is Localhost)"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Extra annotations added to the pod template"
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Extra labels added to the pod template"
+        },
+        "volumes": {
+          "type": "array",
+          "x-wizard": { "advanced": true },
+          "items": {
+            "type": "object"
+          },
+          "description": "Additional raw volume definitions. See https://kubernetes.io/docs/concepts/storage/volumes/"
+        },
+        "nodeSelector": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Simple label-based node selection. For advanced rules, use nodeTargeting instead. See https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector"
+        },
+        "tolerations": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          },
+          "description": "Tolerations for node taints. See https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/"
+        },
+        "affinity": {
+          "type": "object",
+          "x-wizard": { "advanced": true },
+          "description": "Raw affinity rules (merged with nodeTargeting-generated rules). See https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity"
+        },
+        "topologySpreadConstraints": {
+          "x-wizard": { "advanced": true },
+          "type": "object",
+          "description": "Topology spread constraints map. labelSelector defaults to chart's selectorLabels. See https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/",
+          "additionalProperties": {
+            "type": "object",
+            "required": [
+              "topologyKey"
+            ],
+            "properties": {
+              "maxSkew": {
+                "type": "integer",
+                "x-wizard": { "narrow": true },
+                "minimum": 1,
+                "default": 1,
+                "description": "Maximum allowed difference in pod count between topology domains"
+              },
+              "topologyKey": {
+                "type": "string",
+                "x-wizard": { "narrow": true },
+                "description": "Node label key defining the topology domain (e.g. topology.kubernetes.io/zone)"
+              },
+              "whenUnsatisfiable": {
+                "type": "string",
+                "x-wizard": { "narrow": true },
+                "enum": [
+                  "DoNotSchedule",
+                  "ScheduleAnyway"
+                ],
+                "default": "DoNotSchedule",
+                "description": "DoNotSchedule prevents scheduling; ScheduleAnyway schedules anyway with skew minimization"
+              },
+              "minDomains": {
+                "type": "integer",
+                "x-wizard": { "narrow": true },
+                "description": "Minimum number of eligible topology domains (K8s 1.30+)"
+              },
+              "nodeAffinityPolicy": {
+                "type": "string",
+                "x-wizard": { "narrow": true },
+                "enum": [
+                  "Honor",
+                  "Ignore"
+                ],
+                "description": "Whether to honor nodeAffinity when calculating skew"
+              },
+              "nodeTaintsPolicy": {
+                "type": "string",
+                "x-wizard": { "narrow": true },
+                "enum": [
+                  "Honor",
+                  "Ignore"
+                ],
+                "description": "Whether to honor node taints when calculating skew"
+              },
+              "matchLabelKeys": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Pod label keys to use for spreading (K8s 1.27+)"
+              },
+              "labelSelector": {
+                "type": "object",
+                "description": "Override the pod label selector (defaults to chart's selectorLabels)"
+              }
+            }
+          }
+        },
+        "priorityClassName": {
+          "type": "string",
+          "x-wizard": { "advanced": true, "narrow": true },
+          "description": "PriorityClass name for pod scheduling priority. See https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/"
+        },
+        "terminationGracePeriodSeconds": {
+          "x-wizard": { "advanced": true, "narrow": true },
+          "type": [
+            "integer",
+            "string"
+          ],
+          "description": "Seconds to wait for graceful shutdown before force-killing (default: 30)"
+        },
+        "dnsPolicy": {
+          "type": "string",
+          "x-wizard": { "advanced": true, "narrow": true },
+          "enum": [
+            "ClusterFirst",
+            "Default",
+            "ClusterFirstWithHostNet",
+            "None"
+          ],
+          "description": "DNS policy. See https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-s-dns-policy"
+        },
+        "dnsConfig": {
+          "type": "object",
+          "x-wizard": { "advanced": true },
+          "description": "Custom DNS settings (nameservers, searches, options). See https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-dns-config"
+        },
+        "hostNetwork": {
+          "type": "boolean",
+          "x-wizard": { "advanced": true, "narrow": true },
+          "description": "Use the host's network namespace. The pod will use the node's IP and ports directly."
+        },
+        "restartPolicy": {
+          "x-wizard": { "advanced": true, "narrow": true },
+          "type": "string",
+          "enum": [
+            "Always",
+            "OnFailure",
+            "Never",
+            ""
+          ],
+          "description": "Pod restart policy. Always for Deployments/StatefulSets, OnFailure or Never for Jobs. See https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#restart-policy"
+        }
+      },
+      "additionalProperties": false
+    },
+    "networking": {
+      "type": "object",
+      "properties": {
+        "services": {
+          "type": "object",
+          "description": "Map of service name to service config",
+          "x-wizard": {
+            "order": 7,
+            "group": "Networking",
+            "label": "Services",
+            "icon": "Network",
+            "description": "Configure Kubernetes Services to expose your application.",
+            "hiddenFor": [
+              "Job",
+              "CronJob"
+            ]
+          },
+          "additionalProperties": {
+            "type": "object",
+            "required": [
+              "ports"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "x-wizard": {
+                  "hiddenWhen": "headless",
+                  "narrow": true
+                },
+                "enum": [
+                  "ClusterIP",
+                  "NodePort",
+                  "LoadBalancer",
+                  "ExternalName"
+                ],
+                "default": "ClusterIP",
+                "description": "Service type determining how the Service is exposed. See https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types"
+              },
+              "headless": {
+                "type": "boolean",
+                "x-wizard": {
+                  "narrow": true
+                },
+                "description": "Create a headless Service (clusterIP: None), used for StatefulSets or direct pod DNS. See https://kubernetes.io/docs/concepts/services-networking/service/#headless-services"
+              },
+              "ports": {
+                "type": "object",
+                "minProperties": 1,
+                "description": "Map of port name to port config",
+                "additionalProperties": {
+                  "type": "object",
+                  "required": [
+                    "port"
+                  ],
+                  "properties": {
+                    "port": {
+                      "type": "integer",
+                      "x-wizard": { "narrow": true },
+                      "minimum": 1,
+                      "maximum": 65535,
+                      "description": "The port number exposed by the Service"
+                    },
+                    "containerPort": {
+                      "type": "string",
+                      "x-wizard": { "narrow": true, "optionsFrom": "containers.*.ports" },
+                      "description": "Container port name, defaults to port key name"
+                    },
+                    "protocol": {
+                      "type": "string",
+                      "x-wizard": { "narrow": true },
+                      "enum": ["TCP", "UDP", "SCTP"],
+                      "default": "TCP",
+                      "description": "Protocol for this port"
+                    },
+                    "nodePort": {
+                      "type": "integer",
+                      "x-wizard": { "narrow": true },
+                      "description": "Static port on every node (only for NodePort/LoadBalancer type services, range 30000-32767)"
+                    }
+                  }
+                }
+              },
+              "clusterIP": {
+                "type": "string",
+                "x-wizard": { "hiddenWhen": "headless", "narrow": true, "visibleWhen": { "type": ["ClusterIP", "NodePort", "LoadBalancer"] } },
+                "description": "Explicit cluster IP address. See https://kubernetes.io/docs/concepts/services-networking/service/#choosing-your-own-ip-address"
+              },
+              "loadBalancerIP": {
+                "type": "string",
+                "x-wizard": { "hiddenWhen": "headless", "narrow": true, "visibleWhen": { "type": ["LoadBalancer"] } },
+                "description": "Request a specific IP for LoadBalancer type services (cloud-provider dependent)"
+              },
+              "loadBalancerSourceRanges": {
+                "type": "array",
+                "x-wizard": { "hiddenWhen": "headless", "visibleWhen": { "type": ["LoadBalancer"] } },
+                "items": {
+                  "type": "string"
+                },
+                "description": "CIDR ranges allowed to access a LoadBalancer (e.g. ['10.0.0.0/8']). See https://kubernetes.io/docs/concepts/services-networking/service/#load-balancer-source-ranges"
+              },
+              "externalTrafficPolicy": {
+                "type": "string",
+                "x-wizard": { "hiddenWhen": "headless", "narrow": true, "visibleWhen": { "type": ["NodePort", "LoadBalancer"] } },
+                "enum": [
+                  "Cluster",
+                  "Local",
+                  ""
+                ],
+                "description": "Controls whether external traffic is routed to node-local or cluster-wide endpoints. See https://kubernetes.io/docs/concepts/services-networking/service/#external-traffic-policy"
+              },
+              "trafficDistribution": {
+                "type": "string",
+                "x-wizard": { "hiddenWhen": "headless", "narrow": true },
+                "enum": ["PreferClose", "PreferSameNode", "PreferSameZone"],
+                "description": "Traffic routing preference (K8s 1.35+). See https://kubernetes.io/docs/concepts/services-networking/service/#traffic-distribution"
+              },
+              "sessionAffinity": {
+                "type": "string",
+                "x-wizard": { "narrow": true },
+                "enum": ["None", "ClientIP"],
+                "description": "Session affinity. See https://kubernetes.io/docs/concepts/services-networking/service/#session-stickiness"
+              },
+              "ipFamilyPolicy": {
+                "type": "string",
+                "x-wizard": { "narrow": true },
+                "enum": ["SingleStack", "PreferDualStack", "RequireDualStack"],
+                "description": "Dual-stack IP family policy. See https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services"
+              },
+              "ipFamilies": {
+                "type": "array",
+                "x-wizard": { "narrow": true },
+                "items": {
+                  "type": "string",
+                  "enum": ["IPv4", "IPv6"]
+                },
+                "description": "IP families for the Service. See https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services"
+              },
+              "publishNotReadyAddresses": {
+                "type": "boolean",
+                "x-wizard": { "narrow": true },
+                "description": "If true, endpoints are published even when pods are not ready (useful for StatefulSet peer discovery)"
+              },
+              "selectorLabels": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "description": "Override the default pod selector labels for this Service (defaults to chart's selectorLabels)"
+              },
+              "annotations": {
+                "type": "object",
+                "description": "Annotations added to the Service resource. See https://kubernetes.io/docs/concepts/services-networking/service/"
+              },
+              "labels": {
+                "type": "object",
+                "description": "Extra labels added to the Service resource"
+              }
+            }
+          }
+        },
+        "oauth2Proxies": {
+          "type": "object",
+          "description": "Map of oauth2 proxy name to proxy config",
+          "x-wizard": {
+            "order": 19,
+            "group": "Security",
+            "label": "OAuth2 Proxy",
+            "icon": "Lock",
+            "description": "Configure OAuth2 proxy for authentication (sidecar or separate deployment).",
+            "hiddenFor": [
+              "Job",
+              "CronJob"
+            ]
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "mode": {
+                "type": "string",
+                "x-wizard": { "narrow": true },
+                "enum": [
+                  "sidecar",
+                  "deployment"
+                ],
+                "default": "sidecar",
+                "description": "sidecar runs in app pod; deployment creates separate pods. See https://oauth2-proxy.github.io/oauth2-proxy/"
+              },
+              "provider": {
+                "type": "string",
+                "x-wizard": { "narrow": true },
+                "enum": [
+                  "oidc",
+                  "google",
+                  "github",
+                  "azure",
+                  "gitlab",
+                  "bitbucket",
+                  "keycloak-oidc",
+                  "login.gov"
+                ],
+                "default": "oidc",
+                "description": "OAuth2 provider type. See https://oauth2-proxy.github.io/oauth2-proxy/configuration/providers/"
+              },
+              "issuerUrl": {
+                "type": "string",
+                "description": "OIDC issuer URL for token validation (e.g. https://accounts.google.com). See https://oauth2-proxy.github.io/oauth2-proxy/configuration/providers/openid_connect"
+              },
+              "emailDomains": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "default": [
+                  "*"
+                ],
+                "description": "Allowed email domains (* = allow all). See https://oauth2-proxy.github.io/oauth2-proxy/configuration/overview"
+              },
+              "upstream": {
+                "type": "string",
+                "x-wizard": { "visibleWhen": { "mode": ["deployment"] } },
+                "description": "Upstream URL to proxy to (required for deployment mode, e.g. http://my-app-svc:8080). See https://oauth2-proxy.github.io/oauth2-proxy/configuration/overview#upstreams-configuration"
+              },
+              "replicas": {
+                "type": "integer",
+                "x-wizard": { "narrow": true, "visibleWhen": { "mode": ["deployment"] } },
+                "default": 1,
+                "description": "Number of proxy replicas (deployment mode only)"
+              },
+              "port": {
+                "type": "integer",
+                "x-wizard": { "narrow": true },
+                "default": 4180,
+                "description": "Port the OAuth2 proxy listens on"
+              },
+              "portName": {
+                "type": "string",
+                "x-wizard": { "narrow": true },
+                "default": "proxy",
+                "description": "Port name suffix"
+              },
+              "image": {
+                "type": "object",
+                "x-wizard": { "advanced": true },
+                "description": "Override container image (defaults to quay.io/oauth2-proxy/oauth2-proxy:v7.15.1). See https://quay.io/repository/oauth2-proxy/oauth2-proxy",
+                "properties": {
+                  "repository": {
+                    "type": "string",
+                    "x-wizard": { "narrow": true },
+                    "default": "quay.io/oauth2-proxy/oauth2-proxy",
+                    "description": "Image repository"
+                  },
+                  "tag": {
+                    "type": "string",
+                    "x-wizard": { "narrow": true },
+                    "default": "v7.15.1",
+                    "description": "Image tag"
+                  },
+                  "pullPolicy": {
+                    "type": "string",
+                    "x-wizard": { "narrow": true },
+                    "enum": ["Always", "IfNotPresent", "Never"],
+                    "default": "IfNotPresent",
+                    "description": "Image pull policy"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "env": {
+                "type": "object",
+                "x-wizard-field": "env",
+                "description": "Environment variables (CLIENT_ID, CLIENT_SECRET, COOKIE_SECRET are auto-injected as args). See https://oauth2-proxy.github.io/oauth2-proxy/configuration/overview"
+              },
+              "extraArgs": {
+                "type": "object",
+                "x-wizard": { "advanced": true },
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "description": "Extra arguments as key-value pairs (e.g. cookie-refresh: '1h'). See https://oauth2-proxy.github.io/oauth2-proxy/configuration/overview"
+              },
+              "args": {
+                "type": "array",
+                "x-wizard": { "advanced": true },
+                "items": {
+                  "type": "string"
+                },
+                "description": "Override the entire command arguments array"
+              },
+              "resources": {
+                "type": "object",
+                "x-wizard": { "advanced": true },
+                "description": "CPU/memory resource requests and limits. See https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/",
+                "properties": {
+                  "requests": {
+                    "type": "object",
+                    "description": "Minimum resources guaranteed",
+                    "properties": {
+                      "cpu": { "type": "string", "x-wizard": { "narrow": true }, "description": "CPU request (e.g. 50m)" },
+                      "memory": { "type": "string", "x-wizard": { "narrow": true }, "description": "Memory request (e.g. 64Mi)" }
+                    },
+                    "additionalProperties": false
+                  },
+                  "limits": {
+                    "type": "object",
+                    "description": "Maximum resources allowed",
+                    "properties": {
+                      "cpu": { "type": "string", "x-wizard": { "narrow": true }, "description": "CPU limit (e.g. 200m)" },
+                      "memory": { "type": "string", "x-wizard": { "narrow": true }, "description": "Memory limit (e.g. 128Mi)" }
+                    },
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false
+              },
+              "securityContext": {
+                "type": "object",
+                "x-wizard": { "advanced": true },
+                "description": "Container security context. See https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context-1",
+                "properties": {
+                  "runAsUser": { "type": "integer", "x-wizard": { "narrow": true }, "description": "UID to run as" },
+                  "runAsGroup": { "type": "integer", "x-wizard": { "narrow": true }, "description": "GID to run as" },
+                  "runAsNonRoot": { "type": "boolean", "x-wizard": { "narrow": true }, "description": "Require non-root" },
+                  "readOnlyRootFilesystem": { "type": "boolean", "x-wizard": { "narrow": true }, "description": "Read-only root filesystem" },
+                  "allowPrivilegeEscalation": { "type": "boolean", "x-wizard": { "narrow": true }, "description": "Allow privilege escalation" }
+                },
+                "additionalProperties": false
+              },
+              "annotations": {
+                "type": "object",
+                "x-wizard": { "advanced": true },
+                "description": "Extra annotations on OAuth2 proxy resources"
+              },
+              "labels": {
+                "type": "object",
+                "x-wizard": { "advanced": true },
+                "description": "Extra labels on OAuth2 proxy resources"
+              }
+            },
+            "description": "OAuth2 Proxy instance configuration. See https://oauth2-proxy.github.io/oauth2-proxy/"
+          }
+        },
+        "ingresses": {
+          "type": "object",
+          "description": "Map of ingress name to ingress config",
+          "x-wizard": {
+            "order": 8,
+            "group": "Networking",
+            "label": "Ingresses",
+            "icon": "Globe",
+            "description": "Configure Kubernetes Ingresses for external access.",
+            "hiddenFor": [
+              "Job",
+              "CronJob"
+            ]
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "className": {
+                "type": "string",
+                "x-wizard": { "narrow": true },
+                "description": "IngressClass name (e.g. nginx, traefik). See https://kubernetes.io/docs/concepts/services-networking/ingress/#ingress-class"
+              },
+              "oauth2Proxy": {
+                "type": "string",
+                "x-wizard": { "narrow": true, "optionsFrom": "networking.oauth2Proxies" },
+                "description": "Key from networking.oauth2Proxies map if oauth2proxy should be used for authentication on this Ingress"
+              },
+              "hosts": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "host",
+                    "paths"
+                  ],
+                  "properties": {
+                    "host": {
+                      "type": "string",
+                      "description": "Hostname for this rule (e.g. app.example.com)"
+                    },
+                    "paths": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "path"
+                        ],
+                        "properties": {
+                          "path": {
+                            "type": "string",
+                            "x-wizard": { "narrow": true },
+                            "description": "URL path to match (e.g. / or /api)"
+                          },
+                          "pathType": {
+                            "type": "string",
+                            "x-wizard": { "narrow": true },
+                            "enum": [
+                              "Prefix",
+                              "Exact",
+                              "ImplementationSpecific"
+                            ],
+                            "default": "Prefix",
+                            "description": "How the path is matched. See https://kubernetes.io/docs/concepts/services-networking/ingress/#path-types"
+                          },
+                          "serviceName": {
+                            "type": "string",
+                            "x-wizard": { "narrow": true },
+                            "description": "Backend Service name (defaults to the first Service in networking.services)"
+                          },
+                          "servicePort": {
+                            "type": "integer",
+                            "x-wizard": { "narrow": true },
+                            "description": "Backend Service port number"
+                          }
+                        },
+                        "description": "Path rule mapping a URL path to a backend service"
+                      },
+                      "description": "URL path rules for this host"
+                    }
+                  },
+                  "description": "Host rule with hostname and path mappings"
+                },
+                "description": "List of host rules for the Ingress"
+              },
+              "tls": {
+                "type": "array",
+                "x-wizard": { "advanced": true },
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "secretName": {
+                      "type": "string",
+                      "description": "Name of the Secret containing tls.crt and tls.key"
+                    },
+                    "hosts": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "Hostnames covered by this TLS certificate"
+                    }
+                  },
+                  "description": "TLS entry mapping hosts to a Secret containing the certificate"
+                },
+                "description": "TLS configuration for HTTPS. See https://kubernetes.io/docs/concepts/services-networking/ingress/#tls"
+              },
+              "annotations": {
+                "type": "object",
+                "x-wizard": { "advanced": true },
+                "description": "Annotations on the Ingress (often used for controller-specific config)"
+              },
+              "labels": {
+                "type": "object",
+                "x-wizard": { "advanced": true },
+                "description": "Extra labels on the Ingress resource"
+              },
+              "defaultBackend": {
+                "type": "object",
+                "x-wizard": { "advanced": true },
+                "description": "Default backend for unmatched requests. See https://kubernetes.io/docs/concepts/services-networking/ingress/#default-backend"
+              }
+            },
+            "description": "Ingress configuration. See https://kubernetes.io/docs/concepts/services-networking/ingress/"
+          }
+        },
+        "gatewayApi": {
+          "type": "object",
+          "x-wizard": {
+            "order": 9,
+            "group": "Networking",
+            "label": "Gateway API",
+            "icon": "Network",
+            "description": "Configure Gateway API routes (HTTPRoute, GRPCRoute, TLSRoute, etc.).",
+            "hiddenFor": [
+              "Job",
+              "CronJob"
+            ]
+          },
+          "properties": {
+            "routes": {
+              "type": "object",
+              "description": "Gateway API routes map",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "x-wizard": { "narrow": true },
+                    "enum": [
+                      "HTTPRoute",
+                      "GRPCRoute",
+                      "TLSRoute",
+                      "TCPRoute",
+                      "UDPRoute"
+                    ],
+                    "default": "HTTPRoute"
+                  },
+                  "oauth2Proxy": {
+                    "type": "string",
+                    "x-wizard": { "narrow": true, "optionsFrom": "networking.oauth2Proxies" },
+                    "description": "Key from networking.oauth2Proxies map if oauth2proxy should be used for authentication on this route"
+                  },
+                  "parentRefs": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "name"
+                      ],
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "x-wizard": { "narrow": true },
+                          "description": "Gateway name"
+                        },
+                        "namespace": {
+                          "type": "string",
+                          "x-wizard": { "narrow": true },
+                          "description": "Gateway namespace (defaults to route's namespace)"
+                        },
+                        "sectionName": {
+                          "type": "string",
+                          "x-wizard": { "narrow": true },
+                          "description": "Specific listener name on the Gateway"
+                        },
+                        "port": {
+                          "type": "integer",
+                          "x-wizard": { "narrow": true },
+                          "description": "Specific listener port on the Gateway"
+                        }
+                      },
+                      "description": "Reference to a Gateway resource"
+                    },
+                    "description": "Gateway references this route attaches to. See https://gateway-api.sigs.k8s.io/api-types/httproute/#attaching-to-gateways"
+                  },
+                  "hostnames": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Hostnames this route matches (e.g. ['app.example.com'])"
+                  },
+                  "rules": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    },
+                    "description": "Routing rules (matches, filters, backendRefs). See https://gateway-api.sigs.k8s.io/api-types/httproute/#rules"
+                  },
+                  "policies": {
+                    "type": "object",
+                    "x-wizard": { "expanded": true },
+                    "properties": {
+                      "envoy": {
+                        "type": "object",
+                        "description": "Envoy Gateway BackendTrafficPolicy. See https://gateway.envoyproxy.io/docs/api/extension_types/#backendtrafficpolicy",
+                        "properties": {
+                          "loadBalancer": {
+                            "type": "object",
+                            "description": "Load balancing policy configuration"
+                          },
+                          "circuitBreaker": {
+                            "type": "object",
+                            "description": "Circuit breaker settings for upstream connections"
+                          },
+                          "retry": {
+                            "type": "object",
+                            "description": "Retry policy for failed requests"
+                          },
+                          "timeout": {
+                            "type": "object",
+                            "description": "Request/connection timeout settings"
+                          },
+                          "rateLimit": {
+                            "type": "object",
+                            "description": "Rate limiting configuration"
+                          },
+                          "healthCheck": {
+                            "type": "object",
+                            "description": "Active health check configuration for backends"
+                          },
+                          "connection": {
+                            "type": "object",
+                            "description": "Connection-level settings"
+                          },
+                          "tcpKeepalive": {
+                            "type": "object",
+                            "description": "TCP keepalive settings"
+                          },
+                          "faultInjection": {
+                            "type": "object",
+                            "description": "Fault injection for testing (abort/delay)"
+                          },
+                          "useClientProtocol": {
+                            "type": "boolean",
+                            "description": "Use the same protocol as the downstream client"
+                          },
+                          "proxyProtocol": {
+                            "type": "object",
+                            "description": "PROXY protocol configuration for backend connections"
+                          },
+                          "compression": {
+                            "type": "array",
+                            "description": "Response compression algorithms"
+                          },
+                          "http2": {
+                            "type": "object",
+                            "description": "HTTP/2 settings for backend connections"
+                          },
+                          "dns": {
+                            "type": "object",
+                            "description": "DNS resolution settings for backends"
+                          },
+                          "annotations": {
+                            "type": "object",
+                            "description": "Annotations on the BackendTrafficPolicy resource"
+                          },
+                          "labels": {
+                            "type": "object",
+                            "description": "Labels on the BackendTrafficPolicy resource"
+                          }
+                        }
+                      }
+                    },
+                    "description": "Traffic policies attached to this route"
+                  },
+                  "annotations": {
+                    "type": "object",
+                    "x-wizard": { "advanced": true },
+                    "description": "Annotations on the route resource"
+                  },
+                  "labels": {
+                    "type": "object",
+                    "x-wizard": { "advanced": true },
+                    "description": "Labels on the route resource"
+                  }
+                },
+                "description": "Gateway API route configuration. See https://gateway-api.sigs.k8s.io/api-types/httproute/"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "networkPolicies": {
+          "type": "object",
+          "description": "Map of NetworkPolicy name to config",
+          "x-wizard": {
+            "order": 12,
+            "group": "Networking",
+            "label": "Network Policies",
+            "icon": "ShieldCheck",
+            "description": "Configure Kubernetes NetworkPolicies to control pod-to-pod traffic."
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "podSelector": {
+                "type": "object",
+                "description": "Select which pods this policy applies to (defaults to chart's selectorLabels)"
+              },
+              "policyTypes": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": ["Ingress", "Egress"]
+                },
+                "description": "Policy types to enforce. See https://kubernetes.io/docs/concepts/services-networking/network-policies/"
+              },
+              "ingress": {
+                "type": "array",
+                "items": {
+                  "type": "object"
+                },
+                "description": "Allowed inbound traffic rules. See https://kubernetes.io/docs/concepts/services-networking/network-policies/#networkpolicy-resource"
+              },
+              "egress": {
+                "type": "array",
+                "items": {
+                  "type": "object"
+                },
+                "description": "Allowed outbound traffic rules"
+              },
+              "annotations": {
+                "type": "object",
+                "description": "Annotations on the NetworkPolicy resource"
+              },
+              "labels": {
+                "type": "object",
+                "description": "Labels on the NetworkPolicy resource"
+              }
+            },
+            "description": "NetworkPolicy configuration. See https://kubernetes.io/docs/concepts/services-networking/network-policies/"
+          }
+        },
+        "istio": {
+          "type": "object",
+          "x-wizard": {
+            "order": 13,
+            "group": "Networking",
+            "label": "Istio",
+            "icon": "Shield",
+            "description": "Configure Istio service mesh resources: VirtualServices, DestinationRules, PeerAuthentication, AuthorizationPolicies.",
+            "hiddenFor": [
+              "Job",
+              "CronJob"
+            ]
+          },
+          "properties": {
+            "virtualServices": {
+              "type": "object",
+              "description": "Map of VirtualService name to config",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "hosts": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Hostnames this VirtualService applies to"
+                  },
+                  "gateways": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Gateways this VirtualService is bound to (e.g. ['istio-system/my-gateway'])"
+                  },
+                  "exportTo": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Namespaces this VirtualService is visible to ('.' = same ns, '*' = all)"
+                  },
+                  "http": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    },
+                    "description": "HTTP route rules (match, route, redirect, rewrite, etc.)"
+                  },
+                  "tcp": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    },
+                    "description": "TCP route rules"
+                  },
+                  "tls": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    },
+                    "description": "TLS route rules (SNI-based routing)"
+                  },
+                  "annotations": {
+                    "type": "object",
+                    "description": "Annotations on the VirtualService resource"
+                  },
+                  "labels": {
+                    "type": "object",
+                    "description": "Labels on the VirtualService resource"
+                  }
+                },
+                "description": "Istio VirtualService configuration. See https://istio.io/latest/docs/reference/config/networking/virtual-service/"
+              }
+            },
+            "destinationRules": {
+              "type": "object",
+              "description": "Map of DestinationRule name to config",
+              "additionalProperties": {
+                "type": "object",
+                "required": [
+                  "host"
+                ],
+                "properties": {
+                  "host": {
+                    "type": "string",
+                    "description": "Service key (auto-prefixed with release name) or FQDN if externalHost=true"
+                  },
+                  "externalHost": {
+                    "type": "boolean",
+                    "description": "If true, the host value is used as-is (not prefixed with release name)"
+                  },
+                  "trafficPolicy": {
+                    "type": "object",
+                    "description": "Traffic policy (connectionPool, loadBalancer, outlierDetection, tls)"
+                  },
+                  "subsets": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    },
+                    "description": "Named subsets for traffic splitting"
+                  },
+                  "exportTo": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Namespaces this rule is visible to"
+                  },
+                  "annotations": {
+                    "type": "object",
+                    "description": "Annotations on the DestinationRule resource"
+                  },
+                  "labels": {
+                    "type": "object",
+                    "description": "Labels on the DestinationRule resource"
+                  }
+                },
+                "description": "Istio DestinationRule configuration. See https://istio.io/latest/docs/reference/config/networking/destination-rule/"
+              }
+            },
+            "peerAuthentication": {
+              "type": "object",
+              "description": "Map of PeerAuthentication name to config",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "selector": {
+                    "type": "object",
+                    "description": "Workload selector (defaults to chart's selectorLabels)"
+                  },
+                  "mtls": {
+                    "type": "object",
+                    "description": "mTLS mode configuration (STRICT, PERMISSIVE, DISABLE)"
+                  },
+                  "portLevelMtls": {
+                    "type": "object",
+                    "description": "Per-port mTLS settings override"
+                  },
+                  "annotations": {
+                    "type": "object",
+                    "description": "Annotations on the PeerAuthentication resource"
+                  },
+                  "labels": {
+                    "type": "object",
+                    "description": "Labels on the PeerAuthentication resource"
+                  }
+                },
+                "description": "Istio PeerAuthentication configuration. See https://istio.io/latest/docs/reference/config/security/peer_authentication/"
+              }
+            },
+            "authorizationPolicies": {
+              "type": "object",
+              "description": "Map of AuthorizationPolicy name to config",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "selector": {
+                    "type": "object",
+                    "description": "Workload selector (defaults to chart's selectorLabels)"
+                  },
+                  "action": {
+                    "type": "string",
+                    "enum": [
+                      "ALLOW",
+                      "DENY",
+                      "CUSTOM",
+                      "AUDIT"
+                    ],
+                    "description": "Policy action: ALLOW, DENY, CUSTOM, or AUDIT"
+                  },
+                  "rules": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    },
+                    "description": "Authorization rules (from, to, when conditions)"
+                  },
+                  "annotations": {
+                    "type": "object",
+                    "description": "Annotations on the AuthorizationPolicy resource"
+                  },
+                  "labels": {
+                    "type": "object",
+                    "description": "Labels on the AuthorizationPolicy resource"
+                  }
+                },
+                "description": "Istio AuthorizationPolicy configuration. See https://istio.io/latest/docs/reference/config/security/authorization-policy/"
+              }
+            }
+          }
+        }
+      },
+      "description": "Networking configuration: Services, Ingresses, Gateway API, mTLS, and network policies"
+    },
+    "config": {
+      "type": "object",
+      "properties": {
+        "configMaps": {
+          "type": "object",
+          "x-wizard": {
+            "order": 14,
+            "group": "Config & Storage",
+            "label": "ConfigMaps",
+            "icon": "FileText",
+            "description": "Manage ConfigMaps. Chart-managed ConfigMaps are auto-prefixed and include checksum annotations for automatic pod rollouts."
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "description": "Key-value pairs stored in the ConfigMap"
+              },
+              "binaryData": {
+                "type": "object",
+                "description": "Binary data stored in the ConfigMap (base64-encoded values)"
+              },
+              "reloaderEnabled": {
+                "type": "boolean",
+                "x-wizard": { "advanced": true },
+                "description": "Include this ConfigMap in Stakater Reloader annotations for auto pod restarts on changes. See https://github.com/stakater/Reloader"
+              },
+              "annotations": {
+                "type": "object",
+                "x-wizard": { "advanced": true },
+                "description": "Annotations on the ConfigMap resource"
+              },
+              "labels": {
+                "type": "object",
+                "x-wizard": { "advanced": true },
+                "description": "Labels on the ConfigMap resource"
+              }
+            },
+            "description": "ConfigMap configuration. See https://kubernetes.io/docs/concepts/configuration/configmap/"
+          }
+        },
+        "secrets": {
+          "type": "object",
+          "x-wizard": {
+            "order": 15,
+            "group": "Config & Storage",
+            "label": "Secrets",
+            "icon": "Lock",
+            "description": "Manage Secrets with optional auto-generation via ESO Password generators."
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "default": "Opaque",
+                "enum": [
+                  "Opaque",
+                  "kubernetes.io/tls",
+                  "kubernetes.io/dockerconfigjson",
+                  "kubernetes.io/basic-auth",
+                  "kubernetes.io/ssh-auth",
+                  "kubernetes.io/service-account-token"
+                ],
+                "description": "Secret type. See https://kubernetes.io/docs/concepts/configuration/secret/#secret-types"
+              },
+              "data": {
+                "type": "object",
+                "description": "Base64-encoded key-value pairs"
+              },
+              "stringData": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "description": "Plain-text key-value pairs (auto-encoded to base64)"
+              },
+              "generate": {
+                "type": "object",
+                "description": "Auto-generate random values via External Secrets Operator Password generator. See https://external-secrets.io/latest/provider/generator-password/",
+                "additionalProperties": {
+                  "type": "object",
+                  "properties": {
+                    "length": {
+                      "type": "integer",
+                      "default": 32,
+                      "x-wizard": { "narrow": true },
+                      "description": "Generated password length"
+                    },
+                    "digits": {
+                      "type": "integer",
+                      "x-wizard": { "narrow": true },
+                      "description": "Minimum number of digits"
+                    },
+                    "symbols": {
+                      "type": "integer",
+                      "x-wizard": { "narrow": true },
+                      "description": "Minimum number of symbol characters"
+                    },
+                    "symbolCharacters": {
+                      "type": "string",
+                      "x-wizard": { "narrow": true },
+                      "description": "Allowed symbol characters (defaults to provider default)"
+                    },
+                    "noUpper": {
+                      "type": "boolean",
+                      "x-wizard": { "narrow": true },
+                      "description": "Exclude uppercase letters"
+                    },
+                    "allowRepeat": {
+                      "type": "boolean",
+                      "x-wizard": { "narrow": true },
+                      "description": "Allow repeated characters"
+                    },
+                    "encoding": {
+                      "type": "string",
+                      "x-wizard": { "narrow": true },
+                      "enum": [
+                        "raw",
+                        "base64",
+                        "base64url",
+                        "base32",
+                        "hex"
+                      ],
+                      "description": "Output encoding for the generated value"
+                    }
+                  },
+                  "description": "Password generation config for a single key"
+                }
+              },
+              "generateRefreshInterval": {
+                "type": "string",
+                "default": "0",
+                "description": "How often ESO regenerates the secret. '0' = generate once and never rotate."
+              },
+              "reloaderEnabled": {
+                "type": "boolean",
+                "x-wizard": { "advanced": true },
+                "description": "Include in Stakater Reloader annotations for auto pod restarts. See https://github.com/stakater/Reloader"
+              },
+              "annotations": {
+                "type": "object",
+                "x-wizard": { "advanced": true },
+                "description": "Annotations on the Secret resource"
+              },
+              "labels": {
+                "type": "object",
+                "x-wizard": { "advanced": true },
+                "description": "Labels on the Secret resource"
+              }
+            },
+            "description": "Secret configuration. See https://kubernetes.io/docs/concepts/configuration/secret/"
+          }
+        },
+        "externalSecrets": {
+          "type": "object",
+          "x-wizard": {
+            "order": 16,
+            "group": "Config & Storage",
+            "label": "External Secrets",
+            "icon": "FileKey",
+            "description": "Configure ExternalSecrets to sync secrets from external stores (AWS Secrets Manager, Vault, etc.)."
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "refreshInterval": {
+                "type": "string",
+                "description": "How often to sync the secret from the external store (e.g. '1h', '5m'). See https://external-secrets.io/latest/api/externalsecret/"
+              },
+              "secretStoreRef": {
+                "type": "object",
+                "x-wizard": { "expanded": true },
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "x-wizard": { "narrow": true },
+                    "description": "SecretStore resource name"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "x-wizard": { "narrow": true },
+                    "enum": [
+                      "SecretStore",
+                      "ClusterSecretStore"
+                    ],
+                    "default": "SecretStore",
+                    "description": "SecretStore or ClusterSecretStore"
+                  }
+                },
+                "description": "Reference to the SecretStore or ClusterSecretStore. See https://external-secrets.io/latest/api/secretstore/"
+              },
+              "target": {
+                "type": "object",
+                "description": "Target Secret configuration. See https://external-secrets.io/latest/api/externalsecret/#target",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Target Secret name (defaults to <fullname>-<key>)"
+                  },
+                  "creationPolicy": {
+                    "type": "string",
+                    "x-wizard": { "narrow": true },
+                    "enum": ["Owner", "Orphan", "Merge", "None"],
+                    "description": "How the Secret is created. See https://external-secrets.io/latest/api/externalsecret/#target"
+                  },
+                  "deletionPolicy": {
+                    "type": "string",
+                    "x-wizard": { "narrow": true },
+                    "enum": ["Delete", "Merge", "Retain"],
+                    "description": "What happens when the ExternalSecret is deleted. See https://external-secrets.io/latest/api/externalsecret/#target"
+                  },
+                  "template": {
+                    "type": "object",
+                    "x-wizard": { "advanced": true },
+                    "description": "Template for the generated Secret (type, metadata, data). See https://external-secrets.io/latest/guides/templating/"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "data": {
+                "type": "array",
+                "description": "Individual key mappings from the external store. See https://external-secrets.io/latest/api/externalsecret/#data",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "secretKey": {
+                      "type": "string",
+                      "x-wizard": { "narrow": true },
+                      "description": "Key name in the target Kubernetes Secret"
+                    },
+                    "remoteRef": {
+                      "type": "object",
+                      "description": "Reference to the key in the external store",
+                      "properties": {
+                        "key": {
+                          "type": "string",
+                          "description": "Key/path in the external store (e.g. my-secret, /path/to/secret)"
+                        },
+                        "property": {
+                          "type": "string",
+                          "description": "Property within the secret (for JSON secrets)"
+                        },
+                        "version": {
+                          "type": "string",
+                          "description": "Version or stage of the secret"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "dataFrom": {
+                "type": "array",
+                "description": "Bulk data extraction from the external store. See https://external-secrets.io/latest/api/externalsecret/#datafrom"
+              },
+              "annotations": {
+                "type": "object",
+                "x-wizard": { "advanced": true },
+                "description": "Annotations on the ExternalSecret resource"
+              },
+              "labels": {
+                "type": "object",
+                "x-wizard": { "advanced": true },
+                "description": "Labels on the ExternalSecret resource"
+              }
+            },
+            "description": "ExternalSecret configuration. See https://external-secrets.io/latest/api/externalsecret/"
+          }
+        },
+        "certificates": {
+          "type": "object",
+          "description": "Map of cert-manager Certificate name to config",
+          "x-wizard": {
+            "order": 17,
+            "group": "Config & Storage",
+            "label": "Certificates",
+            "icon": "FileKey",
+            "description": "Configure cert-manager Certificate resources for TLS. Certificates auto-mount when a mount path is set."
+          },
+          "additionalProperties": {
+            "type": "object",
+            "required": [
+              "issuerRef"
+            ],
+            "properties": {
+              "issuerRef": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "x-wizard": { "expanded": true },
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Issuer resource name"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "x-wizard": { "narrow": true },
+                    "enum": [
+                      "Issuer",
+                      "ClusterIssuer"
+                    ],
+                    "default": "ClusterIssuer",
+                    "description": "Issuer or ClusterIssuer"
+                  },
+                  "group": {
+                    "type": "string",
+                    "x-wizard": { "narrow": true },
+                    "description": "API group (defaults to cert-manager.io)"
+                  }
+                },
+                "description": "Reference to the cert-manager Issuer or ClusterIssuer. See https://cert-manager.io/docs/configuration/"
+              },
+              "secretName": {
+                "type": "string",
+                "x-wizard": { "narrow": true },
+                "description": "Target Secret name for the TLS cert (defaults to <fullname>-<key>-tls)"
+              },
+              "mountPath": {
+                "type": "string",
+                "x-wizard": { "narrow": true },
+                "description": "Auto-mount the certificate Secret to all containers at this path"
+              },
+              "commonName": {
+                "type": "string",
+                "x-wizard": { "narrow": true },
+                "description": "X.509 common name (CN) for the certificate"
+              },
+              "isCA": {
+                "type": "boolean",
+                "x-wizard": { "narrow": true },
+                "description": "Mark this certificate as a Certificate Authority"
+              },
+               "duration": {
+                "type": "string",
+                "x-wizard": { "narrow": true },
+                "description": "Certificate validity duration (e.g. 2160h for 90 days). See https://cert-manager.io/docs/usage/certificate/#renewal"
+              },
+              "renewBefore": {
+                "type": "string",
+                "x-wizard": { "narrow": true },
+                "description": "Time before expiry to begin renewal (e.g. 360h for 15 days)"
+              },
+              "dnsNames": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Subject Alternative Names (SANs) — DNS entries the cert is valid for"
+              },
+              "ipAddresses": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Subject Alternative Names (SANs) — IP addresses the cert is valid for"
+              },
+              "uris": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Subject Alternative Names (SANs) — URIs the cert is valid for"
+              },
+              "emailAddresses": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Subject Alternative Names (SANs) — email addresses"
+              },
+              "usages": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Key usages (e.g. ['server auth', 'digital signature']). See https://cert-manager.io/docs/reference/api-docs/#cert-manager.io/v1.KeyUsage"
+              },
+              "privateKey": {
+                "type": "object",
+                "description": "Private key configuration (algorithm, encoding, size, rotation). See https://cert-manager.io/docs/usage/certificate/#private-key"
+              },
+              "subject": {
+                "type": "object",
+                "description": "X.509 subject fields (organization, country, etc.)"
+              },
+              "keystores": {
+                "type": "object",
+                "description": "Java/PKCS12 keystore generation. See https://cert-manager.io/docs/usage/certificate/#keystores"
+              },
+              "secretTemplate": {
+                "type": "object",
+                "description": "Template for the generated Secret (annotations, labels)"
+              },
+              "annotations": {
+                "type": "object",
+                "x-wizard": { "advanced": true },
+                "description": "Annotations on the Certificate resource"
+              },
+              "labels": {
+                "type": "object",
+                "x-wizard": { "advanced": true },
+                "description": "Labels on the Certificate resource"
+              }
+            },
+            "description": "cert-manager Certificate configuration. See https://cert-manager.io/docs/usage/certificate/"
+          }
+        }
+      }
+    },
+    "persistence": {
+      "type": "object",
+      "x-wizard": {
+        "order": 18,
+        "group": "Config & Storage",
+        "label": "Persistence",
+        "icon": "HardDrive",
+        "description": "Configure persistent storage. For StatefulSets, entries become volumeClaimTemplates."
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "storageClass": {
+            "type": "string",
+            "x-wizard": { "narrow": true },
+            "description": "StorageClass name (e.g. gp3, standard). Empty = cluster default. See https://kubernetes.io/docs/concepts/storage/storage-classes/"
+          },
+          "accessMode": {
+            "type": "string",
+            "x-wizard": { "narrow": true },
+            "enum": ["ReadWriteOnce", "ReadOnlyMany", "ReadWriteMany", "ReadWriteOncePod"],
+            "default": "ReadWriteOnce",
+            "description": "Volume access mode. See https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes"
+          },
+          "size": {
+            "type": "string",
+            "x-wizard": { "narrow": true },
+            "default": "1Gi",
+            "description": "Storage size (e.g. 1Gi, 10Gi, 100Gi)"
+          },
+          "existingClaim": {
+            "type": "string",
+            "x-wizard": { "narrow": true },
+            "description": "Use an existing PVC instead of creating a new one"
+          },
+          "volumeName": {
+            "type": "string",
+            "x-wizard": { "narrow": true },
+            "description": "Bind to a specific PersistentVolume by name"
+          },
+          "selector": {
+            "type": "object",
+            "x-wizard": { "advanced": true },
+            "description": "Label selector to filter available PersistentVolumes"
+          },
+          "annotations": {
+            "type": "object",
+            "x-wizard": { "advanced": true },
+            "description": "Annotations on the PVC resource"
+          },
+          "labels": {
+            "type": "object",
+            "x-wizard": { "advanced": true },
+            "description": "Labels on the PVC resource"
+          }
+        },
+        "description": "PersistentVolumeClaim configuration. For StatefulSets, these become volumeClaimTemplates. See https://kubernetes.io/docs/concepts/storage/persistent-volumes/"
+      }
+    },
+    "autoscaling": {
+      "type": "object",
+      "x-wizard": {
+        "order": 19,
+        "group": "Scaling",
+        "label": "Autoscaling",
+        "icon": "TrendingUp",
+        "description": "Configure HPA, VPA, and KEDA autoscaling. Note: HPA and KEDA are mutually exclusive.",
+        "hiddenFor": [
+          "Job",
+          "CronJob",
+          "DaemonSet"
+        ]
+      },
+      "properties": {
+        "hpa": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable HPA for this workload"
+            },
+            "minReplicas": {
+              "type": "integer",
+              "x-wizard": { "narrow": true },
+              "minimum": 1,
+              "default": 1,
+              "description": "Minimum number of replicas"
+            },
+            "maxReplicas": {
+              "type": "integer",
+              "x-wizard": { "narrow": true },
+              "minimum": 1,
+              "default": 10,
+              "description": "Maximum number of replicas"
+            },
+            "metrics": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              },
+              "description": "Scaling metrics (cpu, memory, custom). See https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/#autoscaling-on-multiple-metrics-and-custom-metrics"
+            },
+            "behavior": {
+              "type": "object",
+              "description": "Scale-up and scale-down behavior policies. See https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#configurable-scaling-behavior"
+            },
+            "annotations": {
+              "type": "object",
+              "x-wizard": { "advanced": true },
+              "description": "Annotations on the HPA resource"
+            },
+            "labels": {
+              "type": "object",
+              "x-wizard": { "advanced": true },
+              "description": "Labels on the HPA resource"
+            }
+          },
+          "additionalProperties": false,
+          "description": "Horizontal Pod Autoscaler. See https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/"
+        },
+        "vpa": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable VPA for this workload. See https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler"
+            },
+            "updatePolicy": {
+              "type": "object",
+              "description": "How VPA applies recommendations. See https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler#quick-start",
+              "properties": {
+                "updateMode": {
+                  "type": "string",
+                  "enum": ["Auto", "Recreate", "Initial", "Off"],
+                  "default": "Auto",
+                  "description": "Auto: applies on pod restart; Recreate: evicts pods; Initial: only at creation; Off: recommendations only"
+                }
+              },
+              "additionalProperties": false
+            },
+            "resourcePolicy": {
+              "type": "object",
+              "x-wizard": { "advanced": true },
+              "description": "Per-container resource policies. See https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go",
+              "properties": {
+                "containerPolicies": {
+                  "type": "array",
+                  "description": "List of per-container resource policies",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "containerName": {
+                        "type": "string",
+                        "description": "Container name (or '*' for all containers)"
+                      },
+                      "mode": {
+                        "type": "string",
+                        "x-wizard": { "narrow": true },
+                        "enum": ["Auto", "Off"],
+                        "description": "Auto: VPA manages this container; Off: VPA ignores it"
+                      },
+                      "controlledResources": {
+                        "type": "array",
+                        "items": { "type": "string" },
+                        "description": "Resources to control (e.g. cpu, memory)"
+                      },
+                      "minAllowed": {
+                        "type": "object",
+                        "description": "Minimum allowed resources",
+                        "properties": {
+                          "cpu": { "type": "string", "x-wizard": { "narrow": true }, "description": "Min CPU (e.g. 50m)" },
+                          "memory": { "type": "string", "x-wizard": { "narrow": true }, "description": "Min memory (e.g. 64Mi)" }
+                        },
+                        "additionalProperties": false
+                      },
+                      "maxAllowed": {
+                        "type": "object",
+                        "description": "Maximum allowed resources",
+                        "properties": {
+                          "cpu": { "type": "string", "x-wizard": { "narrow": true }, "description": "Max CPU (e.g. 4)" },
+                          "memory": { "type": "string", "x-wizard": { "narrow": true }, "description": "Max memory (e.g. 8Gi)" }
+                        },
+                        "additionalProperties": false
+                      }
+                    }
+                  }
+                }
+              },
+              "additionalProperties": false
+            },
+            "recommenders": {
+              "type": "array",
+              "x-wizard": { "advanced": true },
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Custom recommender name"
+                  }
+                }
+              },
+              "description": "Custom recommender configurations. See https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler#using-alternative-recommender"
+            },
+            "annotations": {
+              "type": "object",
+              "x-wizard": { "advanced": true },
+              "description": "Annotations on the VPA resource"
+            },
+            "labels": {
+              "type": "object",
+              "x-wizard": { "advanced": true },
+              "description": "Labels on the VPA resource"
+            }
+          },
+          "additionalProperties": false,
+          "description": "Vertical Pod Autoscaler. See https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler"
+        },
+        "keda": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable KEDA scaling for this workload"
+            },
+            "minReplicaCount": {
+              "type": "integer",
+              "x-wizard": { "narrow": true },
+              "minimum": 0,
+              "default": 1,
+              "description": "Minimum number of replicas (0 = scale to zero)"
+            },
+            "maxReplicaCount": {
+              "type": "integer",
+              "x-wizard": { "narrow": true },
+              "minimum": 1,
+              "default": 10,
+              "description": "Maximum number of replicas"
+            },
+            "pollingInterval": {
+              "type": [
+                "integer",
+                "string"
+              ],
+              "description": "How often KEDA checks triggers (seconds, default: 30)"
+            },
+            "cooldownPeriod": {
+              "type": [
+                "integer",
+                "string"
+              ],
+              "x-wizard": { "narrow": true },
+              "description": "Wait period after last trigger before scaling down (seconds, default: 300)"
+            },
+            "idleReplicaCount": {
+              "type": [
+                "integer",
+                "string"
+              ],
+              "x-wizard": { "narrow": true },
+              "description": "Replica count when idle (below minReplicaCount). See https://keda.sh/docs/latest/concepts/scaling-deployments/#idlereplicacount"
+            },
+            "fallback": {
+              "type": "object",
+              "description": "Fallback replicas when trigger metrics are unavailable. See https://keda.sh/docs/latest/concepts/scaling-deployments/#fallback"
+            },
+            "advanced": {
+              "type": "object",
+              "description": "Advanced KEDA config (restoreToOriginalReplicaCount, horizontalPodAutoscalerConfig)"
+            },
+            "triggers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "type",
+                  "metadata"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "description": "Trigger type (e.g. prometheus, kafka, cron). See https://keda.sh/docs/latest/scalers/"
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "Optional trigger name for identification"
+                  },
+                  "metadata": {
+                    "type": "object",
+                    "description": "Trigger-specific configuration"
+                  },
+                  "authenticationRef": {
+                    "type": "object",
+                    "description": "Reference to a TriggerAuthentication resource"
+                  },
+                  "metricType": {
+                    "type": "string",
+                    "description": "Metric type: AverageValue, Value, or Utilization"
+                  }
+                },
+                "description": "A KEDA trigger (e.g. prometheus, kafka, rabbitmq, cron)"
+              },
+              "description": "KEDA trigger definitions. See https://keda.sh/docs/latest/scalers/"
+            },
+            "successfulJobsHistoryLimit": {
+              "type": [
+                "integer",
+                "string"
+              ],
+              "x-wizard": { "narrow": true },
+              "description": "ScaledJob: how many successful jobs to keep (default: 100)"
+            },
+            "failedJobsHistoryLimit": {
+              "type": [
+                "integer",
+                "string"
+              ],
+              "x-wizard": { "narrow": true },
+              "description": "ScaledJob: how many failed jobs to keep (default: 100)"
+            },
+            "scalingStrategy": {
+              "type": "object",
+              "description": "ScaledJob: scaling strategy (default, custom, accurate). See https://keda.sh/docs/latest/concepts/scaling-jobs/"
+            },
+            "annotations": {
+              "type": "object",
+              "x-wizard": { "advanced": true },
+              "description": "Annotations on the KEDA ScaledObject/ScaledJob resource"
+            },
+            "labels": {
+              "type": "object",
+              "x-wizard": { "advanced": true },
+              "description": "Labels on the KEDA ScaledObject/ScaledJob resource"
+            }
+          },
+          "additionalProperties": false,
+          "description": "KEDA ScaledObject/ScaledJob configuration. See https://keda.sh/docs/latest/concepts/scaling-deployments/"
+        }
+      },
+      "additionalProperties": false
+    },
+    "pdb": {
+      "type": "object",
+      "x-wizard": {
+        "order": 20,
+        "group": "Scaling",
+        "label": "Pod Disruption Budget",
+        "icon": "ShieldCheck",
+        "description": "Configure Pod Disruption Budget to ensure availability during voluntary disruptions.",
+        "hiddenFor": [
+          "Job",
+          "CronJob"
+        ]
+      },
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "x-wizard": { "narrow": true },
+          "description": "Enable Pod Disruption Budget for this workload"
+        },
+        "minAvailable": {
+          "type": [
+            "integer",
+            "string"
+          ],
+          "x-wizard": { "narrow": true },
+          "description": "Minimum pods that must be available during disruptions (number or percentage like '50%'). See https://kubernetes.io/docs/tasks/run-application/configure-pdb/"
+        },
+        "maxUnavailable": {
+          "type": [
+            "integer",
+            "string"
+          ],
+          "x-wizard": { "narrow": true },
+          "description": "Maximum pods that can be unavailable during disruptions (number or percentage)"
+        },
+        "unhealthyPodEvictionPolicy": {
+          "type": "string",
+          "x-wizard": { "narrow": true },
+          "enum": ["IfHealthyBudget", "AlwaysAllow"],
+          "description": "Policy for evicting unhealthy pods (K8s 1.31+). See https://kubernetes.io/docs/tasks/run-application/configure-pdb/#unhealthy-pod-eviction-policy"
+        },
+        "annotations": {
+          "type": "object",
+          "x-wizard": {
+            "advanced": true
+          },
+          "description": "Annotations on the PDB resource"
+        },
+        "labels": {
+          "type": "object",
+          "x-wizard": { "advanced": true },
+          "description": "Labels on the PDB resource"
+        }
+      },
+      "additionalProperties": false
+    },
+    "rbac": {
+      "type": "object",
+      "x-wizard": {
+        "order": 18,
+        "group": "Security",
+        "label": "RBAC",
+        "icon": "Users",
+        "description": "Configure ServiceAccount, Roles, ClusterRoles, and their Bindings."
+      },
+      "properties": {
+        "serviceAccount": {
+          "type": "object",
+          "x-wizard": { "expanded": true },
+          "properties": {
+            "create": {
+              "type": "boolean",
+              "x-wizard": { "narrow": true },
+              "default": true,
+              "description": "Create a ServiceAccount for this release"
+            },
+            "automountServiceAccountToken": {
+              "type": "boolean",
+              "x-wizard": { "narrow": true },
+              "description": "Auto-mount the service account token in pods. See https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#opt-out-of-api-credential-automounting"
+            },
+            "name": {
+              "type": "string",
+              "x-wizard": { "narrow": true },
+              "description": "ServiceAccount name (defaults to fullname if create=true, or 'default')"
+            },
+            "imagePullSecrets": {
+              "type": "array",
+              "x-wizard": { "advanced": true },
+              "description": "Image pull secrets to add to the ServiceAccount"
+            },
+            "annotations": {
+              "type": "object",
+              "x-wizard": { "advanced": true },
+              "description": "Annotations on the ServiceAccount (e.g. for IAM role binding)"
+            },
+            "labels": {
+              "type": "object",
+              "x-wizard": { "advanced": true },
+              "description": "Labels on the ServiceAccount"
+            }
+          },
+          "additionalProperties": false,
+          "description": "ServiceAccount configuration. See https://kubernetes.io/docs/concepts/security/service-accounts/"
+        },
+        "roles": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "rules": {
+                "type": "array",
+                "description": "Permission rules. See https://kubernetes.io/docs/reference/access-authn-authz/rbac/#role-and-clusterrole",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "apiGroups": {
+                      "type": "array",
+                      "items": { "type": "string" },
+                      "description": "API groups (e.g. \"\", apps, batch)"
+                    },
+                    "resources": {
+                      "type": "array",
+                      "items": { "type": "string" },
+                      "description": "Resources (e.g. pods, deployments, secrets)"
+                    },
+                    "verbs": {
+                      "type": "array",
+                      "items": { "type": "string" },
+                      "description": "Allowed verbs (e.g. get, list, watch, create, update, delete)"
+                    }
+                  }
+                }
+              },
+              "annotations": {
+                "type": "object",
+                "x-wizard": { "advanced": true },
+                "description": "Annotations on the Role resource"
+              },
+              "labels": {
+                "type": "object",
+                "x-wizard": { "advanced": true },
+                "description": "Labels on the Role resource"
+              }
+            }
+          },
+          "description": "Map of Role name to config. See https://kubernetes.io/docs/reference/access-authn-authz/rbac/#role-and-clusterrole"
+        },
+        "clusterRoles": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "rules": {
+                "type": "array",
+                "description": "Permission rules. See https://kubernetes.io/docs/reference/access-authn-authz/rbac/#role-and-clusterrole",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "apiGroups": {
+                      "type": "array",
+                      "items": { "type": "string" },
+                      "description": "API groups (e.g. \"\", apps, batch)"
+                    },
+                    "resources": {
+                      "type": "array",
+                      "items": { "type": "string" },
+                      "description": "Resources (e.g. pods, deployments, secrets)"
+                    },
+                    "verbs": {
+                      "type": "array",
+                      "items": { "type": "string" },
+                      "description": "Allowed verbs (e.g. get, list, watch, create, update, delete)"
+                    }
+                  }
+                }
+              },
+              "annotations": {
+                "type": "object",
+                "x-wizard": { "advanced": true },
+                "description": "Annotations on the ClusterRole resource"
+              },
+              "labels": {
+                "type": "object",
+                "x-wizard": { "advanced": true },
+                "description": "Labels on the ClusterRole resource"
+              }
+            }
+          },
+          "description": "Map of ClusterRole name to config. See https://kubernetes.io/docs/reference/access-authn-authz/rbac/#role-and-clusterrole"
+        },
+        "roleBindings": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "roleRef": {
+                "type": "object",
+                "x-wizard": { "expanded": true },
+                "required": ["name"],
+                "description": "Reference to the Role to bind. See https://kubernetes.io/docs/reference/access-authn-authz/rbac/#rolebinding-and-clusterrolebinding",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "x-wizard": { "narrow": true, "optionsFrom": "rbac.roles" },
+                    "description": "Role name (from rbac.roles map key)"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "x-wizard": { "narrow": true },
+                    "enum": ["Role", "ClusterRole"],
+                    "default": "Role",
+                    "description": "Role or ClusterRole"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "subjects": {
+                "type": "array",
+                "description": "Subjects to bind (defaults to chart's ServiceAccount)",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "x-wizard": { "narrow": true },
+                      "enum": ["ServiceAccount", "User", "Group"],
+                      "description": "Subject kind"
+                    },
+                    "name": {
+                      "type": "string",
+                      "x-wizard": { "narrow": true },
+                      "description": "Subject name"
+                    },
+                    "namespace": {
+                      "type": "string",
+                      "description": "Subject namespace (for ServiceAccount)"
+                    }
+                  }
+                }
+              },
+              "annotations": {
+                "type": "object",
+                "x-wizard": { "advanced": true },
+                "description": "Annotations on the RoleBinding resource"
+              },
+              "labels": {
+                "type": "object",
+                "x-wizard": { "advanced": true },
+                "description": "Labels on the RoleBinding resource"
+              }
+            }
+          },
+          "description": "Map of RoleBinding name to config. See https://kubernetes.io/docs/reference/access-authn-authz/rbac/#rolebinding-and-clusterrolebinding"
+        },
+        "clusterRoleBindings": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "roleRef": {
+                "type": "object",
+                "x-wizard": { "expanded": true },
+                "required": ["name"],
+                "description": "Reference to the ClusterRole to bind. See https://kubernetes.io/docs/reference/access-authn-authz/rbac/#rolebinding-and-clusterrolebinding",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "x-wizard": { "narrow": true, "optionsFrom": "rbac.clusterRoles" },
+                    "description": "ClusterRole name (from rbac.clusterRoles map key)"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "x-wizard": { "narrow": true },
+                    "enum": ["ClusterRole"],
+                    "default": "ClusterRole",
+                    "description": "Always ClusterRole for ClusterRoleBindings"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "subjects": {
+                "type": "array",
+                "description": "Subjects to bind (defaults to chart's ServiceAccount)",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "x-wizard": { "narrow": true },
+                      "enum": ["ServiceAccount", "User", "Group"],
+                      "description": "Subject kind"
+                    },
+                    "name": {
+                      "type": "string",
+                      "x-wizard": { "narrow": true },
+                      "description": "Subject name"
+                    },
+                    "namespace": {
+                      "type": "string",
+                      "description": "Subject namespace (for ServiceAccount)"
+                    }
+                  }
+                }
+              },
+              "annotations": {
+                "type": "object",
+                "x-wizard": { "advanced": true },
+                "description": "Annotations on the ClusterRoleBinding resource"
+              },
+              "labels": {
+                "type": "object",
+                "x-wizard": { "advanced": true },
+                "description": "Labels on the ClusterRoleBinding resource"
+              }
+            }
+          },
+          "description": "Map of ClusterRoleBinding name to config. See https://kubernetes.io/docs/reference/access-authn-authz/rbac/#rolebinding-and-clusterrolebinding"
+        }
+      },
+      "additionalProperties": false
+    },
+    "monitors": {
+      "type": "object",
+      "description": "Map of monitor name to monitor config",
+      "x-wizard": {
+        "order": 21,
+        "group": "Observability",
+        "label": "Monitors",
+        "icon": "Activity",
+        "description": "Configure ServiceMonitor/PodMonitor for Prometheus or VictoriaMetrics."
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "service",
+              "pod"
+            ],
+            "x-wizard": { "narrow": true },
+            "default": "service",
+            "description": "Monitor type: 'service' creates ServiceMonitor, 'pod' creates PodMonitor"
+          },
+          "operator": {
+            "type": "string",
+            "enum": [
+              "prometheus",
+              "victoriametrics"
+            ],
+            "x-wizard": { "narrow": true },
+            "default": "prometheus",
+            "description": "Target operator: 'prometheus' creates ServiceMonitor/PodMonitor, 'victoriametrics' creates VMServiceScrape/VMPodScrape"
+          },
+          "port": {
+            "type": "string",
+            "x-wizard": { "narrow": true, "visibleWhen": { "kind": ["service"] } },
+            "default": "http",
+            "description": "Named port to scrape (must match a port name in networking.services)"
+          },
+          "path": {
+            "type": "string",
+            "x-wizard": { "narrow": true },
+            "description": "Metrics endpoint path (default: /metrics)"
+          },
+          "interval": {
+            "type": "string",
+            "x-wizard": { "narrow": true },
+            "description": "Scrape interval (e.g. '30s', '1m')"
+          },
+          "scrapeTimeout": {
+            "type": "string",
+            "x-wizard": { "narrow": true },
+            "description": "Per-scrape timeout (must be less than interval)"
+          },
+          "scheme": {
+            "type": "string",
+            "x-wizard": { "narrow": true },
+            "enum": ["http", "https"],
+            "description": "HTTP scheme for scraping"
+          },
+          "honorLabels": {
+            "type": "boolean",
+            "x-wizard": { "narrow": true, "advanced": true },
+            "description": "Keep metric labels from the target even if they conflict with attached labels"
+          },
+          "honorTimestamps": {
+            "type": "boolean",
+            "x-wizard": { "narrow": true, "advanced": true },
+            "description": "Use timestamps from scraped metrics instead of scrape time"
+          },
+          "followRedirects": {
+            "type": "boolean",
+            "x-wizard": { "narrow": true, "advanced": true },
+            "description": "Follow HTTP redirects during scraping"
+          },
+          "params": {
+            "type": "object",
+            "x-wizard": { "advanced": true },
+            "description": "Optional HTTP query parameters for the scrape request"
+          },
+          "tlsConfig": {
+            "type": "object",
+            "x-wizard": { "advanced": true },
+            "description": "TLS configuration for scraping HTTPS endpoints"
+          },
+          "bearerTokenSecret": {
+            "type": "object",
+            "x-wizard": { "advanced": true },
+            "description": "Secret reference for bearer token authentication"
+          },
+          "basicAuth": {
+            "type": "object",
+            "x-wizard": { "advanced": true },
+            "description": "Basic auth credentials for scraping"
+          },
+          "authorization": {
+            "type": "object",
+            "x-wizard": { "advanced": true },
+            "description": "Authorization header configuration"
+          },
+          "oauth2": {
+            "type": "object",
+            "x-wizard": { "advanced": true },
+            "description": "OAuth2 client credentials for scraping"
+          },
+          "proxyURL": {
+            "type": "string",
+            "x-wizard": { "advanced": true },
+            "description": "HTTP proxy URL for scrape requests"
+          },
+          "metricRelabelings": {
+            "type": "array",
+            "x-wizard": { "advanced": true },
+            "description": "Relabeling rules applied to scraped metrics before ingestion"
+          },
+          "relabelings": {
+            "type": "array",
+            "x-wizard": { "advanced": true },
+            "description": "Relabeling rules applied to discovered targets before scraping"
+          },
+          "endpoints": {
+            "type": "array",
+            "x-wizard": { "advanced": true },
+            "description": "Multiple endpoint configurations (overrides single-endpoint fields above)"
+          },
+          "selector": {
+            "type": "object",
+            "x-wizard": { "advanced": true },
+            "description": "Override label selector for discovering target services/pods"
+          },
+          "namespaceSelector": {
+            "type": "object",
+            "x-wizard": { "advanced": true },
+            "description": "Namespace selector for discovering targets across namespaces"
+          },
+          "jobLabel": {
+            "type": "string",
+            "x-wizard": { "advanced": true, "visibleWhen": { "kind": ["service"] } },
+            "description": "Label whose value becomes the Prometheus job name (ServiceMonitor only)"
+          },
+          "targetLabels": {
+            "type": "array",
+            "x-wizard": { "advanced": true, "visibleWhen": { "kind": ["service"] } },
+            "items": {
+              "type": "string"
+            },
+            "description": "Service labels to transfer to scraped metrics (ServiceMonitor only)"
+          },
+          "podTargetLabels": {
+            "type": "array",
+            "x-wizard": { "advanced": true, "visibleWhen": { "kind": ["pod"] } },
+            "items": {
+              "type": "string"
+            },
+            "description": "Pod labels to transfer to scraped metrics (PodMonitor only)"
+          },
+          "sampleLimit": {
+            "type": "integer",
+            "x-wizard": { "narrow": true, "advanced": true },
+            "description": "Per-scrape limit on number of samples accepted"
+          },
+          "vmScrapeParams": {
+            "type": "object",
+            "x-wizard": { "advanced": true, "visibleWhen": { "operator": ["victoriametrics"] } },
+            "description": "VictoriaMetrics-specific scrape parameters. See https://docs.victoriametrics.com/operator/api/#vmservicescrapespec"
+          },
+          "maxScrapeSize": {
+            "type": "string",
+            "x-wizard": { "narrow": true, "advanced": true, "visibleWhen": { "operator": ["victoriametrics"] } },
+            "description": "Maximum size of a single scrape response (VictoriaMetrics only)"
+          },
+          "seriesLimit": {
+            "type": "integer",
+            "x-wizard": { "narrow": true, "advanced": true, "visibleWhen": { "operator": ["victoriametrics"] } },
+            "description": "Limit on unique time series per scrape target (VictoriaMetrics only)"
+          },
+          "labels": {
+            "type": "object",
+            "x-wizard": { "advanced": true },
+            "description": "Labels on the monitor resource"
+          },
+          "annotations": {
+            "type": "object",
+            "x-wizard": { "advanced": true },
+            "description": "Annotations on the monitor resource"
+          }
+        },
+        "description": "ServiceMonitor or PodMonitor configuration for Prometheus/VictoriaMetrics. See https://prometheus-operator.dev/docs/api-reference/api/#monitoring.coreos.com/v1.ServiceMonitor"
+      }
+    },
+    "alerting": {
+      "type": "object",
+      "description": "Map of alerting rule name to config (PrometheusRule or VMRule)",
+      "x-wizard": {
+        "order": 22,
+        "group": "Observability",
+        "label": "Alerting Rules",
+        "icon": "Activity",
+        "description": "Configure PrometheusRule or VMRule alerting and recording rules."
+      },
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "groups"
+        ],
+        "properties": {
+          "operator": {
+            "type": "string",
+            "enum": [
+              "prometheus",
+              "victoriametrics"
+            ],
+            "default": "prometheus",
+            "description": "Target operator: 'prometheus' creates PrometheusRule, 'victoriametrics' creates VMRule"
+          },
+          "groups": {
+            "type": "array",
+            "description": "Rule groups in standard Prometheus format. See https://prometheus.io/docs/prometheus/latest/configuration/recording_rules/",
+            "items": {
+              "type": "object",
+              "required": [
+                "name",
+                "rules"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Rule group name"
+                },
+                "interval": {
+                  "type": "string",
+                  "x-wizard": { "narrow": true },
+                  "description": "Evaluation interval for rules in this group"
+                },
+                "limit": {
+                  "type": "integer",
+                  "x-wizard": { "narrow": true },
+                  "description": "Maximum number of alerts produced by this group"
+                },
+                "labels": {
+                  "type": "object",
+                  "description": "Labels added to all rules in this group"
+                },
+                "rules": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  },
+                  "description": "Alerting and recording rules. See https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/"
+                }
+              },
+              "description": "A rule group containing alerting or recording rules"
+            }
+          },
+          "annotations": {
+            "type": "object",
+            "x-wizard": { "advanced": true },
+            "description": "Annotations on the rule resource"
+          },
+          "labels": {
+            "type": "object",
+            "x-wizard": { "advanced": true },
+            "description": "Labels on the rule resource"
+          }
+        },
+        "description": "Alerting/recording rule group. See https://prometheus-operator.dev/docs/api-reference/api/#monitoring.coreos.com/v1.PrometheusRule"
+      }
+    },
+    "dashboards": {
+      "type": "object",
+      "x-wizard": {
+        "order": 23,
+        "group": "Observability",
+        "label": "Dashboards",
+        "icon": "Activity",
+        "description": "Configure Grafana dashboards via the Grafana Operator. See https://grafana.com/docs/grafana/latest/as-code/infrastructure-as-code/grafana-operator/operator-dashboards-folders-datasources/#add-a-dashboard-to-a-folder"
+      },
+      "properties": {
+        "grafana": {
+          "type": "object",
+          "description": "Map of Grafana dashboard name to dashboard config",
+          "additionalProperties": {
+            "type": "object",
+            "required": [
+              "instanceSelector"
+            ],
+            "properties": {
+              "instanceSelector": {
+                "type": "object",
+                "x-wizard": { "expanded": true },
+                "description": "Label selector to match target Grafana instances. See https://grafana.github.io/grafana-operator/docs/dashboards/#instance-selector",
+                "properties": {
+                  "matchLabels": {
+                    "type": "object",
+                    "additionalProperties": { "type": "string" },
+                    "description": "Labels that must match the Grafana instance (e.g. dashboards: enabled)"
+                  }
+                }
+              },
+              "grafanaCom": {
+                "type": "object",
+                "description": "Import from grafana.com by dashboard ID. See https://grafana.com/grafana/dashboards/",
+                "properties": {
+                  "id": {
+                    "type": "integer",
+                    "x-wizard": { "narrow": true },
+                    "description": "Dashboard ID from grafana.com (e.g. 1860 for Node Exporter)"
+                  },
+                  "revision": {
+                    "type": "integer",
+                    "x-wizard": { "narrow": true },
+                    "description": "Dashboard revision number"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "url": {
+                "type": "string",
+                "description": "URL to fetch dashboard JSON from. See https://grafana.github.io/grafana-operator/docs/dashboards/#from-url"
+              },
+              "json": {
+                "type": "string",
+                "description": "Inline dashboard JSON model. See https://grafana.github.io/grafana-operator/docs/dashboards/#from-json"
+              },
+              "configMapRef": {
+                "type": "object",
+                "description": "Load dashboard from a ConfigMap. See https://grafana.github.io/grafana-operator/docs/dashboards/#from-configmap",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "x-wizard": { "narrow": true },
+                    "description": "ConfigMap name"
+                  },
+                  "key": {
+                    "type": "string",
+                    "x-wizard": { "narrow": true },
+                    "description": "Key within the ConfigMap containing the dashboard JSON"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "folder": {
+                "type": "string",
+                "x-wizard": { "narrow": true },
+                "description": "Grafana folder name"
+              },
+              "folderUID": {
+                "type": "string",
+                "x-wizard": { "narrow": true },
+                "description": "Grafana folder UID (takes precedence over folder name)"
+              },
+              "folderRef": {
+                "type": "string",
+                "x-wizard": { "narrow": true },
+                "description": "Reference to a GrafanaFolder resource name"
+              },
+              "uid": {
+                "type": "string",
+                "maxLength": 40,
+                "x-wizard": { "narrow": true },
+                "description": "Explicit dashboard UID (max 40 chars, auto-generated if omitted)"
+              },
+              "resyncPeriod": {
+                "type": "string",
+                "x-wizard": { "narrow": true, "advanced": true },
+                "description": "How often to re-sync the dashboard (e.g. '5m')"
+              },
+              "allowCrossNamespaceImport": {
+                "type": "boolean",
+                "x-wizard": { "narrow": true, "advanced": true },
+                "description": "Allow import by Grafana instances in other namespaces"
+              },
+              "suspend": {
+                "type": "boolean",
+                "x-wizard": { "narrow": true, "advanced": true },
+                "description": "Suspend reconciliation of this dashboard"
+              },
+              "gzipJson": {
+                "type": "string",
+                "x-wizard": { "advanced": true },
+                "description": "Gzip-compressed and base64-encoded dashboard JSON"
+              },
+              "urlAuthorization": {
+                "type": "object",
+                "x-wizard": { "advanced": true },
+                "description": "Authorization config for fetching dashboard from URL",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "x-wizard": { "narrow": true },
+                    "enum": ["bearer", "basic"],
+                    "description": "Authorization type"
+                  },
+                  "credential": {
+                    "type": "object",
+                    "description": "Secret reference for the credential",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "x-wizard": { "narrow": true },
+                        "description": "Secret name"
+                      },
+                      "key": {
+                        "type": "string",
+                        "x-wizard": { "narrow": true },
+                        "description": "Key within the Secret"
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false
+              },
+              "jsonnet": {
+                "type": "string",
+                "x-wizard": { "advanced": true },
+                "description": "Jsonnet source for generating the dashboard. See https://grafana.github.io/grafana-operator/docs/dashboards/#from-jsonnet"
+              },
+              "contentCacheDuration": {
+                "type": "string",
+                "x-wizard": { "advanced": true },
+                "description": "How long to cache fetched dashboard content"
+              },
+              "datasources": {
+                "type": "array",
+                "x-wizard": { "advanced": true },
+                "description": "Datasource variable substitutions. See https://grafana.github.io/grafana-operator/docs/dashboards/#datasources",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "inputName": {
+                      "type": "string",
+                      "x-wizard": { "narrow": true },
+                      "description": "Variable name in the dashboard JSON (e.g. DS_PROMETHEUS)"
+                    },
+                    "datasourceName": {
+                      "type": "string",
+                      "x-wizard": { "narrow": true },
+                      "description": "Grafana datasource name to substitute"
+                    }
+                  }
+                }
+              },
+              "plugins": {
+                "type": "array",
+                "x-wizard": { "advanced": true },
+                "description": "Required Grafana plugins. See https://grafana.github.io/grafana-operator/docs/dashboards/#plugins",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "x-wizard": { "narrow": true },
+                      "description": "Plugin ID (e.g. grafana-piechart-panel)"
+                    },
+                    "version": {
+                      "type": "string",
+                      "x-wizard": { "narrow": true },
+                      "description": "Plugin version"
+                    }
+                  }
+                }
+              },
+              "envs": {
+                "type": "array",
+                "items": {
+                  "type": "object"
+                },
+                "x-wizard": { "advanced": true },
+                "description": "Environment variable substitutions in the dashboard JSON"
+              },
+              "envFrom": {
+                "type": "array",
+                "items": {
+                  "type": "object"
+                },
+                "x-wizard": { "advanced": true },
+                "description": "Environment variable sources (ConfigMap/Secret references)"
+              },
+              "annotations": {
+                "type": "object",
+                "x-wizard": { "advanced": true },
+                "description": "Annotations on the GrafanaDashboard resource"
+              },
+              "labels": {
+                "type": "object",
+                "x-wizard": { "advanced": true },
+                "description": "Labels on the GrafanaDashboard resource"
+              }
+            },
+            "description": "GrafanaDashboard configuration via Grafana Operator. See https://grafana.github.io/grafana-operator/docs/dashboards/"
+          }
+        }
+      }
+    },
+    "workloads": {
+      "type": "object",
+      "x-wizard": {
+        "order": 2,
+        "group": "Workload",
+        "label": "Workload Settings",
+        "icon": "Settings",
+        "description": "Configure settings specific to your workload type (replicas, strategy, schedule, etc.).",
+        "selectByValue": "workloadType"
+      },
+      "properties": {
+        "rollout": {
+          "type": "object",
+          "description": "Argo Rollouts settings. See https://argo-rollouts.readthedocs.io/en/stable/features/specification/",
+          "properties": {
+            "replicaCount": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 1,
+              "description": "Number of pod replicas"
+            },
+            "strategy": {
+              "type": "object",
+              "description": "Rollout strategy: canary or blueGreen. See https://argo-rollouts.readthedocs.io/en/stable/features/canary/"
+            },
+            "minReadySeconds": {
+              "type": [
+                "integer",
+                "string"
+              ],
+              "x-wizard": { "advanced": true },
+              "default": 0,
+              "description": "Minimum seconds a pod must be ready before considered available. See https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#min-ready-seconds"
+            },
+            "revisionHistoryLimit": {
+              "type": [
+                "integer",
+                "string"
+              ],
+              "x-wizard": { "advanced": true },
+              "default": 10,
+              "description": "Number of old ReplicaSets to retain for rollback. See https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#revision-history-limit"
+            },
+            "restartAt": {
+              "type": "string",
+              "description": "Scheduled restart time in RFC 3339 format"
+            },
+            "analysis": {
+              "type": "object",
+              "description": "Background AnalysisRun configuration. See https://argo-rollouts.readthedocs.io/en/stable/features/analysis/"
+            }
+          },
+          "additionalProperties": false
+        },
+        "deployment": {
+          "type": "object",
+          "description": "Deployment settings. See https://kubernetes.io/docs/concepts/workloads/controllers/deployment/",
+          "properties": {
+            "replicaCount": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 1,
+              "description": "Number of pod replicas"
+            },
+            "strategy": {
+              "type": "object",
+              "description": "Deployment update strategy. See https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "RollingUpdate",
+                    "Recreate"
+                  ],
+                  "default": "RollingUpdate",
+                  "description": "RollingUpdate replaces pods gradually; Recreate kills all existing pods first. See https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy"
+                }
+              }
+            },
+            "minReadySeconds": {
+              "type": [
+                "integer",
+                "string"
+              ],
+              "x-wizard": { "advanced": true },
+              "default": 0,
+              "description": "Minimum seconds a pod must be ready before considered available. See https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#min-ready-seconds"
+            },
+            "revisionHistoryLimit": {
+              "type": [
+                "integer",
+                "string"
+              ],
+              "x-wizard": { "advanced": true },
+              "default": 10,
+              "description": "Number of old ReplicaSets to retain for rollback. See https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#revision-history-limit"
+            }
+          },
+          "additionalProperties": false
+        },
+        "statefulSet": {
+          "type": "object",
+          "description": "StatefulSet settings. See https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/",
+          "properties": {
+            "replicaCount": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 1,
+              "description": "Number of pod replicas"
+            },
+            "serviceName": {
+              "type": "string",
+              "description": "Override the governing headless Service name"
+            },
+            "publishNotReadyAddresses": {
+              "type": "boolean",
+              "x-wizard": { "advanced": true },
+              "description": "Publish DNS records for pods even when not ready"
+            },
+            "podManagementPolicy": {
+              "type": "string",
+              "x-wizard": { "advanced": true },
+              "enum": [
+                "OrderedReady",
+                "Parallel",
+                ""
+              ],
+              "default": "OrderedReady",
+              "description": "OrderedReady creates pods sequentially; Parallel launches all at once. See https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#pod-management-policies"
+            },
+            "updateStrategy": {
+              "type": "object",
+              "description": "StatefulSet update strategy. See https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "RollingUpdate",
+                    "OnDelete"
+                  ],
+                  "default": "RollingUpdate",
+                  "description": "RollingUpdate updates pods automatically; OnDelete waits for manual pod deletion. See https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies"
+                }
+              }
+            },
+            "minReadySeconds": {
+              "type": [
+                "integer",
+                "string"
+              ],
+              "x-wizard": { "advanced": true },
+              "default": 0,
+              "description": "Minimum seconds a pod must be ready before considered available. See https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#min-ready-seconds"
+            },
+            "revisionHistoryLimit": {
+              "type": [
+                "integer",
+                "string"
+              ],
+              "x-wizard": { "advanced": true },
+              "default": 10,
+              "description": "Number of old revisions to retain for rollback. See https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#revision-history-limit"
+            },
+            "ordinals": {
+              "type": "object",
+              "x-wizard": { "advanced": true },
+              "description": "Ordinal configuration (start index). See https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#start-ordinal"
+            },
+            "persistentVolumeClaimRetentionPolicy": {
+              "type": "object",
+              "x-wizard": { "advanced": true },
+              "description": "PVC retention policy on scale-down/deletion. See https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#persistentvolumeclaim-retention"
+            }
+          },
+          "additionalProperties": false
+        },
+        "daemonSet": {
+          "type": "object",
+          "description": "DaemonSet settings. See https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/",
+          "properties": {
+            "updateStrategy": {
+              "type": "object",
+              "description": "DaemonSet update strategy. See https://kubernetes.io/docs/tasks/manage-daemon/update-daemon-set/",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "RollingUpdate",
+                    "OnDelete"
+                  ],
+                  "default": "RollingUpdate",
+                  "description": "RollingUpdate updates pods automatically; OnDelete waits for manual pod deletion. See https://kubernetes.io/docs/tasks/manage-daemon/update-daemon-set/"
+                }
+              }
+            },
+            "minReadySeconds": {
+              "type": [
+                "integer",
+                "string"
+              ],
+              "x-wizard": { "advanced": true },
+              "default": 0,
+              "description": "Minimum seconds a pod must be ready before considered available. See https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#min-ready-seconds"
+            },
+            "revisionHistoryLimit": {
+              "type": [
+                "integer",
+                "string"
+              ],
+              "x-wizard": { "advanced": true },
+              "default": 10,
+              "description": "Number of old DaemonSet revisions to retain for rollback. See https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#revision-history-limit"
+            }
+          },
+          "additionalProperties": false
+        },
+        "cronJob": {
+          "type": "object",
+          "description": "CronJob settings. See https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/",
+          "properties": {
+            "schedule": {
+              "type": "string",
+              "default": "0 * * * *",
+              "description": "Cron schedule expression (e.g. '0 */6 * * *'). Use https://crontab.guru to build expressions."
+            },
+            "timeZone": {
+              "type": "string",
+              "description": "IANA time zone for the schedule (e.g. 'America/New_York'). See https://en.wikipedia.org/wiki/List_of_tz_database_time_zones"
+            },
+            "concurrencyPolicy": {
+              "type": "string",
+              "enum": [
+                "Allow",
+                "Forbid",
+                "Replace",
+                ""
+              ],
+              "default": "Allow",
+              "description": "Allow runs concurrent jobs; Forbid skips if previous is running; Replace kills previous job first"
+            },
+            "suspend": {
+              "type": "boolean",
+              "description": "Suspend subsequent executions (does not apply to already started jobs)"
+            },
+            "successfulJobsHistoryLimit": {
+              "type": [
+                "integer",
+                "string"
+              ],
+              "description": "Number of successful finished jobs to retain (default: 3)"
+            },
+            "failedJobsHistoryLimit": {
+              "type": [
+                "integer",
+                "string"
+              ],
+              "description": "Number of failed finished jobs to retain (default: 1)"
+            },
+            "startingDeadlineSeconds": {
+              "type": [
+                "integer",
+                "string"
+              ],
+              "description": "Deadline in seconds for starting the job if it missed its schedule"
+            }
+          },
+          "additionalProperties": false
+        },
+        "job": {
+          "type": "object",
+          "description": "Job settings. See https://kubernetes.io/docs/concepts/workloads/controllers/job/",
+          "properties": {
+            "backoffLimit": {
+              "type": [
+                "integer",
+                "string"
+              ],
+              "description": "Number of retries before marking the job as failed (default: 6)"
+            },
+            "activeDeadlineSeconds": {
+              "type": [
+                "integer",
+                "string"
+              ],
+              "description": "Maximum duration in seconds before the job is terminated"
+            },
+            "ttlSecondsAfterFinished": {
+              "type": [
+                "integer",
+                "string"
+              ],
+              "description": "Seconds to keep the job after it finishes. Cleaned up by TTL controller. See https://kubernetes.io/docs/concepts/workloads/controllers/ttlafterfinished/"
+            },
+            "completions": {
+              "type": [
+                "integer",
+                "string"
+              ],
+              "description": "Number of successful completions required (default: 1)"
+            },
+            "parallelism": {
+              "type": [
+                "integer",
+                "string"
+              ],
+              "description": "Maximum number of pods running in parallel (default: 1)"
+            },
+            "completionMode": {
+              "type": "string",
+              "enum": [
+                "NonIndexed",
+                "Indexed",
+                ""
+              ],
+              "description": "NonIndexed: any pod completion counts. Indexed: each index must complete. See https://kubernetes.io/docs/concepts/workloads/controllers/job/#completion-mode"
+            },
+            "podReplacementPolicy": {
+              "type": "string",
+              "enum": [
+                "Failed",
+                "TerminatingOrFailed",
+                ""
+              ],
+              "description": "When to create replacement pods (K8s 1.34+). See https://kubernetes.io/docs/concepts/workloads/controllers/job/#pod-replacement-policy"
+            },
+            "suspend": {
+              "type": "boolean",
+              "description": "Suspend the job — running pods will be terminated and restarted when resumed"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "hooks": {
+      "type": "object",
+      "description": "Map of hook name to hook Job config. Runs at Helm lifecycle events.",
+      "x-wizard": {
+        "order": 24,
+        "group": "Operations",
+        "label": "Hooks",
+        "icon": "Anchor",
+        "description": "Configure Helm lifecycle hooks (pre-install, pre-upgrade, etc.) that run as Jobs."
+      },
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "events",
+          "containers"
+        ],
+        "properties": {
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "pre-install",
+                "post-install",
+                "pre-upgrade",
+                "post-upgrade",
+                "pre-delete",
+                "post-delete",
+                "pre-rollback",
+                "post-rollback"
+              ]
+            },
+            "description": "Helm lifecycle events that trigger this hook. See https://helm.sh/docs/topics/charts_hooks/#the-available-hooks"
+          },
+          "weight": {
+            "type": "string",
+            "x-wizard": { "narrow": true },
+            "default": "0",
+            "description": "Execution order among hooks at the same event (lower runs first). See https://helm.sh/docs/topics/charts_hooks/#hook-weights"
+          },
+          "deletePolicy": {
+            "type": "string",
+            "x-wizard": { "narrow": true },
+            "enum": [
+              "before-hook-creation",
+              "hook-succeeded",
+              "hook-failed"
+            ],
+            "default": "before-hook-creation",
+            "description": "When to delete the hook resource. See https://helm.sh/docs/topics/charts_hooks/#hook-deletion-policies"
+          },
+          "containers": {
+            "type": "object",
+            "description": "Hook Job containers (same format as main containers). See https://helm.sh/docs/topics/charts_hooks/"
+          },
+          "initContainers": {
+            "type": "object",
+            "x-wizard": { "advanced": true },
+            "description": "Init containers for the hook Job"
+          },
+          "backoffLimit": {
+            "type": [
+              "integer",
+              "string"
+            ],
+            "x-wizard": { "narrow": true },
+            "description": "Number of retries before marking the hook Job as failed. See https://kubernetes.io/docs/concepts/workloads/controllers/job/#pod-backoff-failure-policy"
+          },
+          "activeDeadlineSeconds": {
+            "type": [
+              "integer",
+              "string"
+            ],
+            "x-wizard": { "narrow": true },
+            "description": "Maximum duration (seconds) before the hook Job is terminated. See https://kubernetes.io/docs/concepts/workloads/controllers/job/#job-termination-and-cleanup"
+          },
+          "ttlSecondsAfterFinished": {
+            "type": [
+              "integer",
+              "string"
+            ],
+            "x-wizard": { "narrow": true, "advanced": true },
+            "description": "Seconds to keep the hook Job after completion. See https://kubernetes.io/docs/concepts/workloads/controllers/job/#ttl-mechanism-for-finished-jobs"
+          },
+          "completions": {
+            "type": [
+              "integer",
+              "string"
+            ],
+            "x-wizard": { "narrow": true, "advanced": true },
+            "description": "Number of successful completions required. See https://kubernetes.io/docs/concepts/workloads/controllers/job/#parallel-jobs"
+          },
+          "parallelism": {
+            "type": [
+              "integer",
+              "string"
+            ],
+            "x-wizard": { "narrow": true, "advanced": true },
+            "description": "Maximum number of pods running in parallel. See https://kubernetes.io/docs/concepts/workloads/controllers/job/#parallel-jobs"
+          },
+          "annotations": {
+            "type": "object",
+            "x-wizard": { "advanced": true },
+            "description": "Extra annotations on the hook Job"
+          },
+          "labels": {
+            "type": "object",
+            "x-wizard": { "advanced": true },
+            "description": "Extra labels on the hook Job"
+          }
+        },
+        "description": "Helm hook Job configuration. See https://helm.sh/docs/topics/charts_hooks/"
+      }
+    },
+    "extraResources": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "x-wizard": {
+        "order": 28,
+        "group": "Operations",
+        "label": "Extra Resources",
+        "icon": "Plus",
+        "description": "Add arbitrary Kubernetes resources not covered by the chart."
+      },
+      "description": "Arbitrary Kubernetes resources not covered by the chart. Each item is a complete resource manifest."
+    }
+  }
+}
